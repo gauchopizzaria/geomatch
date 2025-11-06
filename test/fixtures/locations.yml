@@ -1,0 +1,13 @@
+# Read about fixtures at https://api.rubyonrails.org/classes/ActiveRecord/FixtureSet.html
+
+one:
+  user: one
+  latitude: 9.99
+  longitude: 9.99
+  last_seen_at: 2025-11-06 10:26:05
+
+two:
+  user: two
+  latitude: 9.99
+  longitude: 9.99
+  last_seen_at: 2025-11-06 10:26:05
