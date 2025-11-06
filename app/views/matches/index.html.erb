@@ -1,0 +1,10 @@
+<!-- app/views/matches/index.html.erb -->
+<h1>Seus Matches</h1>
+
+<% @matches.each do |match| %>
+  <!-- Exibir informações do match -->
+  <p><%= link_to "Chat com #{match.other_user(current_user).display_name}", match_path(match) %></p>
+<% end %>
+
+<!-- Helper de Paginação do Kaminari -->
+<%= paginate @matches %>

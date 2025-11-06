@@ -1,0 +1,9 @@
+<!-- app/views/matches/show.html.erb -->
+<!-- ... Conteúdo do chat ... -->
+
+<div id="messages">
+  <%= render @messages %>
+</div>
+
+<!-- O Kaminari também oferece um helper para "carregar mais" (load more) -->
+<%= paginate @messages, remote: true %>
