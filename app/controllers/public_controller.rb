@@ -1,6 +1,6 @@
 class PublicController < ApplicationController
   def landing
-    # Renderiza a página de boas-vindas (landing page)
+      redirect_to discover_path if user_signed_in?
   end
 
   def terms

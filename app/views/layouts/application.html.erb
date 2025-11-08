@@ -5,26 +5,61 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
-    <meta name="csrf-token" content="<%= csrf_meta_tags %>">
+    <!-- Meta responsivo -->
+    <meta name="viewport" content="width=device-width, initial-scale=1">
 
+    <!-- Fonte: Poppins (Google Fonts) -->
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&display=swap" rel="stylesheet">
+
+    <!-- CSS principal compilado -->
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+    <!-- Leaflet CSS via CDN -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+
+    <!-- JS principal -->
     <%= javascript_include_tag "application", type: "module", "data-turbo-track": "reload" %>
 
-    <!-- Leaflet -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
+    <!-- Leaflet JS -->
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
   </head>
 
   <body>
-    <header>
-      <h1>GeoMatch</h1>
+    <header class="site-header">
+      <div class="container header-inner">
+        <%= link_to root_path, class: "brand" do %>
+          <img src="<%= asset_path('logo-geomatch.svg') %>" alt="GeoMatch" class="brand-logo" />
+        <% end %>
+
+        <nav class="nav">
+          <% if user_signed_in? %>
+            <%= link_to "Descobrir", discover_path, class: "btn btn-link" %>
+            <%= link_to "Meu Perfil", user_path(current_user), class: "btn btn-outline" %>
+            <%= button_to "Sair", destroy_user_session_path, method: :delete, class: "btn btn-primary", data: { turbo_confirm: "Deseja realmente sair?" } %>
+          <% else %>
+            <%= link_to "Entrar", new_user_session_path, class: "btn btn-outline" %>
+            <%= link_to "Cadastrar", new_user_registration_path, class: "btn btn-primary" %>
+          <% end %>
+        </nav>
+      </div>
     </header>
 
-    <div class="container">
+    <main class="container site-content">
       <%= yield %>
-    </div>
-    
+    </main>
 
+    <footer class="site-footer">
+      <div class="container footer-inner">
+        <p>© <%= Time.current.year %> GeoMatch. Todos os direitos reservados.</p>
+        <nav class="footer-nav">
+          <%= link_to "Termos de Uso", terms_of_use_path %> |
+          <%= link_to "Privacidade", privacy_policy_path %>
+        </nav>
+      </div>
+    </footer>
+
+    <!-- JS adicional para o mapa -->
     <%= javascript_include_tag "map", type: "module" %>
   </body>
 </html>

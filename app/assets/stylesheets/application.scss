@@ -1,1 +1,360 @@
-// Sassy
+// --------------------------------------------------
+// GeoMatch - application.scss (Fase 1: variáveis + tipografia + estilos base)
+// Rename: application.css -> application.scss
+// --------------------------------------------------
+
+@use "discover";
+@use "public";
+
+
+// Variáveis de cores (paleta proposta)
+$color-primary:    #FF3358; // CTA principal (Badoo)
+$color-background: #F6EAD4; // Fundo principal (bege claro)
+$color-secondary:  #998271; // Bronze (detalhes)
+$color-text:       #090E12; // Texto / fundo escuro
+$color-support:    #F0E6F7; // Lilás suave (suporte)
+$white:            #FFFFFF;
+$max-width:        1200px;
+
+// Tipografia
+$font-stack: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
+$base-font-size: 16px;
+$heading-weight: 700;
+
+// Import Leaflet CSS (se estiver usando npm/yarn ajuste o path)
+@import "leaflet/dist/leaflet.css";
+
+// Reset básico (escopo reduzido)
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: $font-stack;
+  font-size: $base-font-size;
+  color: $color-text;
+  background-color: $color-background;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  line-height: 1.5;
+}
+
+// Container central
+.container {
+  width: 90%;
+  max-width: $max-width;
+  margin: 0 auto;
+  padding: 0 16px;
+}
+
+// Header simplificado
+.site-header {
+  background: transparent;
+  padding: 14px 0;
+  border-bottom: 1px solid rgba(9,14,18,0.06);
+
+  .header-inner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .brand {
+    display: flex;
+    align-items: center;
+    text-decoration: none;
+
+    .brand-logo {
+      height: 42px;
+      width: auto;
+      display: block;
+    }
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+}
+
+// Tipografia base
+h1, h2, h3, h4 {
+  font-family: $font-stack;
+  font-weight: $heading-weight;
+  color: $color-text;
+  margin: 0 0 12px 0;
+}
+
+h1 {
+  font-size: 2.25rem;
+  line-height: 1.05;
+}
+
+p {
+  margin: 0 0 12px 0;
+  color: darken($color-text, 2%);
+  font-weight: 400;
+}
+
+// Botões (componentes base)
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  transition: transform 0.12s ease, box-shadow 0.12s ease;
+  border: none;
+  white-space: nowrap;
+  user-select: none;
+}
+
+// CTA principal — preenchido
+.btn-primary {
+  @extend .btn;
+  background-color: $color-primary;
+  color: $white;
+  box-shadow: 0 6px 18px rgba(255,51,88,0.15);
+
+  &:hover, &:focus {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 24px rgba(255,51,88,0.18);
+  }
+}
+
+// Botão outline (secundário)
+.btn-outline {
+  @extend .btn;
+  background: transparent;
+  color: $color-text;
+  border: 2px solid rgba(9,14,18,0.06);
+  padding: 8px 14px;
+
+  &:hover {
+    background: rgba(0,0,0,0.03);
+  }
+}
+
+// Pequenas utilidades
+.text-center { text-align: center; }
+.mt-8 { margin-top: 2rem; }
+.mb-8 { margin-bottom: 2rem; }
+
+// Páginas principais (exemplos)
+.landing-page,
+.terms-page,
+.privacy-page,
+.profiles-page {
+  padding: 48px 0;
+  text-align: center;
+}
+
+// Landing hero (exemplo minimal)
+.landing-hero {
+  background: linear-gradient(180deg, $color-background 0%, lighten($color-support, 4%) 100%);
+  border-radius: 14px;
+  padding: 40px;
+  display: flex;
+  gap: 32px;
+  align-items: center;
+  justify-content: space-between;
+
+  .hero-content {
+    flex: 1;
+    text-align: left;
+
+    h1 {
+      color: $color-primary;
+      font-size: 2.5rem;
+      margin-bottom: 12px;
+    }
+
+    p.lead {
+      color: rgba($color-text, 0.9);
+      font-size: 1.0625rem;
+      margin-bottom: 18px;
+    }
+
+    .hero-ctas {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+  }
+
+  .hero-visual {
+    width: 40%;
+    min-width: 220px;
+    max-width: 420px;
+    // aqui você pode colocar um mock do mapa ou ilustração
+    background: linear-gradient(135deg, rgba($color-support,0.9), rgba($color-background,0.95));
+    border-radius: 12px;
+    padding: 18px;
+  }
+
+  @media (max-width: 900px) {
+    flex-direction: column;
+    .hero-visual { width: 100%; }
+    .hero-content { text-align: center; }
+  }
+}
+
+// Perfis (cards)
+.profile-item {
+  background: $white;
+  border-radius: 10px;
+  padding: 14px;
+  width: 220px;
+  box-shadow: 0 6px 18px rgba(9,14,18,0.04);
+  border: 1px solid rgba(9,14,18,0.03);
+
+  .profile-name {
+    color: $color-primary;
+    font-weight: 700;
+  }
+
+  .profile-meta {
+    color: rgba($color-text, 0.7);
+    font-size: 0.9rem;
+  }
+}
+
+// Inputs
+.input {
+  display: block;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(9,14,18,0.08);
+  background: $white;
+  font-size: 1rem;
+
+  &:focus {
+    outline: none;
+    box-shadow: 0 0 0 4px rgba(153,130,113,0.08);
+    border-color: $color-secondary;
+  }
+}
+
+// Mapa (container base)
+.map-container {
+  width: 100%;
+  height: 360px;
+  border-radius: 12px;
+  overflow: hidden;
+  border: 1px solid rgba(9,14,18,0.04);
+  background: linear-gradient(180deg, lighten($color-support, 3%), $color-background);
+}
+
+// small helpers
+.flex { display:flex; }
+.center { display:flex; align-items:center; justify-content:center; }
+
+
+
+body {
+  margin: 0;
+  font-family: "Poppins", sans-serif;
+  background: #f9f9f9;
+  color: #333;
+}
+
+.site-header {
+  background: #fff;
+  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+
+  .logo {
+    height: 40px;
+  }
+
+  .nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+  }
+
+  .nav-link {
+    text-decoration: none;
+    color: #333;
+    font-weight: 500;
+    transition: 0.2s;
+
+    &:hover {
+      color: #ff3b5c;
+    }
+
+    &.highlight {
+      background: #ff3b5c;
+      color: #fff;
+      padding: 0.5rem 1rem;
+      border-radius: 8px;
+    }
+  }
+
+  .logout-btn {
+    background: #ff3b5c;
+    border: none;
+    color: #fff;
+    padding: 0.5rem 1rem;
+    border-radius: 8px;
+    cursor: pointer;
+  }
+}
+
+.site-footer {
+  background: #fff;
+  padding: 1rem 0;
+  text-align: center;
+  color: #777;
+  font-size: 0.9rem;
+  border-top: 1px solid #eee;
+}
+
+.landing {
+  text-align: center;
+  padding: 8rem 2rem;
+  background: linear-gradient(180deg, #ff3b5c, #ff6f91);
+  color: #fff;
+
+  h1 {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.2rem;
+    margin-bottom: 2rem;
+  }
+
+  .cta-btn {
+    background: #fff;
+    color: #ff3b5c;
+    padding: 1rem 2rem;
+    border-radius: 10px;
+    text-decoration: none;
+    font-weight: bold;
+    transition: 0.3s;
+
+    &:hover {
+      background: rgba(255,255,255,0.9);
+      transform: scale(1.05);
+    }
+  }
+}

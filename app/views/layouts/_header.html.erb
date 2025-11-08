@@ -1,0 +1,19 @@
+<header class="site-header">
+  <div class="container">
+    <a href="/" class="brand">
+      <%= image_tag "logo-geomatch.svg", alt: "GeoMatch", class: "logo" %>
+    </a>
+
+    <% if user_signed_in? %>
+      <nav class="nav">
+        <%= link_to "Meu Perfil", "#", class: "nav-link" %>
+        <%= button_to "Sair", logout_path, method: :delete, class: "logout-btn" %>
+      </nav>
+    <% else %>
+      <nav class="nav">
+        <%= link_to "Entrar", new_user_session_path, class: "nav-link" %>
+        <%= link_to "Cadastrar", new_user_registration_path, class: "nav-link highlight" %>
+      </nav>
+    <% end %>
+  </div>
+</header>
