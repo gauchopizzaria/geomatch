@@ -21,11 +21,13 @@ Rails.application.routes.draw do
     resources :messages, only: [:create]
   end
 
+  # Autenticação (Devise)
+  devise_for :users
+
   # Usuários (exibição e atualização)
   resources :users, only: [:show, :update]
 
-  # Autenticação (Devise)
-  devise_for :users
+  
 
   # Health check
   get 'up' => 'rails/health#show', as: :rails_health_check
