@@ -1,30 +1,20 @@
 // --------------------------------------------------
-// GeoMatch - application.scss (Fase 1: variáveis + tipografia + estilos base)
-// Rename: application.css -> application.scss
+// GeoMatch - Layout Moderno e Responsivo
 // --------------------------------------------------
 
+@use "sass:color";
 @use "discover";
 @use "public";
 
+// 🎨 Paleta de cores
+$color-primary: #d4af37; // dourado
+$color-background: #f8f2e7; // bege claro
+$color-dark: #121212; // preto escuro
+$color-text: #1a1a1a;
+$color-accent: #ff3b5c; // detalhe vibrante
+$white: #ffffff;
 
-// Variáveis de cores (paleta proposta)
-$color-primary:    #FF3358; // CTA principal (Badoo)
-$color-background: #F6EAD4; // Fundo principal (bege claro)
-$color-secondary:  #998271; // Bronze (detalhes)
-$color-text:       #090E12; // Texto / fundo escuro
-$color-support:    #F0E6F7; // Lilás suave (suporte)
-$white:            #FFFFFF;
-$max-width:        1200px;
-
-// Tipografia
-$font-stack: 'Poppins', 'Helvetica Neue', Arial, sans-serif;
-$base-font-size: 16px;
-$heading-weight: 700;
-
-// Import Leaflet CSS (se estiver usando npm/yarn ajuste o path)
-@import "leaflet/dist/leaflet.css";
-
-// Reset básico (escopo reduzido)
+// 🧱 Layout base
 *,
 *::before,
 *::after {
@@ -32,38 +22,255 @@ $heading-weight: 700;
 }
 
 html, body {
-  height: 100%;
   margin: 0;
   padding: 0;
-  font-family: $font-stack;
-  font-size: $base-font-size;
+  font-family: 'Poppins', sans-serif;
+  background: $color-background;
   color: $color-text;
-  background-color: $color-background;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  line-height: 1.5;
+  line-height: 1.6;
+  scroll-behavior: smooth;
 }
 
-// Container central
-.container {
-  width: 90%;
-  max-width: $max-width;
-  margin: 0 auto;
-  padding: 0 16px;
-}
-
-// Header simplificado
+// --------------------------------------------------
+// Cabeçalho
+// --------------------------------------------------
 .site-header {
-  background: transparent;
-  padding: 14px 0;
-  border-bottom: 1px solid rgba(9,14,18,0.06);
+  background: $white;
+  padding: 1rem 2rem;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 
-  .header-inner {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  .logo {
+    height: 42px;
   }
 
+  nav {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+
+    a {
+      text-decoration: none;
+      color: $color-dark;
+      font-weight: 500;
+      transition: color 0.2s ease;
+
+      &:hover {
+        color: $color-accent;
+      }
+
+      &.highlight {
+        background: $color-accent;
+        color: $white;
+        padding: 0.5rem 1rem;
+        border-radius: 8px;
+      }
+    }
+  }
+}
+
+// --------------------------------------------------
+// Hero (Topo da Landing)
+// --------------------------------------------------
+.landing-hero {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 60px;
+  padding: 80px 8%;
+  background: linear-gradient(180deg, lighten($color-background, 3%) 0%, $color-background 100%);
+
+  .hero-content {
+    flex: 1;
+    h1 {
+      font-size: 3rem;
+      font-weight: 700;
+      color: $color-dark;
+      margin-bottom: 16px;
+    }
+
+    p {
+      font-size: 1.2rem;
+      color: rgba($color-dark, 0.8);
+      margin-bottom: 32px;
+    }
+
+    .hero-ctas {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .btn-primary {
+      background: $color-primary;
+      color: $color-dark;
+      font-weight: 700;
+      padding: 14px 28px;
+      border-radius: 12px;
+      border: none;
+      box-shadow: 0 6px 20px rgba($color-primary, 0.2);
+      transition: all 0.2s ease;
+
+      &:hover {
+        background: darken($color-primary, 8%);
+        transform: translateY(-2px);
+      }
+    }
+
+    .btn-social {
+      background: $white;
+      border: 1px solid rgba($color-dark, 0.1);
+      padding: 12px 20px;
+      border-radius: 8px;
+      color: $color-dark;
+      font-weight: 500;
+      flex: 1;
+      text-align: center;
+
+      &:hover {
+        background: rgba($color-primary, 0.1);
+      }
+    }
+  }
+
+  .hero-visual {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+
+    img {
+      width: 100%;
+      max-width: 400px;
+      border-radius: 20px;
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.1);
+    }
+  }
+
+  @media (max-width: 900px) {
+    flex-direction: column-reverse;
+    text-align: center;
+    padding: 60px 5%;
+
+    .hero-visual {
+      img {
+        max-width: 300px;
+      }
+    }
+
+    .hero-content {
+      .hero-ctas {
+        flex-direction: column;
+        align-items: center;
+      }
+    }
+  }
+}
+
+// --------------------------------------------------
+// Seções intermediárias (confiança, chat, match, segurança)
+// --------------------------------------------------
+.section {
+  padding: 80px 10%;
+  text-align: center;
+  background: $color-background;
+
+  h2 {
+    color: $color-primary;
+    font-size: 2rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    color: rgba($color-dark, 0.8);
+    max-width: 600px;
+    margin: 0 auto 2rem;
+  }
+
+  .btn-outline {
+    display: inline-block;
+    padding: 12px 28px;
+    border: 2px solid $color-primary;
+    border-radius: 10px;
+    color: $color-dark;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s;
+
+    &:hover {
+      background: $color-primary;
+      color: $color-dark;
+    }
+  }
+
+  img {
+    max-width: 300px;
+    margin-top: 30px;
+  }
+}
+
+// --------------------------------------------------
+// Rodapé
+// --------------------------------------------------
+.landing-footer {
+  background: $color-dark;
+  color: $color-primary;
+  text-align: center;
+  padding: 40px 0;
+  font-size: 0.95rem;
+
+  a {
+    color: $color-primary;
+    text-decoration: none;
+    margin: 0 8px;
+
+    &:hover {
+      text-decoration: underline;
+    }
+  }
+}
+
+// --------------------------------------------------
+// Responsividade geral
+// --------------------------------------------------
+@media (max-width: 600px) {
+  .landing-hero h1 {
+    font-size: 2.2rem;
+  }
+
+  .section {
+    padding: 60px 5%;
+  }
+}
+
+
+// --------------------------------------------------
+// HEADER - GEO MATCH
+// --------------------------------------------------
+
+.site-header {
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  width: 100%;
+
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0.8rem 2rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  // Logo / Marca
   .brand {
     display: flex;
     align-items: center;
@@ -72,478 +279,340 @@ html, body {
     .brand-logo {
       height: 42px;
       width: auto;
-      display: block;
+      transition: transform 0.2s ease-in-out;
+    }
+
+    &:hover .brand-logo {
+      transform: scale(1.05);
     }
   }
 
-  .nav {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-}
-
-// Tipografia base
-h1, h2, h3, h4 {
-  font-family: $font-stack;
-  font-weight: $heading-weight;
-  color: $color-text;
-  margin: 0 0 12px 0;
-}
-
-h1 {
-  font-size: 2.25rem;
-  line-height: 1.05;
-}
-
-p {
-  margin: 0 0 12px 0;
-  color: darken($color-text, 2%);
-  font-weight: 400;
-}
-
-// Botões (componentes base)
-.btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 10px 16px;
-  border-radius: 10px;
-  font-weight: 600;
-  text-decoration: none;
-  cursor: pointer;
-  transition: transform 0.12s ease, box-shadow 0.12s ease;
-  border: none;
-  white-space: nowrap;
-  user-select: none;
-}
-
-// CTA principal — preenchido
-.btn-primary {
-  @extend .btn;
-  background-color: $color-primary;
-  color: $white;
-  box-shadow: 0 6px 18px rgba(255,51,88,0.15);
-
-  &:hover, &:focus {
-    transform: translateY(-2px);
-    box-shadow: 0 10px 24px rgba(255,51,88,0.18);
-  }
-}
-
-// Botão outline (secundário)
-.btn-outline {
-  @extend .btn;
-  background: transparent;
-  color: $color-text;
-  border: 2px solid rgba(9,14,18,0.06);
-  padding: 8px 14px;
-
-  &:hover {
-    background: rgba(0,0,0,0.03);
-  }
-}
-
-// Pequenas utilidades
-.text-center { text-align: center; }
-.mt-8 { margin-top: 2rem; }
-.mb-8 { margin-bottom: 2rem; }
-
-// Páginas principais (exemplos)
-.landing-page,
-.terms-page,
-.privacy-page,
-.profiles-page {
-  padding: 48px 0;
-  text-align: center;
-}
-
-// Landing hero (exemplo minimal)
-.landing-hero {
-  background: linear-gradient(180deg, $color-background 0%, lighten($color-support, 4%) 100%);
-  border-radius: 14px;
-  padding: 40px;
-  display: flex;
-  gap: 32px;
-  align-items: center;
-  justify-content: space-between;
-
-  .hero-content {
-    flex: 1;
-    text-align: left;
-
-    h1 {
-      color: $color-primary;
-      font-size: 2.5rem;
-      margin-bottom: 12px;
-    }
-
-    p.lead {
-      color: rgba($color-text, 0.9);
-      font-size: 1.0625rem;
-      margin-bottom: 18px;
-    }
-
-    .hero-ctas {
-      display: flex;
-      gap: 12px;
-      align-items: center;
-    }
-  }
-
-  .hero-visual {
-    width: 40%;
-    min-width: 220px;
-    max-width: 420px;
-    // aqui você pode colocar um mock do mapa ou ilustração
-    background: linear-gradient(135deg, rgba($color-support,0.9), rgba($color-background,0.95));
-    border-radius: 12px;
-    padding: 18px;
-  }
-
-  @media (max-width: 900px) {
-    flex-direction: column;
-    .hero-visual { width: 100%; }
-    .hero-content { text-align: center; }
-  }
-}
-
-// Perfis (cards)
-.profile-item {
-  background: $white;
-  border-radius: 10px;
-  padding: 14px;
-  width: 220px;
-  box-shadow: 0 6px 18px rgba(9,14,18,0.04);
-  border: 1px solid rgba(9,14,18,0.03);
-
-  .profile-name {
-    color: $color-primary;
-    font-weight: 700;
-  }
-
-  .profile-meta {
-    color: rgba($color-text, 0.7);
-    font-size: 0.9rem;
-  }
-}
-
-// Inputs
-.input {
-  display: block;
-  width: 100%;
-  padding: 10px 12px;
-  border-radius: 8px;
-  border: 1px solid rgba(9,14,18,0.08);
-  background: $white;
-  font-size: 1rem;
-
-  &:focus {
-    outline: none;
-    box-shadow: 0 0 0 4px rgba(153,130,113,0.08);
-    border-color: $color-secondary;
-  }
-}
-
-// Mapa (container base)
-.map-container {
-  width: 100%;
-  height: 360px;
-  border-radius: 12px;
-  overflow: hidden;
-  border: 1px solid rgba(9,14,18,0.04);
-  background: linear-gradient(180deg, lighten($color-support, 3%), $color-background);
-}
-
-// small helpers
-.flex { display:flex; }
-.center { display:flex; align-items:center; justify-content:center; }
-
-
-
-body {
-  margin: 0;
-  font-family: "Poppins", sans-serif;
-  background: #f9f9f9;
-  color: #333;
-}
-
-.site-header {
-  background: #fff;
-  box-shadow: 0 2px 5px rgba(0,0,0,0.05);
-  padding: 1rem 2rem;
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-
-  .logo {
-    height: 40px;
-  }
-
+  // Navegação
   .nav {
     display: flex;
     align-items: center;
     gap: 1rem;
+
+    .btn {
+      font-family: 'Poppins', sans-serif;
+      font-weight: 600;
+      text-decoration: none;
+      border-radius: 10px;
+      transition: all 0.2s ease-in-out;
+      cursor: pointer;
+
+      &.btn-link {
+        color: #222;
+        padding: 0.5rem 0.8rem;
+        border: none;
+        background: transparent;
+
+        &:hover {
+          color: #d4af37;
+        }
+      }
+
+      &.btn-outline {
+        border: 2px solid #d4af37;
+        color: #222;
+        background: transparent;
+        padding: 0.5rem 1rem;
+
+        &:hover {
+          background: #d4af37;
+          color: #121212;
+          box-shadow: 0 0 10px rgba(212, 175, 55, 0.4);
+        }
+      }
+
+      &.btn-primary {
+        background: #d4af37;
+        color: #121212;
+        border: none;
+        padding: 0.5rem 1.2rem;
+        box-shadow: 0 3px 10px rgba(212, 175, 55, 0.25);
+
+        &:hover {
+          background: darken(#d4af37, 8%);
+          transform: translateY(-2px);
+        }
+      }
+    }
   }
 
-  .nav-link {
-    text-decoration: none;
-    color: #333;
-    font-weight: 500;
-    transition: 0.2s;
-
-    &:hover {
-      color: #ff3b5c;
+  // Modo responsivo
+  @media (max-width: 900px) {
+    .header-inner {
+      flex-direction: column;
+      gap: 0.8rem;
     }
 
-    &.highlight {
-      background: #ff3b5c;
-      color: #fff;
-      padding: 0.5rem 1rem;
-      border-radius: 8px;
+    .nav {
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 0.6rem;
     }
-  }
 
-  .logout-btn {
-    background: #ff3b5c;
-    border: none;
-    color: #fff;
-    padding: 0.5rem 1rem;
-    border-radius: 8px;
-    cursor: pointer;
+    .btn {
+      font-size: 0.9rem;
+      padding: 0.4rem 0.8rem;
+    }
   }
 }
+
+// --------------------------------------------------
+// LANDING PAGE
+// --------------------------------------------------
+
+.section {
+  padding: 5rem 1.5rem;
+
+  &.section-light {
+    background: #ffffff;
+    color: #222;
+  }
+
+  &.section-gold {
+    background: #d4af37;
+    color: #121212;
+
+    h2, p {
+      color: #121212;
+    }
+
+    .btn-outline {
+      border-color: #121212;
+      color: #121212;
+
+      &:hover {
+        background: #121212;
+        color: #d4af37;
+      }
+    }
+  }
+
+  &.section-gray {
+    background: #f6f6f6;
+    color: #222;
+  }
+
+  .container {
+    max-width: 1200px;
+    margin: 0 auto;
+  }
+
+  .section-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    align-items: center;
+    gap: 3rem;
+
+    &.reverse {
+      direction: rtl;
+
+      .section-text {
+        direction: ltr;
+      }
+    }
+
+    @media (max-width: 900px) {
+      grid-template-columns: 1fr;
+      text-align: center;
+
+      &.reverse {
+        direction: ltr;
+      }
+    }
+  }
+
+  .section-text {
+    h2 {
+      font-size: 2rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      font-family: "Poppins", sans-serif;
+    }
+
+    p {
+      font-size: 1.1rem;
+      line-height: 1.7;
+      margin-bottom: 1rem;
+    }
+
+    .highlight {
+      font-weight: 600;
+      color: #d4af37;
+    }
+
+    .btn {
+      margin-top: 1.2rem;
+    }
+  }
+
+  .section-image {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    img {
+      width: 380px;
+      height: 380px;
+      object-fit: cover;
+      border-radius: 20px;
+      box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+      transition: transform 0.3s ease;
+
+      &:hover {
+        transform: scale(1.03);
+      }
+
+      @media (max-width: 900px) {
+        width: 300px;
+        height: 300px;
+      }
+    }
+  }
+}
+
 
 .site-footer {
-  background: #fff;
-  padding: 1rem 0;
-  text-align: center;
-  color: #777;
-  font-size: 0.9rem;
-  border-top: 1px solid #eee;
-}
+  background-color: #111; // Cor base do rodapé
+  color: #ddd;
+  font-family: "Poppins", sans-serif;
+  padding: 3rem 1rem 1.5rem;
+  font-size: 0.95rem;
+  line-height: 1.6;
 
-.landing {
-  text-align: center;
-  padding: 8rem 2rem;
-  background: linear-gradient(180deg, #ff3b5c, #ff6f91);
-  color: #fff;
-
-  h1 {
-    font-size: 3rem;
-    margin-bottom: 1rem;
+  .footer-inner {
+    max-width: 1200px;
+    margin: 0 auto;
   }
 
-  p {
-    font-size: 1.2rem;
+  .footer-top {
+    text-align: center;
     margin-bottom: 2rem;
-  }
-
-  .cta-btn {
-    background: #fff;
-    color: #ff3b5c;
-    padding: 1rem 2rem;
-    border-radius: 10px;
-    text-decoration: none;
-    font-weight: bold;
-    transition: 0.3s;
-
-    &:hover {
-      background: rgba(255,255,255,0.9);
-      transform: scale(1.05);
-    }
-  }
-}
-
-// --------------------------------------------------
-// Estilos para a Landing Page (Inspirado no Badoo)
-// --------------------------------------------------
-
-// Variáveis de cores (reutilizando as suas)
-// $color-primary:    #FF3358; // CTA principal (Badoo)
-// $color-background: #F6EAD4; // Fundo principal (bege claro)
-// $color-secondary:  #998271; // Bronze (detalhes)
-// $color-text:       #090E12; // Texto / fundo escuro
-// $color-support:    #F0E6F7; // Lilás suave (suporte)
-// $white:            #FFFFFF;
-
-// Estilos de Botões (Ajuste para o estilo Badoo)
-.btn-primary {
-    // Sobrescreve o estilo base para o CTA principal (fundo escuro)
-    background-color: $color-text;
-    color: $white;
-    padding: 14px 24px; // Maior para impacto
-    box-shadow: 0 6px 18px rgba($color-text, 0.15);
-
-    &:hover, &:focus {
-        transform: translateY(-2px);
-        box-shadow: 0 10px 24px rgba($color-text, 0.25);
-    }
-}
-
-.btn-secondary {
-    // Mantém o estilo secundário, mas ajusta para o novo padrão
-    @extend .btn-outline;
-    color: $color-text;
-    border-color: rgba($color-text, 0.1);
-}
-
-// Botões Sociais (Google/Facebook)
-.btn-social {
-    @extend .btn;
-    background: $white;
-    color: $color-text;
-    border: 1px solid rgba($color-text, 0.1);
-    padding: 12px 20px;
-    border-radius: 8px;
     font-weight: 500;
-    flex-grow: 1;
+    color: #fff;
+  }
+
+  .footer-links {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2.5rem;
+  }
+
+  .footer-column {
+    h4 {
+      color: #fff;
+      font-size: 1rem;
+      margin-bottom: 0.8rem;
+      font-weight: 600;
+      border-bottom: 1px solid #333;
+      padding-bottom: 0.3rem;
+    }
+
+    ul {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+
+      li {
+        margin: 0.4rem 0;
+
+        a {
+          color: #ccc;
+          text-decoration: none;
+          transition: color 0.2s ease;
+
+          &:hover {
+            color: #fff;
+          }
+        }
+      }
+    }
+  }
+
+  .social-links {
+    display: flex;
+    gap: 0.8rem;
+
+    img {
+      width: 28px;
+      height: 28px;
+      object-fit: contain;
+      transition: transform 0.2s ease;
+
+      &:hover {
+        transform: scale(1.1);
+      }
+    }
+  }
+
+  .footer-bottom {
+    border-top: 1px solid #333;
+    padding-top: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.2rem;
     text-align: center;
 
-    &:hover {
-        background: rgba($white, 0.9);
-    }
-}
+    .app-links {
+      display: flex;
+      align-items: center;
+      gap: 0.8rem;
+      flex-wrap: wrap;
+      justify-content: center;
 
-// Landing hero (seção principal)
-.landing-hero {
-    background: linear-gradient(180deg, $color-background 0%, $color-support 100%); // Fundo degradê suave
-    padding: 60px 0;
-    display: flex;
-    gap: 40px;
-    align-items: center;
-    justify-content: space-between;
+      p {
+        margin: 0;
+        font-weight: 500;
+      }
 
-    .hero-content {
-        flex: 1;
-        text-align: left;
+      img {
+        width: 130px;
+        height: auto;
+        object-fit: contain;
+        transition: opacity 0.2s ease;
 
-        h1 {
-            font-size: 3.5rem; // Maior para impacto
-            line-height: 1.05;
-            color: $color-primary; // Cor primária para o título principal
-            margin-bottom: 12px;
+        &:hover {
+          opacity: 0.85;
         }
-
-        .lead {
-            font-size: 1.25rem;
-            font-weight: 400;
-            margin-bottom: 30px;
-        }
-
-        .hero-ctas {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            margin-top: 12px;
-        }
-
-        .social-ctas {
-            display: flex;
-            gap: 12px;
-            align-items: center;
-            margin-top: 12px;
-        }
-
-        .cta-separator {
-            margin: 1rem 0 0.5rem 0;
-            font-weight: 600;
-            color: rgba($color-text, 0.7);
-        }
+      }
     }
 
-    .hero-visual {
-        width: 45%;
-        min-width: 300px;
-        max-width: 500px;
-        padding: 20px;
-        background: $color-support; // Cor de suporte para o fundo do visual
-        border-radius: 16px;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    .copyright {
+      color: #aaa;
+      font-size: 0.85rem;
+      margin-top: 0.5rem;
+    }
+  }
+
+  // Responsivo
+  @media (max-width: 768px) {
+    .footer-links {
+      grid-template-columns: repeat(2, 1fr);
+      text-align: center;
     }
 
-    .map-container {
-        width: 100%;
-        height: 300px;
-        border-radius: 12px;
-        overflow: hidden;
-        border: 2px solid $color-secondary;
-        background: linear-gradient(135deg, $color-support, $color-background);
-        @extend .center; // Reutiliza a classe .center se estiver definida
+    .footer-column {
+      h4 {
+        border: none;
+      }
+    }
+  }
+
+  @media (max-width: 480px) {
+    font-size: 0.9rem;
+
+    .social-links img {
+      width: 24px;
+      height: 24px;
     }
 
-    .visual-text {
-        color: $color-secondary;
-        font-weight: 600;
+    .app-links img {
+      width: 110px;
     }
-}
-
-// Seção de Funcionalidades
-.features-section {
-    padding: 40px 0;
-
-    h2 {
-        color: $color-primary;
-        margin-bottom: 30px;
-    }
-
-    .features-grid {
-        display: flex;
-        justify-content: space-around;
-        gap: 20px;
-    }
-
-    .feature-card {
-        flex: 1;
-        background: $white;
-        padding: 20px;
-        border-radius: 10px;
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-        border-top: 4px solid $color-primary;
-        text-align: center;
-
-        h3 {
-            color: $color-secondary;
-            font-size: 1.2rem;
-        }
-    }
-}
-
-// Responsividade
-@media (max-width: 900px) {
-    .landing-hero {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .hero-content {
-        text-align: center;
-    }
-
-    .hero-visual {
-        width: 100%;
-        margin-top: 30px;
-    }
-
-    .hero-ctas {
-        flex-direction: column;
-    }
-
-    .hero-ctas a {
-        width: 100%;
-    }
-
-    .features-grid {
-        flex-direction: column;
-    }
-}
-
-@media (max-width: 600px) {
-    .landing-hero .hero-content h1 {
-        font-size: 2.5rem;
-    }
+  }
 }

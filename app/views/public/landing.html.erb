@@ -1,48 +1,83 @@
 <section class="landing-hero container">
-    <div class="hero-content">
-        <!-- Título de Impacto - Inspirado no Badoo -->
-        <h1>Encontros com total confiança.</h1>
-        <p class="lead">
-            Ajudamos você a mostrar seu verdadeiro eu, para criar conexões com confiança.
-            Use nossa tecnologia de localização para encontrar pessoas próximas.
-        </p>
+  <div class="hero-content">
+    <h1>Encontros com total confiança.</h1>
+    <p class="lead">
+      Mostre seu verdadeiro eu e crie conexões reais. Com a tecnologia GeoMatch,
+      encontre pessoas próximas com total segurança e transparência.
+    </p>
 
-        <div class="hero-ctas">
-            <!-- Botão principal - similar ao "Continuar com e-mail ou telefone" -->
-            <%= link_to "Cadastre-se com E-mail ou Telefone", new_user_registration_path, class: "btn btn-primary" %>
-        </div>
-        
-        <p class="cta-separator">Ou</p>
-
-        <div class="hero-ctas social-ctas">
-            <!-- Botões de login social - similar ao Google/Facebook -->
-            <%= link_to "Continuar com Google", "#", class: "btn btn-social btn-google" %>
-            <%= link_to "Continuar com Facebook", "#", class: "btn btn-social btn-facebook" %>
-        </div>
+    <div class="hero-ctas">
+      <%= link_to "Cadastre-se com E-mail ou Telefone", new_user_registration_path, class: "btn btn-primary" %>
     </div>
 
-    <div class="hero-visual">
-        <!-- Simulação de visual do GeoMatch (Mapa + Perfis) -->
-        <div class="map-container center">
-            <p class="visual-text">Visual de Mapa e Perfis</p>
-        </div>
+    <p class="cta-separator">Ou</p>
+
+    <div class="hero-ctas social-ctas">
+      <%= link_to "Continuar com Google", "#", class: "btn btn-social btn-google" %>
+      <%= link_to "Continuar com Facebook", "#", class: "btn btn-social btn-facebook" %>
     </div>
+  </div>
+
+  <div class="hero-visual">
+    <<%= image_tag "hero_visual.png", alt: "Visual de mapa e perfis", class: "hero-image" %>
+  </div>
 </section>
 
-<section class="container features-section">
-    <h2 class="text-center">Por que GeoMatch?</h2>
-    <div class="features-grid">
-        <div class="feature-card">
-            <h3>Localização Precisa</h3>
-            <p>Conecte-se com pessoas que estão realmente perto de você.</p>
-        </div>
-        <div class="feature-card">
-            <h3>Segurança em Primeiro Lugar</h3>
-            <p>Tecnologia avançada para combater perfis falsos e spam.</p>
-        </div>
-        <div class="feature-card">
-            <h3>Sem Rodeios</h3>
-            <p>Diga o que você procura. De conversas a algo sério.</p>
-        </div>
+<!-- SEÇÃO 1 — CONFIANÇA -->
+<section class="section section-light">
+  <div class="container section-grid">
+    <div class="section-text">
+      <h2>É sobre ter confiança.</h2>
+      <p>Nossa tecnologia avançada combate perfis falsos, golpes e spam — garantindo que você fale com pessoas genuínas.</p>
+      <p class="highlight">Mostre seu melhor eu e encontre relações que realmente importam.</p>
+      <%= link_to "Registrar-se", new_user_registration_path, class: "btn btn-primary" %>
     </div>
+    <div class="section-image">
+      <%= image_tag "mao_comprimento.png", alt: "Mãos se cumprimentando" %>
+    </div>
+  </div>
 </section>
+
+<!-- SEÇÃO 2 — CONVERSAS REAIS -->
+<section class="section section-gold">
+  <div class="container section-grid reverse">
+    <div class="section-image">
+      <%= image_tag "confiança.png", alt: "A fim de conversar agora?" %>
+    </div>
+    <div class="section-text">
+      <h2>A fim de conversar agora?</h2>
+      <p>Não espere por uma conexão. Pule direto para o papo com quem também quer se conhecer de verdade.</p>
+      <%= link_to "Registrar-se", new_user_registration_path, class: "btn btn-outline" %>
+    </div>
+  </div>
+</section>
+
+<!-- SEÇÃO 3 — PERFIS -->
+<section class="section section-light">
+  <div class="container section-grid">
+    <div class="section-text">
+      <h2>Encontre pessoas que querem o mesmo que você.</h2>
+      <p>Diga o que procura — sem rodeios.</p>
+      <p>Quer apenas conversar? Tudo bem. Quer algo sério? Perfeito.</p>
+      <%= link_to "Registrar-se", new_user_registration_path, class: "btn btn-primary" %>
+    </div>
+    <div class="section-image">
+      <%= image_tag "perfis.png", alt: "Perfis de usuários" %>
+    </div>
+  </div>
+</section>
+
+<!-- SEÇÃO 4 — SEGURANÇA -->
+<section class="section section-gray">
+  <div class="container section-grid reverse">
+    <div class="section-image">
+      <%= image_tag "seguranca.png", alt: "Ilustração de segurança" %>
+    </div>
+    <div class="section-text">
+      <h2>Segurança em primeiro lugar, sempre.</h2>
+      <p>Nossa prioridade máxima é a sua segurança. Acesse o Safety Centre para suporte e informações.</p>
+      <%= link_to "Visite o Safety Centre",  class: "btn btn-outline" %>
+    </div>
+  </div>
+</section>
+
