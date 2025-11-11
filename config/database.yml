@@ -21,14 +21,23 @@ production:
   primary:
     adapter: postgresql
     encoding: unicode
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
     url: <%= ENV["DATABASE_URL"] %>
-    pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
+
+  cache:
+    adapter: postgresql
+    encoding: unicode
+    pool: 5
+    url: <%= ENV["DATABASE_URL"] %>
 
   queue:
     adapter: postgresql
-    url: <%= ENV["DATABASE_URL"] %> # usa a mesma conexão da aplicação
-    migrations_paths: db/queue_migrate
+    encoding: unicode
+    pool: 5
+    url: <%= ENV["DATABASE_URL"] %>
 
   cable:
     adapter: postgresql
-    url: <%= ENV["DATABASE_URL"] %> # o Action Cable (Solid Cable) usa o mesmo banco
+    encoding: unicode
+    pool: 5
+    url: <%= ENV["DATABASE_URL"] %>
