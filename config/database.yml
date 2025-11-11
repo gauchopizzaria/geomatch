@@ -18,19 +18,17 @@ test:
   database: geomatch_test
 
 production:
-  <<: *default
-  # Render define automaticamente a variável DATABASE_URL,
-  # então o Rails se conecta por ela.
-  url: <%= ENV["DATABASE_URL"] %>
+  primary:
+    adapter: postgresql
+    encoding: unicode
+    url: <%= ENV["DATABASE_URL"] %>
+    pool: <%= ENV.fetch("RAILS_MAX_THREADS", 5) %>
 
-  # Faz o Solid Queue (fila de jobs) usar o mesmo banco da aplicação.
-  connects_to:
-    database:
-      writing: primary
-      queue: primary
+  queue:
+    adapter: postgresql
+    url: <%= ENV["DATABASE_URL"] %> # usa a mesma conexão da aplicação
+    migrations_paths: db/queue_migrate
 
-# ⚡ Action Cable (Solid Cable)
-# Em produção, ele precisa do mesmo banco da aplicação.
-cable:
-  <<: *default
-  url: <%= ENV["DATABASE_URL"] %>
+  cable:
+    adapter: postgresql
+    url: <%= ENV["DATABASE_URL"] %> # o Action Cable (Solid Cable) usa o mesmo banco
