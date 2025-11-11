@@ -23,13 +23,14 @@ production:
   # então o Rails se conecta por ela.
   url: <%= ENV["DATABASE_URL"] %>
 
-  # Configuração para o Action Cable (Solid Cable)
-  # Ele precisa de uma configuração de banco de dados para o ambiente de produção.
-  cable:
-    <<: *default
-    url: <%= ENV["DATABASE_URL"] %>
-
   # Faz o Solid Queue (fila de jobs) usar o mesmo banco da aplicação.
   connects_to:
     database:
       writing: primary
+      queue: primary
+
+# ⚡ Action Cable (Solid Cable)
+# Em produção, ele precisa do mesmo banco da aplicação.
+cable:
+  <<: *default
+  url: <%= ENV["DATABASE_URL"] %>
