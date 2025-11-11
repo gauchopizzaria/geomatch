@@ -1,7 +1,13 @@
+# config/database.yml
+
 default: &default
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
+  username: <%= ENV["DATABASE_USERNAME"] || "postgres" %>
+  password: <%= ENV["DATABASE_PASSWORD"] || "postgres" %>
+  host: <%= ENV["DATABASE_HOST"] || "localhost" %>
+  port: <%= ENV["DATABASE_PORT"] || 5432 %>
 
 development:
   <<: *default
@@ -13,13 +19,16 @@ test:
 
 production:
   <<: *default
+  # Render fornece automaticamente o DATABASE_URL, então só isso basta
   url: <%= ENV["DATABASE_URL"] %>
 
-  # Solid Queue precisa disso 👇
-  queue:
-    <<: *default
+  # 🔁 Garante que o Solid Queue use o mesmo banco da aplicação
+  connects_to:
+    database:
+      writing: primary
+      queue: primary
+
+  # ⚡ Garante que o Action Cable também use a mesma conexão PostgreSQL
+  cable:
+    adapter: postgresql
     url: <%= ENV["DATABASE_URL"] %>
-
-cable:
-  adapter: postgresql
-  url: <%= ENV["DATABASE_URL"] %>
