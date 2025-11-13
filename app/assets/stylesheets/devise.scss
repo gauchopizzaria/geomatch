@@ -1,0 +1,102 @@
+// --------------------------------------------------
+// Estilos para Formulários Devise (Login, Cadastro, etc.)
+// Usando valores hexadecimais para evitar problemas de carregamento de variáveis
+// --------------------------------------------------
+
+.devise-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 80vh;
+  padding: 2rem 1rem;
+}
+
+.devise-form-card {
+  background: #ffffff; /* $white */
+  padding: 2.5rem;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(#121212, 0.1); /* $color-dark */
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+
+  h2 {
+    font-size: 1.8rem;
+    color: #121212; /* $color-dark */
+    margin-bottom: 1.5rem;
+    font-weight: 700;
+  }
+
+  .field {
+    margin-bottom: 1rem;
+    text-align: left;
+
+    label {
+      display: block;
+      font-weight: 500;
+      margin-bottom: 0.4rem;
+      color: #1a1a1a; /* $color-text */
+      font-size: 0.95rem;
+    }
+
+    input[type="email"],
+    input[type="password"],
+    input[type="text"] {
+      width: 100%;
+      padding: 0.75rem 1rem;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      font-size: 1rem;
+      transition: border-color 0.2s, box-shadow 0.2s;
+
+      &:focus {
+        border-color: #d4af37; /* $color-primary */
+        box-shadow: 0 0 0 3px rgba(#d4af37, 0.2); /* $color-primary */
+        outline: none;
+      }
+    }
+  }
+
+  .actions {
+    margin-top: 1.5rem;
+
+    .btn-primary {
+      width: 100%;
+      padding: 0.8rem;
+      font-size: 1.1rem;
+      font-weight: 600;
+      border-radius: 10px;
+    }
+  }
+
+  .remember-me {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+
+    input[type="checkbox"] {
+      margin-right: 0.5rem;
+      width: 16px;
+      height: 16px;
+      accent-color: #d4af37; /* $color-primary */
+    }
+  }
+
+  .devise-links {
+    margin-top: 1.5rem;
+    padding-top: 1rem;
+    border-top: 1px solid #eee;
+
+    a {
+      display: block;
+      color: #d4af37; /* $color-primary */
+      text-decoration: none;
+      margin-bottom: 0.5rem;
+      font-size: 0.9rem;
+
+      &:hover {
+        text-decoration: underline;
+      }
+    }
+  }
+}

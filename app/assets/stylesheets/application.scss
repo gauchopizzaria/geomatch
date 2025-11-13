@@ -3,18 +3,20 @@
 // --------------------------------------------------
 
 @use "sass:color";
-@use "discover";
-@use "public";
-@use "profile";
-@use "map";
 
-// 🎨 Paleta de cores
+// 🎨 Paleta de cores <--- AGORA ESTÁ AQUI
 $color-primary: #d4af37; // dourado
 $color-background: #f8f2e7; // bege claro
 $color-dark: #121212; // preto escuro
 $color-text: #1a1a1a;
 $color-accent: #ff3b5c; // detalhe vibrante
 $white: #ffffff;
+
+@use "discover";
+@use "public";
+@use "profile";
+@use "map";
+@use "devise"; // <--- AGORA IMPORTA DEPOIS DAS VARIÁVEIS
 
 // 🧱 Layout base
 .container {
