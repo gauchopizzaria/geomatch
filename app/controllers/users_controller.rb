@@ -45,6 +45,6 @@ end
   def user_params
     # Strong parameters: permite a atualização de username, bio e avatar
     # Inclui :username e :bio que já existem na tabela
-    params.require(:user).permit(:username, :bio, :avatar)
+    params.require(:user).permit(:username, :bio, :avatar).except(:checksum)
   end
 end
