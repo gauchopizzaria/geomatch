@@ -14,3 +14,10 @@ r2:
   endpoint: <%= ENV["R2_ENDPOINT"] %>
   force_path_style: true
   region: auto
+
+  # ⚠️ NECESSÁRIO PARA R2 FUNCIONAR
+  upload:
+    checksum: false
+
+  # ⚠️ Rails 7/8 precisam disso também!
+  disable_content_md5_validation: true
