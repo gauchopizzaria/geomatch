@@ -29,10 +29,21 @@ class UsersController < ApplicationController
     @user = current_user
   end
 
-  # Ação para processar a atualização do perfil
+ # Ação para processar a atualização do perfil
  def update
   @user = current_user
-  if @user.update(user_params.to_h)
+  
+  # 1. Separa o avatar dos outros parâmetros
+  avatar_param = user_params[:avatar]
+  update_params = user_params.except(:avatar).to_h
+  
+  # 2. Tenta atualizar os outros campos
+  if @user.update(update_params)
+    # 3. Se a atualização for bem-sucedida e houver um novo avatar, anexa-o manualmente
+    if avatar_param.present?
+      @user.avatar.attach(avatar_param)
+    end
+    
     redirect_to edit_profile_path, notice: "Perfil atualizado com sucesso!"
   else
     render :edit
