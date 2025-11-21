@@ -9,13 +9,13 @@ local:
 r2:
   service: S3
   access_key_id: <%= ENV["R2_ACCESS_KEY_ID"] %>
-  secret_access_key: <%= ENV["R2_SECRET_ACCESS_KEY"] %>
+  secret_access_key: <%= ENV["R2_SECRET_KEY"] %>
   bucket: <%= ENV["R2_BUCKET"] %>
-  endpoint: <%= ENV["R2_ENDPOINT"] %> # Ex: https://<NAMESPACE>.r2.cloudflarestorage.com
-  public_host: <%= ENV["R2_PUBLIC_URL"] %> # URL pública do bucket
-  force_path_style: true
+  endpoint: <%= ENV["R2_ENDPOINT"] %>
   region: auto
   public: true
+  url: <%= ENV["R2_PUBLIC_URL"] %>
+
 
   upload:
     checksum: false

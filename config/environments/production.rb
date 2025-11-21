@@ -33,9 +33,6 @@ Rails.application.configure do
  # host: ENV["R2_PUBLIC_HOST"]
 #}
 
-config.active_storage.asset_host = ENV["R2_PUBLIC_HOST"]
-
- config.active_storage.content_checksum_service = nil if config.active_storage.service == :r2
   
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
