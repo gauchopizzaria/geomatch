@@ -15,9 +15,3 @@ r2:
   force_path_style: true
   region: auto
   public: true
-
-  # ⚠️ NECESSÁRIO PARA R2 FUNCIONAR
-  upload:
-    checksum: false
-
- 
