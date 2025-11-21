@@ -33,7 +33,7 @@ Rails.application.configure do
   host: ENV["R2_PUBLIC_HOST"]
 }
 
- config.active_storage.resolve_model_to_route = :public
+ 
   
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
