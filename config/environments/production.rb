@@ -28,13 +28,6 @@ Rails.application.configure do
   config.active_storage.service = :r2
 
 
- # config.active_storage.resolve_model_to_route = :public
- config.active_storage.url_options = {
-  host: ENV["R2_PUBLIC_HOST"]
-}
-
-  
-
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # config.assume_ssl = true
 
