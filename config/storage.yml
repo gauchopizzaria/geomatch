@@ -14,7 +14,5 @@ r2:
   endpoint: <%= ENV["R2_ENDPOINT"] %>
   region: auto
   public: true
-  #url: <%= ENV["R2_PUBLIC_HOST"] %>
+  
 
-  upload:
-    checksum: false
