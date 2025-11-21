@@ -32,32 +32,20 @@ class UsersController < ApplicationController
  def update
   @user = current_user
   
-  # Obtém os parâmetros permitidos UMA ÚNICA VEZ
-  permitted_params = user_params
-  
-  # Separa o avatar dos outros parâmetros
-  avatar_param = permitted_params[:avatar]
-  
-  # REMOVE O AVATAR E O CHECKSUM DO HASH FINAL
-  update_params = permitted_params.except(:avatar, :checksum).to_h
-  
-  if @user.update(update_params)
-    # Anexa o avatar usando o método de atribuição (=), que é mais robusto
-    @user.avatar = avatar_param if avatar_param.present?
-    
-    redirect_to edit_profile_path, notice: "Perfil atualizado com sucesso!"
+  # O Rails lida com o avatar automaticamente se ele estiver nos strong parameters.
+  # O método update tentará salvar o usuário e o anexo do avatar de uma vez.
+  if @user.update(user_params)
+    redirect_to edit_profile_path, notice: "Perfil atualizado com sucesso."
   else
-    render :edit
+    # Se a atualização falhar (por validação do username/bio OU do avatar)
+    render :edit, status: :unprocessable_entity
   end
 end
 
+private
 
-
-  private
-
-  def user_params
-    # Strong parameters: permite a atualização de username, bio e avatar
-    # Inclui :username e :bio que já existem na tabela
-    params.require(:user).permit(:username, :bio, :avatar)
-  end
+def user_params
+  # Strong parameters: permite a atualização de username, bio e avatar
+  params.require(:user).permit(:username, :bio, :avatar)
+end
 end
