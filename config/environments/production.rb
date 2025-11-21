@@ -29,9 +29,11 @@ Rails.application.configure do
 
 
  # config.active_storage.resolve_model_to_route = :public
- config.active_storage.url_options = {
-  host: ENV["R2_PUBLIC_HOST"]
-}
+ #config.active_storage.url_options = {
+ # host: ENV["R2_PUBLIC_HOST"]
+#}
+
+config.active_storage.asset_host = ENV["R2_PUBLIC_HOST"]
 
  config.active_storage.content_checksum_service = nil if config.active_storage.service == :r2
   
