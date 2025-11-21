@@ -19,7 +19,7 @@
     <div class="flex flex-col items-center space-y-4">
       <div class="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-300">
         <% if current_user.avatar.attached? %>
-          <%= image_tag url_for(current_user.avatar), class: "w-full h-full object-cover", id: "avatar-preview" %>
+          <%= image_tag current_user.avatar, class: "w-full h-full object-cover", id: "avatar-preview" %>
         <% else %>
           <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500" id="avatar-placeholder">
             <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
