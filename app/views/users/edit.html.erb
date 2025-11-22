@@ -1,82 +1,89 @@
 <div class="container mx-auto p-4">
   <h1 class="text-2xl font-bold mb-4">Meu Perfil</h1>
 
-  <%= form_with(model: current_user, url: profile_path, method: :patch, local: true, html: { class: "space-y-4", multipart: true }) do |form| %>
-    
-    <% if current_user.errors.any? %>
-      <div id="error_explanation" class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
-        <p class="font-bold">
-          <%= pluralize(current_user.errors.count, "erro") %> impediu que este perfil fosse salvo:
-        </p>
+  <%= form_with model: @user, url: profile_path, method: :patch, multipart: true, data: { turbo: false } do |f| %>
+
+    <% if @user.errors.any? %>
+      <div class="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+        <p class="font-bold"><%= pluralize(@user.errors.count, "erro") %> impediram salvar o perfil:</p>
+
         <ul class="list-disc ml-5">
-          <% current_user.errors.full_messages.each do |message| %>
+          <% @user.errors.full_messages.each do |message| %>
             <li><%= message %></li>
           <% end %>
         </ul>
       </div>
     <% end %>
 
+    <!-- Avatar -->
     <div class="flex flex-col items-center space-y-4">
       <div class="relative w-32 h-32 rounded-full overflow-hidden border-4 border-gray-300">
-        <% if current_user.avatar.attached? %>
-          <%= image_tag current_user.avatar, class: "w-full h-full object-cover", id: "avatar-preview" %>
+        <% if @user.avatar.attached? %>
+          <%= image_tag @user.avatar, id: "avatar-preview",
+              class: "w-full h-full object-cover" %>
         <% else %>
-          <div class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500" id="avatar-placeholder">
-            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+          <div id="avatar-placeholder"
+               class="w-full h-full bg-gray-200 flex items-center justify-center text-gray-500">
+            <svg class="w-12 h-12" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                    d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
             </svg>
           </div>
         <% end %>
       </div>
 
-      <label class="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition duration-300">
+      <label class="cursor-pointer bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded transition">
         Alterar Foto
-        <%= form.file_field :avatar, class: "hidden", onchange: "previewImage(event)" %>
+        <%= f.file_field :avatar, class: "hidden", onchange: "previewImage(event)" %>
       </label>
     </div>
 
-    <div>
-      <%= form.label :username, "Nome de Usuário", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_field :username, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Seu nome ou apelido" %>
+    <!-- Nome -->
+    <div class="mt-4">
+      <%= f.label :username, "Nome de Usuário", class: "text-sm font-medium text-gray-700" %>
+      <%= f.text_field :username,
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500" %>
     </div>
 
-    <div>
-      <%= form.label :bio, "Biografia", class: "block text-sm font-medium text-gray-700" %>
-      <%= form.text_area :bio, rows: 4, class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm", placeholder: "Fale um pouco sobre você..." %>
+    <!-- Bio -->
+    <div class="mt-4">
+      <%= f.label :bio, "Biografia", class: "text-sm font-medium text-gray-700" %>
+      <%= f.text_area :bio, rows: 4,
+          class: "mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500" %>
     </div>
 
-    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
-      <%= form.submit "Salvar Alterações", class: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded transition duration-300 cursor-pointer" %>
+    <!-- Botões -->
+    <div class="flex flex-col sm:flex-row justify-between items-center gap-3 mt-4">
+      <%= f.submit "Salvar Alterações",
+          class: "bg-green-500 hover:bg-green-700 text-white font-bold py-2 px-4 rounded" %>
 
-      <%= link_to "Editar Senha", edit_user_registration_path, class: "bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded transition duration-300" %>
+      <%= link_to "Editar Senha", edit_user_registration_path,
+          class: "bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" %>
     </div>
+
   <% end %>
 </div>
 
 <script>
   function previewImage(event) {
     const reader = new FileReader();
+
     reader.onload = function() {
-      let output = document.getElementById('avatar-preview');
-      const placeholder = document.getElementById('avatar-placeholder');
-      
-      if (!output) {
-        const container = document.querySelector('.relative.w-32.h-32');
-        output = document.createElement('img');
-        output.id = 'avatar-preview';
-        output.className = 'w-full h-full object-cover';
-        container.appendChild(output);
+      let img = document.getElementById("avatar-preview");
+      const placeholder = document.getElementById("avatar-placeholder");
+
+      if (!img) {
+        const container = document.querySelector(".relative.w-32.h-32");
+        img = document.createElement("img");
+        img.id = "avatar-preview";
+        img.className = "w-full h-full object-cover";
+        container.appendChild(img);
       }
 
-      output.src = reader.result;
-      output.style.display = 'block';
-
-      if (placeholder) placeholder.style.display = 'none';
+      img.src = reader.result;
+      if (placeholder) placeholder.style.display = "none";
     };
 
-    if (event.target.files && event.target.files[0]) {
-      reader.readAsDataURL(event.target.files[0]);
-    }
+    reader.readAsDataURL(event.target.files[0]);
   }
 </script>

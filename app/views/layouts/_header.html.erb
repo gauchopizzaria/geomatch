@@ -1,13 +1,18 @@
 <header class="site-header">
   <div class="container">
-    <a href="/" class="brand">
+    <%= link_to root_path, class: "brand" do %>
       <%= image_tag "logo-geomatch.svg", alt: "GeoMatch", class: "logo" %>
-    </a>
+    <% end %>
 
     <% if user_signed_in? %>
       <nav class="nav">
-        <%= link_to "Meu Perfil", "#", class: "nav-link" %>
-        <%= button_to "Sair", logout_path, method: :delete, class: "logout-btn" %>
+        <%= link_to "Meu Perfil", edit_profile_path, class: "nav-link" %>
+
+        <%= button_to "Sair",
+              destroy_user_session_path,
+              method: :delete,
+              class: "logout-btn",
+              data: { turbo_confirm: "Deseja realmente sair?" } %>
       </nav>
     <% else %>
       <nav class="nav">
