@@ -23,12 +23,6 @@ Rails.application.configure do
   # Active Storage (points to R2)
   config.active_storage.service = :r2
 
-  # Ajuste seguro do checksum (evita erro no Docker build)
-  config.after_initialize do
-    r2 = Rails.application.config.active_storage.service_configurations[:r2]
-    r2[:checksum_algorithm] = :none if r2
-  end
-
   # Logging
   config.log_tags = [:request_id]
   config.logger = ActiveSupport::TaggedLogging.logger(STDOUT)
