@@ -12,7 +12,3 @@ r2:
   secret_access_key: <%= ENV["R2_SECRET_ACCESS_KEY"] %>
   bucket: <%= ENV["R2_BUCKET"] %>
   endpoint: <%= ENV["R2_ENDPOINT"] %>
-  region: auto
-  public: true
-  
-
