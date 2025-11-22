@@ -15,5 +15,5 @@ r2:
   bucket: <%= ENV['R2_BUCKET'] %>
   endpoint: <%= ENV['R2_ENDPOINT'] %>
   force_path_style: true
-  checksum_algorithm: :none 
+
   

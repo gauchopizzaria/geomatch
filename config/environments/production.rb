@@ -27,6 +27,12 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :r2
 
+  config.active_storage.service = :r2
+
+ config.after_initialize do
+  Rails.application.config.active_storage.service_configurations[:r2][:checksum_algorithm] = :none
+ end
+
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # config.assume_ssl = true
