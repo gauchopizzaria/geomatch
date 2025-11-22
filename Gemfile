@@ -43,6 +43,7 @@ gem "thruster", require: false
 gem "image_processing", "~> 1.2"
 
 gem "aws-sdk-s3", require: false
+gem "aws-sdk-core", ">= 3.238"
 gem "jsbundling-rails"
 gem "fiddle"
 gem "devise"
