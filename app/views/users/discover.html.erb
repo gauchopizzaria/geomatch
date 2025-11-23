@@ -16,7 +16,11 @@
 <div id="user-popup" class="user-popup hidden">
   <div class="popup-content">
     <div class="user-info">
-      <img id="popup-avatar" src="" alt="Avatar" class="avatar">
+      <img id="popup-avatar"
+           src="<%= @user&.avatar&.attached? ? url_for(@user.avatar) : '/default-avatar.png' %>"
+           alt="Avatar"
+           class="avatar">
+
       <div class="user-details">
         <h3 id="popup-username"></h3>
         <p id="popup-location"></p>
