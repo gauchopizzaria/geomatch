@@ -25,4 +25,13 @@ class User < ApplicationRecord
    username.presence || email&.split('@')&.first || "Usuário"
   end
 
+  # Para tratar hobbies como array
+  def hobbies_list
+    (hobbies || "").split(",")
+  end
+
+  def hobbies_list=(values)
+    self.hobbies = values.reject(&:blank?).join(",")
+  end
+
 end

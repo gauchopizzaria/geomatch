@@ -52,7 +52,10 @@ class UsersController < ApplicationController
       :bio,
       :birthdate,
       :gender,
-      :share_location
+      :share_location,
+      :gender,
+      :interested_in,
+      hobbies_list: [] # ← RECEBE ARRAY!
     )
   end
 end

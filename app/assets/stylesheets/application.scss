@@ -26,6 +26,7 @@ $white: #ffffff;
 @use "matches";
 @use "chat";
 @use "devise"; // <--- AGORA IMPORTA DEPOIS DAS VARIÁVEIS
+@use "edit_profile";
 
 // 🧱 Layout base
 .container {
