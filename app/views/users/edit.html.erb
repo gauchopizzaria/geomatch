@@ -72,6 +72,8 @@
       </div> <!-- /profile-grid -->
 
       <%= f.submit "Salvar Alterações", class: "profile-submit" %>
+      <%= link_to "Editar Senha", edit_user_registration_path,
+          class: "bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" %>
 
     <% end %>
 

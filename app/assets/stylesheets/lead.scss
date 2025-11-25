@@ -1,0 +1,104 @@
+.lead-card {
+  position: relative;
+  border-radius: 15px;
+  overflow: hidden;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease;
+  width: 100%;
+  max-width: 400px;
+}
+
+.lead-card-image {
+  width: 100%;
+  height: 450px;
+  object-fit: cover;
+  border-bottom: 1px solid #eee;
+}
+
+.lead-card-info {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  padding: 20px;
+  color: white;
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0));
+}
+
+.lead-card-info h5 {
+  font-size: 1.8rem;
+  font-weight: bold;
+  margin-bottom: 5px;
+}
+
+.lead-card-info p {
+  margin-bottom: 5px;
+  font-size: 1rem;
+}
+
+/* Botões */
+.lead-actions {
+  display: flex;
+  justify-content: space-around;
+  padding: 20px 0;
+  width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+.action-button {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  font-size: 2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  border: none;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+}
+
+.reject-button {
+  background-color: #ff5864;
+  color: white;
+}
+
+.like-button {
+  background-color: #05d58b;
+  color: white;
+}
+
+/* ========================================= */
+/*          DESKTOP (TINDER STYLE)           */
+/* ========================================= */
+@media (min-width: 992px) {
+  .lead-wrapper {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 25px;
+    width: 100%;
+  }
+
+  .lead-card {
+    margin: 0 auto;
+  }
+
+  .lead-actions {
+    justify-content: space-between;
+  }
+
+  .action-button {
+    width: 95px;
+    height: 95px;
+    font-size: 2.2rem;
+  }
+}

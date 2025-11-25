@@ -7,6 +7,18 @@ class UsersController < ApplicationController
     @nearby_users = DiscoveryService.new(current_user).find_nearby_users
   end
 
+  # Nova tela de Descoberta (Lead/Swipe)
+  def lead
+    # 1. Buscar IDs dos usuários que o current_user já curtiu (ou descartou, se implementado)
+    liked_ids = current_user.likes.pluck(:liked_id)
+
+    # 2. Chamar o serviço de descoberta que aplica os filtros avançados
+    # O serviço agora retorna o usuário E a distância
+    @next_user, @distance = AdvancedDiscoveryService.new(current_user).find_next_eligible_user(liked_ids)
+
+    # Renderiza a view 'lead.html.erb'
+  end
+
   # Endpoint JSON para retornar usuários próximos
   def nearby
     if params[:latitude].present? && params[:longitude].present?

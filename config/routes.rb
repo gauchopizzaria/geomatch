@@ -10,6 +10,9 @@ Rails.application.routes.draw do
   # Descoberta (mapa)
   get "/discover", to: "users#discover", as: :discover
 
+  # Nova tela de Descoberta (Lead/Swipe)
+  get "/lead", to: "users#lead", as: :lead
+
   # Endpoint JSON para busca de usuários próximos
   get "/users/nearby", to: "users#nearby"
 
