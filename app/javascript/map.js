@@ -74,7 +74,7 @@ ${user.city}`);
         users.forEach((user) => {
           const li = document.createElement("li");
           li.innerHTML = `
-            <img src="${user.avatar_url || '/default-avatar.png'}" alt="${user.username || 'Usuário'}">
+            <img src="${user.avatar_url || '/default-avatar.png'}" alt="${user.username || 'Usuário'}" class="avatar">
             <span>${user.username || "Usuário"} ${
             user.distance_km ? `(${user.distance_km} km)` : ""
           }</span>

@@ -7,18 +7,6 @@ class UsersController < ApplicationController
     @nearby_users = DiscoveryService.new(current_user).find_nearby_users
   end
 
-  # Nova tela de Descoberta (Lead/Swipe)
-  def lead
-    # 1. Buscar IDs dos usuários que o current_user já curtiu (ou descartou, se implementado)
-    liked_ids = current_user.likes.pluck(:liked_id)
-
-    # 2. Chamar o serviço de descoberta que aplica os filtros avançados
-    # O serviço agora retorna o usuário E a distância
-    @next_user, @distance = AdvancedDiscoveryService.new(current_user).find_next_eligible_user(liked_ids)
-
-    # Renderiza a view 'lead.html.erb'
-  end
-
   # Endpoint JSON para retornar usuários próximos
   def nearby
     if params[:latitude].present? && params[:longitude].present?
@@ -31,8 +19,7 @@ class UsersController < ApplicationController
     users = DiscoveryService.new(current_user).find_nearby_users(10)
 
     render json: users.as_json(
-      only: [:id, :username, :latitude, :longitude],
-      methods: [:avatar_url]
+      only: [:id, :username, :latitude, :longitude, :avatar_url]
     )
   rescue => e
     Rails.logger.error "Erro em /users/nearby: #{e.message}"
@@ -64,10 +51,7 @@ class UsersController < ApplicationController
       :bio,
       :birthdate,
       :gender,
-      :share_location,
-      :gender,
-      :interested_in,
-      hobbies_list: [] # ← RECEBE ARRAY!
+      :share_location
     )
   end
 end

@@ -1,5 +1,6 @@
 # app/services/discovery_service.rb
 class DiscoveryService
+  include Rails.application.routes.url_helpers
   def initialize(user)
     @user = user
   end
@@ -20,7 +21,7 @@ class DiscoveryService
             username: u.username,
             latitude: u.latitude,
             longitude: u.longitude,
-            avatar_url: (u.avatar.attached? ? Rails.application.routes.url_helpers.url_for(u.avatar) : nil),
+            avatar_url: (u.avatar.attached? ? Rails.application.routes.url_helpers.rails_blob_url(u.avatar, only_path: true) : nil),
             distance_km: distance
           }
         end
