@@ -11,10 +11,15 @@ class AdvancedDiscoveryService
                      .where.not(id: @user.id)
                      .where.not(id: excluded_user_ids)
 
-    # 2. Aplica Filtro de Interesse (Gênero) no DB
-    if @user.interested_in.present?
-      base_query = base_query.where(gender: @user.interested_in)
+    # 2. Aplica Filtro de Interesse (Gênero) com a nova lógica
+    interested_in = @user.interested_in
+    show_all_genders = ["Não-binário", "Prefiro não dizer", "Outro"]
+
+    if interested_in.present? && !show_all_genders.include?(interested_in)
+      # Se o interesse for "Homem" ou "Mulher", aplica o filtro.
+      base_query = base_query.where(gender: interested_in)
     end
+    # Se o interesse estiver na lista show_all_genders ou for nulo, nenhum filtro de gênero é aplicado, mostrando todos os usuários.
 
     # 3. Carrega os usuários elegíveis para a memória (apenas os necessários)
     base_users = base_query.to_a

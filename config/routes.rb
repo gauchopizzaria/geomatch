@@ -1,4 +1,5 @@
 Rails.application.routes.draw do
+  get "notifications/index"
   # Página inicial pública
   root "public#landing"
 
@@ -16,6 +17,8 @@ Rails.application.routes.draw do
   # Endpoint JSON para busca de usuários próximos
   get "/users/nearby", to: "users#nearby"
 
+  resources :notifications, only: [:index]
+  
   # Likes (curtidas)
   resources :likes, only: [:create, :destroy]
 

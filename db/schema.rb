@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_11_24_202251) do
+ActiveRecord::Schema[8.1].define(version: 2025_11_25_230213) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -83,6 +83,21 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_202251) do
     t.index ["sender_id"], name: "index_messages_on_sender_id"
   end
 
+  create_table "notifications", force: :cascade do |t|
+    t.string "action"
+    t.bigint "actor_id", null: false
+    t.datetime "created_at", null: false
+    t.bigint "notifiable_id", null: false
+    t.string "notifiable_type", null: false
+    t.datetime "read_at"
+    t.bigint "recipient_id", null: false
+    t.datetime "updated_at", null: false
+    t.index ["actor_id"], name: "index_notifications_on_actor_id"
+    t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable"
+    t.index ["recipient_id", "read_at"], name: "index_notifications_on_recipient_id_and_read_at"
+    t.index ["recipient_id"], name: "index_notifications_on_recipient_id"
+  end
+
   create_table "profiles", force: :cascade do |t|
     t.integer "age"
     t.text "bio"
@@ -131,5 +146,7 @@ ActiveRecord::Schema[8.1].define(version: 2025_11_24_202251) do
   add_foreign_key "matches", "users", column: "matched_user_id"
   add_foreign_key "messages", "matches"
   add_foreign_key "messages", "users", column: "sender_id"
+  add_foreign_key "notifications", "users", column: "actor_id"
+  add_foreign_key "notifications", "users", column: "recipient_id"
   add_foreign_key "profiles", "users"
 end
