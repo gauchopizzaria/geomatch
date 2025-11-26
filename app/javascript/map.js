@@ -137,12 +137,18 @@ ${user.city}`);
             body: JSON.stringify({ user_id: likedUserId }),
           });
 
-          if (response.ok) {
+         if (response.ok) {
             const data = await response.json();
             if (data.status === "already_liked") {
               alert("Você já curtiu este usuário. Não é possível curtir duas vezes."); // 🎯 CORREÇÃO 2: Trata o 'already_liked'
             } else if (data.message === "💘 Deu match!") {
               alert("🎉 MATCH! Vocês se curtiram!");
+              
+              // **NOVO: Redireciona para a tela de chat do Match**
+              if (data.match_id) {
+                window.location.href = `/matches/${data.match_id}`;
+              }
+              
             } else {
               alert("❤️ Curtida enviada!");
             }

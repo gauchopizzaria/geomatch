@@ -1,0 +1,13 @@
+<div class="container mt-5">
+  <h1>Suas Notificações</h1>
+  
+  <% if @notifications.any? %>
+    <ul id="notifications-list" class="list-group">
+      <% @notifications.each do |notification| %>
+        <%= render 'notification', notification: notification %>
+      <% end %>
+    </ul>
+  <% else %>
+    <p class="text-muted">Você não tem novas notificações.</p>
+  <% end %>
+</div>

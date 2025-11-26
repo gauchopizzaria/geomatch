@@ -1,0 +1,9 @@
+<li class="list-group-item <%= 'list-group-item-light' if notification.read_at.nil? %>" data-notification-id="<%= notification.id %>">
+  <a href="<%= user_path(notification.actor) %>" class="d-flex align-items-center text-decoration-none">
+    <%= image_tag notification.actor.avatar.attached? ? url_for(notification.actor.avatar) : 'default-avatar.png', class: 'avatar-sm me-3' %>
+    <div>
+      <strong><%= notification.actor.username %></strong> <%= notification.action %>
+      <small class="text-muted d-block"><%= time_ago_in_words(notification.created_at) %> atrás</small>
+    </div>
+  </a>
+</li>
