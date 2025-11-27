@@ -6,7 +6,7 @@ class LikesController < ApplicationController
 
     # 1. Verifica se o like já existe para evitar erro de duplicidade
     if Like.exists?(liker_id: current_user.id, liked_id: liked_user.id)
-      return render json: { message: "Você já curtiu este usuário.", status: "already_liked" }, status: :ok
+      return redirect_to lead_path, alert: "Você já curtiu este usuário."
     end
 
     @like = Like.new(
@@ -33,8 +33,8 @@ class LikesController < ApplicationController
           match = Match.create(user_id: user_id, matched_user_id: matched_user_id, status: "matched")
         end
         
-        # Retorna o match_id na resposta JSON para o frontend
-        render json: { message: "💘 Deu match!", match_id: match.id }, status: :ok
+        # Redireciona para a próxima pessoa após o match
+        redirect_to lead_path, notice: "💘 Deu match!"
       else
           # Lógica de Notificação de Like Recebido
       Notification.create(
@@ -46,17 +46,17 @@ class LikesController < ApplicationController
        
        NotificationBroadcastJob.perform_later(notification)
 
-        # Lógica de Notificação de Like Recebido (Veja o Passo 3)
-        render json: { message: "Curtida enviada!" }, status: :ok
+        # Redireciona para a próxima pessoa após a curtida
+        redirect_to lead_path, notice: "Curtida enviada!"
       end
     else
       # 2. Se o save falhar por outro motivo (ex: validação), retorna erro genérico
-      render json: { error: "Não foi possível registrar a curtida. Tente novamente." }, status: :unprocessable_entity
+      redirect_to lead_path, alert: "Não foi possível registrar a curtida. Tente novamente."
     end
   rescue ActiveRecord::RecordNotFound
-    render json: { error: "Usuário não encontrado" }, status: :not_found
+    redirect_to lead_path, alert: "Usuário não encontrado."
   rescue => e
     Rails.logger.error("Erro ao curtir: #{e.message}")
-    render json: { error: "Erro interno no servidor" }, status: :internal_server_error
+    redirect_to lead_path, alert: "Erro interno no servidor."
   end
 end

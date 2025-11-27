@@ -26,11 +26,10 @@
 
     <!-- Botões de Ação -->
     <div class="lead-actions">
-      <%= link_to "❌", lead_path, class: "action-button reject-button" %>
+      <%= link_to "❌", lead_path, method: :post, class: "action-button reject-button" %>
 
       <%= button_to "❤️", likes_path(user_id: @next_user.id),
             method: :post,
-            data: { turbo_confirm: "Tem certeza que deseja curtir?" },
             class: "action-button like-button",
             id: "like-button" %>
     </div>
@@ -42,17 +41,4 @@
   <% end %>
 </div>
 
-<!-- Script Turbo -->
-<script>
-  document.addEventListener('turbo:submit-end', function(event) {
-    const response = event.detail.fetchResponse;
-    if (response.ok) {
-      response.json().then(data => {
-        alert(data.message);
-        window.location.reload();
-      });
-    } else {
-      alert("Erro ao processar a curtida.");
-    }
-  });
-</script>
+
