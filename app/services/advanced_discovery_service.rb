@@ -13,11 +13,10 @@ class AdvancedDiscoveryService
 
     # 2. Aplica Filtro de Interesse (Gênero) com a nova lógica
     interested_in = @user.interested_in
-    show_all_genders = ["Não-binário", "Prefiro não dizer", "Outro"]
+    generic_options = ["Outro", "Não-binário", "Prefiro não dizer", "Mulher", "Homem"]
 
-    if interested_in.present? && !show_all_genders.include?(interested_in)
-      # Se o interesse for "Homem" ou "Mulher", aplica o filtro.
-      base_query = base_query.where(gender: interested_in)
+    if interested_in.present? && !generic_options.include?(interested_in)
+    base_query = base_query.where(gender: interested_in)
     end
     # Se o interesse estiver na lista show_all_genders ou for nulo, nenhum filtro de gênero é aplicado, mostrando todos os usuários.
 

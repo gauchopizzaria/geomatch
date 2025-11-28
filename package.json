@@ -2,6 +2,7 @@
   "dependencies": {
     "@hotwired/stimulus": "^3.2.2",
     "@hotwired/turbo-rails": "^8.0.20",
+    "canvas-confetti": "^1.9.4",
     "leaflet": "^1.9.4",
     "leaflet.markercluster": "^1.5.3"
   },

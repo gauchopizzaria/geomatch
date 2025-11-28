@@ -35,8 +35,8 @@
         <div class="profile-field">
           <%= f.label :gender, "Gênero" %>
           <%= f.select :gender,
-              [["Homem","homem"],["Mulher","mulher"],["Não-binário","nao-binario"],
-               ["Prefiro não dizer","nao-dizer"],["Outro","outro"]],
+              [["Homem","homem"],["Mulher","mulher"],
+              ["Outro","outro"]],
               {},
               class: "profile-select" %>
         </div>
@@ -44,8 +44,7 @@
         <div class="profile-field">
           <%= f.label :interested_in, "Interessado em conhecer" %>
           <%= f.select :interested_in,
-              [["Homem","homem"],["Mulher","mulher"],["Não-binário","nao-binario"],
-               ["Prefiro não dizer","nao-dizer"],["Outro","outro"]],
+              [["Homem","homem"],["Mulher","mulher"],["Outro","outro"]],
                {},
                class: "profile-select" %>
         </div>

@@ -1,5 +1,7 @@
 // Importa o Stimulus Application
 import { Application } from "@hotwired/stimulus"
+import ConfettiController from "./confetti_controller.js"
+application.register("confetti", ConfettiController)
 
 // Cria a instância da aplicação Stimulus
 const application = Application.start()

@@ -1,15 +1,33 @@
-<!-- app/views/users/lead.html.erb -->
-<div class="container mt-5 lead-wrapper">
+<div class="container mt-5 lead-wrapper" data-controller="confetti">
+
+  <% if @match %>
+    <div class="match-popup">
+      <h2>🎉 Deu Match!</h2>
+
+      
+      <p>Você e <strong><%= @next_user.display_name %></strong> curtiram um ao outro!</p>
+      <p>Deseja iniciar uma conversa agora?</p>
+
+      <div class="match-popup-actions">
+        <%= link_to "💬 Conversar Agora", match_path(@match), class: "btn btn-primary" %>
+        <%= link_to "➡ Continuar Vendo Usuários", lead_path, class: "btn btn-outline-secondary" %>
+      </div>
+    </div>
+  <% end %>
+
+
   <h1 class="text-center">Descubra Pessoas Próximas</h1>
 
   <% if @next_user %>
     <div class="lead-card">
+
       <% if @next_user.avatar.attached? %>
         <%= image_tag @next_user.avatar, class: "lead-card-image" %>
       <% end %>
 
       <div class="lead-card-info">
         <h5 class="card-title"><%= @next_user.display_name %></h5>
+
         <p class="card-text"><%= @next_user.bio %></p>
 
         <% if @distance %>
@@ -26,12 +44,20 @@
 
     <!-- Botões de Ação -->
     <div class="lead-actions">
-      <%= link_to "❌", lead_path, method: :post, class: "action-button reject-button" %>
 
-      <%= button_to "❤️", likes_path(user_id: @next_user.id),
+      <!-- Rejeitar: agora com POST real -->
+      <%= button_to "❌",
+            lead_path,
+            method: :post,
+            class: "action-button reject-button" %>
+
+      <!-- Curtir -->
+      <%= button_to "❤️",
+            likes_path(user_id: @next_user.id),
             method: :post,
             class: "action-button like-button",
             id: "like-button" %>
+
     </div>
 
   <% else %>
@@ -40,5 +66,3 @@
     </div>
   <% end %>
 </div>
-
-

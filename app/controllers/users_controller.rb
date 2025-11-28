@@ -9,14 +9,30 @@ class UsersController < ApplicationController
 
   # Nova tela de Descoberta (Lead/Swipe)
   def lead
-    # 1. Buscar IDs dos usuários que o current_user já curtiu (ou descartou, se implementado)
+    # 🚨 1. CASO SEJA POPUP DE MATCH
+    # Exemplo de rota: /lead?match=true&match_id=27
+    if params[:match] == "true" && params[:match_id].present?
+      @match = Match.find(params[:match_id])
+
+      # Descobre quem é o outro usuário para mostrar no popup
+      @next_user =
+        if @match.user_id == current_user.id
+          @match.matched_user
+        else
+          @match.user
+        end
+
+      # Não continua buscando novos usuários — somente exibe o popup
+      return
+    end
+
+    # 🚀 2. CASO NORMAL (busca próximo usuário elegível)
     liked_ids = current_user.likes.pluck(:liked_id)
 
-    # 2. Chamar o serviço de descoberta que aplica os filtros avançados
-    # O serviço agora retorna o usuário E a distância
-    @next_user, @distance = AdvancedDiscoveryService.new(current_user).find_next_eligible_user(liked_ids)
+    @next_user, @distance =
+      AdvancedDiscoveryService.new(current_user).find_next_eligible_user(liked_ids)
 
-    # Renderiza a view 'lead.html.erb'
+    # Renderiza a view normalmente
   end
 
   # Endpoint JSON para retornar usuários próximos
@@ -30,7 +46,6 @@ class UsersController < ApplicationController
 
     users = DiscoveryService.new(current_user).find_nearby_users(10)
 
-    # CORREÇÃO: Incluir 'avatar_url' diretamente no 'only', pois o DiscoveryService já o adicionou ao Hash.
     render json: users.as_json(
       only: [:id, :username, :latitude, :longitude, :avatar_url, :distance_km]
     )
@@ -66,7 +81,7 @@ class UsersController < ApplicationController
       :gender,
       :share_location,
       :interested_in,
-      hobbies_list: [] # ← RECEBE ARRAY!
+      hobbies_list: [] # RECEBE ARRAY
     )
   end
 end
