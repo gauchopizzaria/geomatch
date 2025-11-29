@@ -4,7 +4,6 @@
     <div class="match-popup">
       <h2>🎉 Deu Match!</h2>
 
-      
       <p>Você e <strong><%= @next_user.display_name %></strong> curtiram um ao outro!</p>
       <p>Deseja iniciar uma conversa agora?</p>
 
@@ -15,15 +14,13 @@
     </div>
   <% end %>
 
-
   <h1 class="text-center">Descubra Pessoas Próximas</h1>
 
   <% if @next_user %>
     <div class="lead-card">
 
-      <% if @next_user.avatar.attached? %>
-        <%= image_tag @next_user.avatar, class: "lead-card-image" %>
-      <% end %>
+      <!-- FOTO COM FALLBACK -->
+      <%= image_tag @next_user.avatar_or_default, class: "lead-card-image" %>
 
       <div class="lead-card-info">
         <h5 class="card-title"><%= @next_user.display_name %></h5>
@@ -45,7 +42,7 @@
     <!-- Botões de Ação -->
     <div class="lead-actions">
 
-      <!-- Rejeitar: agora com POST real -->
+      <!-- Rejeitar -->
       <%= button_to "❌",
             lead_path,
             method: :post,

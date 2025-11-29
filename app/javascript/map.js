@@ -19,43 +19,43 @@ import "leaflet.markercluster"; // Importa a biblioteca de clusterização
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       attribution: "© OpenStreetMap",
-    } ).addTo(map);
+    }).addTo(map);
 
     // Obtém localização atual e envia para backend
-    navigator.geolocation.getCurrentPosition(async (position) => {
-      const { latitude, longitude } = position.coords;
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        const { latitude, longitude } = position.coords;
 
-      // 🎯 CORREÇÃO 1: Centraliza o mapa na localização do usuário
-      map.setView([latitude, longitude], 13);
+        // 🎯 CORREÇÃO 1: Centraliza o mapa na localização do usuário
+        map.setView([latitude, longitude], 13);
 
-      // Atualiza backend
-      await fetch(`/users/nearby?latitude=${latitude}&longitude=${longitude}`);
-      loadNearbyUsers();
-    }, (error) => {
-      console.error("Erro ao obter localização:", error);
-      // Se falhar, carrega usuários com a localização padrão (Itabuna)
-      loadNearbyUsers();
-    });
+        // Atualiza backend
+        await fetch(`/users/nearby?latitude=${latitude}&longitude=${longitude}`);
+        loadNearbyUsers();
+      },
+      (error) => {
+        console.error("Erro ao obter localização:", error);
+        loadNearbyUsers();
+      }
+    );
 
     async function loadNearbyUsers() {
       const response = await fetch("/users/nearby");
       const users = await response.json();
 
-      // 🎯 CORREÇÃO 3: Implementa Marker Clustering para lidar com usuários no mesmo local
+      // 🎯 CORREÇÃO 3: Implementa Marker Clustering
       const markers = L.markerClusterGroup();
 
       users.forEach((user) => {
         const icon = L.divIcon({
-          html: `<img src="${user.avatar_url || '/default-avatar.png'}" class="marker-avatar">`,
+          html: `<img src="${user.avatar_url || "/default-avatar.png"}" class="marker-avatar">`,
           className: "custom-marker",
           iconSize: [40, 40],
         });
 
         const marker = L.marker([user.latitude, user.longitude], { icon });
 
-        // Adiciona um popup simples para o caso de clique em um único marcador
-        marker.bindPopup(`<b>${user.username}</b>  
-${user.city}`);
+        marker.bindPopup(`<b>${user.username}</b><br>${user.city}`);
 
         marker.on("click", () => {
           showUserPopup(user);
@@ -66,15 +66,17 @@ ${user.city}`);
 
       map.addLayer(markers);
 
-      // === NOVO: renderiza usuários reais na sidebar lateral ===
+      // Atualiza lista lateral
       const listContainer = document.getElementById("users-list");
       if (listContainer) {
-        listContainer.innerHTML = ""; // limpa lista anterior
+        listContainer.innerHTML = "";
 
         users.forEach((user) => {
           const li = document.createElement("li");
           li.innerHTML = `
-            <img src="${user.avatar_url || '/default-avatar.png'}" alt="${user.username || 'Usuário'}" class="avatar">
+            <img src="${user.avatar_url || "/default-avatar.png"}" alt="${
+            user.username || "Usuário"
+          }" class="avatar">
             <span>${user.username || "Usuário"} ${
             user.distance_km ? `(${user.distance_km} km)` : ""
           }</span>
@@ -89,10 +91,12 @@ ${user.city}`);
         });
       }
 
-      // 🔹 Emite evento para o HTML saber que os usuários foram carregados
-      document.dispatchEvent(new CustomEvent('usersLoaded', { detail: users }));
+      document.dispatchEvent(
+        new CustomEvent("usersLoaded", { detail: users })
+      );
     }
 
+    // === POPUP DO USUÁRIO ===
     function showUserPopup(user) {
       const popup = document.getElementById("user-popup");
       const avatar = document.getElementById("popup-avatar");
@@ -100,10 +104,8 @@ ${user.city}`);
       const location = document.getElementById("popup-location");
       const distance = document.getElementById("popup-distance");
 
-      // Armazena o ID do usuário atual no popup
       popup.dataset.userId = user.id;
 
-      // Atualiza informações
       avatar.src = user.avatar_url || "/default-avatar.png";
       username.textContent = user.username || "Usuário desconhecido";
       location.textContent = user.city || "Localização não informada";
@@ -115,7 +117,7 @@ ${user.city}`);
       popup.classList.add("show");
     }
 
-    // === Listener do botão de curtir ===
+    // === BOTÃO DE CURTIR ===
     document.addEventListener("click", async (e) => {
       if (e.target && e.target.id === "like-btn") {
         const popup = document.getElementById("user-popup");
@@ -137,42 +139,46 @@ ${user.city}`);
             body: JSON.stringify({ user_id: likedUserId }),
           });
 
-         if (response.ok) {
+          if (response.ok) {
             const data = await response.json();
+
             if (data.status === "already_liked") {
-              alert("Você já curtiu este usuário. Não é possível curtir duas vezes."); // 🎯 CORREÇÃO 2: Trata o 'already_liked'
-            } else if (data.message === "💘 Deu match!") {
+              alert("Você já curtiu este usuário.");
+              return;
+            }
+
+            if (data.message === "💘 Deu match!") {
               alert("🎉 MATCH! Vocês se curtiram!");
-              
-              // **NOVO: Redireciona para a tela de chat do Match**
+
               if (data.match_id) {
                 window.location.href = `/matches/${data.match_id}`;
               }
-              
-            } else {
-              alert("❤️ Curtida enviada!");
+
+              return;
             }
+
+            alert("❤️ Curtida enviada!");
           } else {
             const data = await response.json().catch(() => ({}));
-            alert(`Erro ao curtir: ${data.error || response.statusText}`);
+            alert(`Erro: ${data.error || response.statusText}`);
           }
         } catch (error) {
           console.error("Erro ao enviar curtida:", error);
-          alert("⚠️ Falha ao enviar curtida. Verifique o console.");
+          alert("⚠️ Falha ao enviar curtida.");
         }
       }
     });
   });
 });
 
-// Estilo do marcador com avatar circular (mantido no JS para compatibilidade com o Leaflet.divIcon)
+// Estilo do marcador com avatar circular
 const style = document.createElement("style");
 style.textContent = `
   .marker-avatar {
     width: 40px;
     height: 40px;
     border-radius: 50%;
-    border: 3px solid #d4af37; /* Cor primária */
+    border: 3px solid #d4af37;
     object-fit: cover;
   }
 `;
