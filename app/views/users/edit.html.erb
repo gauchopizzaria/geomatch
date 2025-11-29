@@ -5,13 +5,9 @@
 
     <%= form_with model: @user, url: profile_path, method: :patch, multipart: true, data: { turbo: false } do |f| %>
 
-      <!-- Avatar -->
+      <!-- Avatar (com fallback) -->
       <div class="profile-avatar-box">
-        <% if @user.avatar.attached? %>
-          <%= image_tag @user.avatar, id: "avatar-preview" %>
-        <% else %>
-          <img id="avatar-preview" src="https://via.placeholder.com/120" />
-        <% end %>
+        <%= image_tag @user.avatar_or_default, id: "avatar-preview" %>
       </div>
 
       <label class="avatar-button">
