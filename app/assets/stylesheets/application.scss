@@ -955,92 +955,93 @@ html, body {
 
 .authenticated-layout {
   display: flex;
+  flex-direction: column;
   min-height: 100vh;
-  background-color: var(--color-background);
+  background-color: #000000; /* Fundo preto para o app */
 }
 
 .sidebar {
-  width: 80px; 
-  background-color: var(--color-primary); 
-  color: var(--color-dark); /* Atenção: No modo dark, isso será bege/claro sobre dourado. */
-  padding: 1rem 0;
+  width: 100%;
+  height: 70px;
+  background-color: #111418; /* Cor escura similar ao Tinder */
+  color: #ffffff;
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   align-items: center;
-  box-shadow: 2px 0 10px rgba(0, 0, 0, 0.1);
-  transition: width 0.3s ease;
-  position: sticky;
-  top: 0;
-  height: 100vh;
-  overflow-y: auto;
-
-  /* Efeito de expansão ao passar o mouse (opcional) */
-  &:hover {
-    width: 200px;
-  }
-
-  .sidebar-header {
-    margin-bottom: 2rem;
-    .brand-logo-small {
-      height: 30px;
-      width: auto;
-    }
-  }
+  justify-content: center;
+  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  z-index: 1000;
+  padding: 0;
 
   .sidebar-nav {
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
     width: 100%;
-    gap: 0.5rem;
+    max-width: 600px;
+    justify-content: space-around;
+    align-items: center;
+    height: 100%;
 
     .nav-item {
       display: flex;
+      flex-direction: column;
       align-items: center;
-      padding: 0.8rem 1rem;
-      color: var(--color-dark);
+      justify-content: center;
+      color: #ffffff;
       text-decoration: none;
-      font-weight: 600;
-      transition: background-color 0.2s ease, color 0.2s ease;
-      white-space: nowrap;
-      overflow: hidden;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+      flex: 1;
+      height: 100%;
+      background: transparent;
+      border: none;
+      padding: 0;
 
       i {
-        font-size: 1.5rem;
-        width: 40px; 
-        text-align: center;
+        font-size: 1.4rem;
+        margin-bottom: 4px;
+        color: #ffffff; /* Ícones brancos */
       }
 
       .nav-text {
-        margin-left: 1rem;
-        opacity: 0;
-        transition: opacity 0.3s ease;
+        font-size: 0.65rem; /* Texto menor */
+        font-weight: 500;
+        opacity: 0.8;
       }
 
       &:hover {
-        background-color: rgba(0, 0, 0, 0.1); /* Fallback simples para hover */
-        color: var(--color-section-light);
+        opacity: 1;
+        transform: scale(1.05);
+      }
+
+      &.active {
+        i {
+          color: var(--color-primary); /* Destaque para o item ativo */
+        }
+        .nav-text {
+          opacity: 1;
+          color: var(--color-primary);
+        }
       }
     }
-  }
-
-  /* Mostra o texto ao expandir a sidebar */
-  &:hover .sidebar-nav .nav-item .nav-text {
-    opacity: 1;
   }
 
   .notification-icon {
     position: relative;
     .badge {
       position: absolute;
-      top: 5px;
-      right: 5px;
-      background-color: var(--color-accent);
-      color: var(--color-section-light);
+      top: 8px;
+      right: 25%;
+      background-color: #ff3b5c; /* Vermelho Tinder */
+      color: #ffffff;
       border-radius: 50%;
-      padding: 2px 6px;
-      font-size: 0.7rem;
+      padding: 2px 5px;
+      font-size: 0.6rem;
       line-height: 1;
       font-weight: 700;
+      border: 2px solid #111418;
       &.hidden {
         display: none;
       }
@@ -1049,76 +1050,17 @@ html, body {
 }
 
 .site-content {
-  flex-grow: 1;
-  padding: 2rem; 
+  flex: 1;
+  padding-bottom: 80px; /* Espaço para a bottom nav */
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
   background-color: var(--color-background);
 }
 
 /* Ajuste para telas menores (mobile) */
 @media (max-width: 768px) {
-  .authenticated-layout {
-    flex-direction: column; 
-    padding-bottom: 70px; 
-  }
-
-  .sidebar {
-    width: 100%;
-    height: auto;
-    min-height: 0; 
-    max-height: 70px; 
-    flex-direction: row;
-    justify-content: space-around;
-    padding: 0.5rem 0;
-    position: fixed;
-    bottom: 0;
-    z-index: 1000;
-    box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.1);
-    background-color: var(--color-section-light);
-    color: var(--color-primary);
-
-    &:hover {
-      width: 100%;
-    }
-
-    .sidebar-header {
-      display: none;
-    }
-
-    .sidebar-nav {
-      flex-direction: row;
-      justify-content: space-around;
-      gap: 0;
-
-      .nav-item {
-        padding: 0.5rem;
-        flex-direction: column;
-        text-align: center;
-        color: var(--color-primary);
-
-        i {
-          width: auto;
-          margin-bottom: 0.2rem;
-        }
-
-        .nav-text {
-          opacity: 1;
-          margin-left: 0;
-          font-size: 0.7rem;
-        }
-      }
-    }
-  }
-
   .site-content {
-    flex-grow: 1;
-    padding: 1rem;
-    margin-bottom: 0; 
-    padding-top: 1rem; 
-    min-height: calc(100vh - 70px);
-    background-color: var(--color-background);
-    width: 100%;
-    overflow-y: auto;
-    position: relative; 
-    z-index: 1; 
+    padding: 0; /* Remove padding lateral no mobile para preencher a tela */
   }
 }

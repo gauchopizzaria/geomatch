@@ -1,60 +1,44 @@
 <aside class="sidebar">
-  <div class="sidebar-header">
-    <!-- Logo ou nome do app -->
-    <%= link_to root_path, class: "brand" do %>
-      <!-- Substitua por um ícone ou logo menor -->
-      <img src="<%= asset_path('logo-geomatch.svg') %>" alt="GeoMatch" class="brand-logo-small" />
-    <% end %>
-  </div>
-
   <nav class="sidebar-nav">
     <% if user_signed_in? %>
-      <!-- Link para Descobrir/Mapa -->
-      <%= link_to discover_path, class: "nav-item" do %>
-        <i class="fas fa-map-marker-alt"></i> <!-- Ícone de Mapa/Localização -->
-        <span class="nav-text">Descobrir</span>
+      <!-- Link para Lead/Swipe (Início) -->
+      <%= link_to lead_path, class: "nav-item #{'active' if current_page?(lead_path)}" do %>
+        <i class="fas fa-fire"></i>
+        <span class="nav-text">Início</span>
       <% end %>
 
-      <!-- Link para Lead/Swipe -->
-      <%= link_to lead_path, class: "nav-item" do %>
-        <i class="fas fa-fire"></i> <!-- Ícone de Fogo/Swipe -->
-        <span class="nav-text">Lead</span>
+      <!-- Link para Descobrir/Explorar -->
+      <%= link_to discover_path, class: "nav-item #{'active' if current_page?(discover_path)}" do %>
+        <i class="fas fa-compass"></i>
+        <span class="nav-text">Explorar</span>
       <% end %>
 
-      <!-- Link para Matches/Mensagens -->
-      <%= link_to matches_path, class: "nav-item" do %>
-        <i class="fas fa-comment-dots"></i> <!-- Ícone de Mensagens -->
-        <span class="nav-text">Matches</span>
+      <!-- Link para Matches/Curtidas -->
+      <%= link_to matches_path, class: "nav-item #{'active' if current_page?(matches_path)}" do %>
+        <i class="fas fa-comment"></i>
+        <span class="nav-text">Chat</span>
       <% end %>
 
-      <!-- Link para Notificações -->
-      <%= link_to notifications_path, class: "nav-item notification-icon" do %>
-        <i class="fas fa-bell"></i> <!-- Ícone de Sino -->
-        <span class="nav-text">Notificações</span>
-        <!-- Badge de notificação (reaproveitando a lógica existente) -->
+      <!-- Link para Chat -->
+      <%= link_to notifications_path, class: "nav-item notification-icon #{'active' if current_page?(notifications_path)}" do %>
+         <i class="fas fa-heart"></i>
+        <span class="nav-text">Curtidas</span>
         <span id="unread-notifications-count" class="badge <%= 'hidden' if current_user.notifications.unread.count == 0 %>">
           <%= current_user.notifications.unread.count %>
         </span>
       <% end %>
 
       <!-- Link para Meu Perfil -->
-      <%= link_to edit_profile_path, class: "nav-item" do %>
-        <i class="fas fa-user"></i> <!-- Ícone de Usuário/Perfil -->
-        <span class="nav-text">Meu Perfil</span>
+      <%= link_to edit_profile_path, class: "nav-item #{'active' if current_page?(edit_profile_path)}" do %>
+        <i class="fas fa-user"></i>
+        <span class="nav-text">Perfil</span>
       <% end %>
 
       <!-- Botão de Alternância de Tema (Modo Escuro/Claro) -->
       <button id="theme-toggle" class="nav-item theme-toggle-btn" title="Alternar Modo Escuro/Claro">
-        <!-- O ícone será atualizado pelo JavaScript para mostrar o sol ou a lua -->
         <i class="fas fa-moon"></i> 
-        <span class="nav-text">Modo Escuro</span>
+        <span class="nav-text">Tema</span>
       </button>
-
-      <!-- Link para Sair -->
-      <%= button_to destroy_user_session_path, method: :delete, class: "nav-item logout-btn", data: { turbo_confirm: "Deseja realmente sair?" } do %>
-        <i class="fas fa-sign-out-alt"></i> <!-- Ícone de Sair -->
-        <span class="nav-text">Sair</span>
-      <% end %>
     <% end %>
   </nav>
 </aside>
