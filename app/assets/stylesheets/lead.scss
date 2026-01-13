@@ -1,440 +1,213 @@
 /* ========================================
-   LEAD PAGE - SWIPE CARD STYLES
-   Refatorado para Variáveis de Tema
+   TINDER STYLE - INTEGRADO COM SIDEBAR
    ======================================== */
 
-/* ========================================
-   HELPER CLASSES
-   ======================================== */
-
-.no-drag {
-  -webkit-user-drag: none;
-  -khtml-user-drag: none;
-  -moz-user-drag: none;
-  -o-user-drag: none;
-  user-drag: none;
-  pointer-events: none; 
-}
-
-/* ========================================
-   CONTAINER & LAYOUT
-   ======================================== */
-
-.lead-container {
-  max-width: 500px;
-  margin: 0 auto;
-  padding: 20px;
-  min-height: 100vh;
+/* Container Principal - Ajustado para não cobrir a sidebar */
+.tinder-screen-wrapper {
   display: flex;
   flex-direction: column;
-  background: var(--color-background);
-  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background: #000;
+  height: calc(100vh - 70px); /* Subtrai a altura da sidebar inferior no mobile */
+  width: 100%;
+  position: relative;
+  overflow: hidden;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+
+  /* Ajuste para Desktop (quando a sidebar é lateral) */
+  @media (min-width: 769px) {
+    height: 100vh;
+    /* Se sua sidebar lateral tiver uma largura fixa, o conteúdo principal já deve respeitar isso via layout.erb */
+  }
 }
 
-/* ========================================
-   HEADER
-   ======================================== */
-
-.lead-header {
-  text-align: center;
-  margin-bottom: 30px;
-  animation: slideDown 0.6s ease-out;
+/* Barra Superior (Logo e Filtros) */
+.tinder-top-nav {
+  height: 60px;
+  min-height: 60px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 20px;
+  background: #000;
+  z-index: 100;
 }
 
-.lead-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: var(--color-text);
-  margin: 0 0 8px 0;
-  letter-spacing: -0.5px;
+.tinder-logo-img {
+  height: 30px;
+  filter: brightness(0) invert(1);
 }
 
-.lead-subtitle {
-  font-size: 14px;
-  color: var(--color-text-secondary);
-  margin: 0;
-  font-weight: 500;
+.nav-actions {
+  display: flex;
+  gap: 15px;
+  color: #505965;
 }
 
-/* ========================================
-   CARD WRAPPER
-   ======================================== */
+.nav-icon-btn {
+  background: none;
+  border: none;
+  color: inherit;
+  cursor: pointer;
+  padding: 5px;
+  display: flex;
+  align-items: center;
+  
+  &.purple-flash { color: #a65cf4; }
+}
 
-.lead-card-wrapper {
+/* Área do Conteúdo (Card + Botões) */
+.tinder-main-content {
   flex: 1;
   display: flex;
   flex-direction: column;
-  background: var(--color-section-light);
-  border-radius: 20px;
-  box-shadow: var(--shadow-lg);
+  padding: 0 10px 10px 10px;
+  position: relative;
   overflow: hidden;
-  animation: slideUp 0.6s ease-out;
-  
-  /* Configurações críticas para Swipe */
+}
+
+/* Card Wrapper - Ocupa o máximo de espaço disponível */
+.lead-card-wrapper {
+  flex: 1;
+  position: relative;
+  border-radius: 12px;
+  overflow: hidden;
+  background: #1a1a1a;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   touch-action: none;
   user-select: none;
-  position: relative;
   will-change: transform, opacity;
   cursor: grab;
   z-index: 10;
-  border: 1px solid var(--color-border);
+
+  &:active { cursor: grabbing; }
 }
 
-.lead-card-wrapper:active {
-  cursor: grabbing;
-}
-
-/* ========================================
-   GALLERY STYLES
-   ======================================== */
-
+/* Galeria de Fotos */
 .lead-gallery {
-  position: relative;
+  height: 100%;
   width: 100%;
-  flex: 1;
-  overflow: hidden;
-  background: var(--color-section-gray);
-  display: flex;
-  flex-direction: column;
-}
-
-.gallery-container {
   position: relative;
-  width: 100%;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
 }
 
 .gallery-slides {
-  position: relative;
+  height: 100%;
   width: 100%;
-  flex: 1;
 }
 
 .gallery-slide {
   position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
+  top: 0; left: 0; width: 100%; height: 100%;
   opacity: 0;
-  transition: opacity 0.4s ease-in-out;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.gallery-slide.active {
-  opacity: 1;
-  pointer-events: auto;
-  z-index: 2;
+  transition: opacity 0.3s ease;
+  
+  &.active { opacity: 1; }
 }
 
 .gallery-image {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  display: block;
-  pointer-events: none !important; 
+  pointer-events: none;
 }
 
-.gallery-overlay {
+.gallery-gradient-overlay {
   position: absolute;
   bottom: 0; left: 0; right: 0;
-  height: 65%;
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.4) 50%, transparent 100%);
-  pointer-events: none !important;
-  z-index: 10;
+  height: 40%;
+  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 40%, transparent 100%);
+  pointer-events: none;
 }
 
-/* ========================================
-   INDICATORS (DOTS)
-   ======================================== */
-
-.gallery-indicators {
+/* Barra de Progresso Superior */
+.tinder-progress-bar {
   position: absolute;
-  top: 16px;
-  left: 50%;
-  transform: translateX(-50%);
-  display: flex;
-  gap: 8px;
-  z-index: 100;
-  padding: 8px 16px;
-  background: rgba(0, 0, 0, 0.3);
-  border-radius: 20px;
-  backdrop-filter: blur(4px);
-  pointer-events: auto !important;
+  top: 10px; left: 10px; right: 10px;
+  display: flex; gap: 6px; z-index: 50;
 }
 
-.indicator {
-  width: 32px;
-  height: 4px;
-  background: rgba(255, 255, 255, 0.4);
-  border-radius: 2px;
-  transition: 0.3s;
-  cursor: pointer;
+.progress-segment {
+  flex: 1; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px;
+  &.active { background: #fff; }
 }
 
-.indicator.active {
-  background: var(--color-primary); // Dourado indicando progresso
+/* Navegação por Toque */
+.photo-nav-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 80%;
+  display: flex; z-index: 40;
 }
+.nav-tap-area { flex: 1; height: 100%; }
 
-/* ========================================
-   NAVIGATION (ARROWS)
-   ======================================== */
-
-.gallery-nav {
+/* Informações do Usuário Sobrepostas */
+.lead-user-details {
   position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
-  z-index: 100;
-  background: rgba(0, 0, 0, 0.3);
-  border: none;
+  bottom: 0; left: 0; right: 0;
+  padding: 20px;
   color: white;
-  width: 48px; height: 48px;
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: 0.2s;
-  backdrop-filter: blur(4px);
-  pointer-events: auto !important;
-
-  &:hover {
-    background: rgba(0, 0, 0, 0.6);
-    transform: translateY(-50%) scale(1.1);
-  }
-}
-
-.gallery-prev { left: 16px; }
-.gallery-next { right: 16px; }
-
-/* ========================================
-   SWIPE INDICATOR (labels "LIKE" / "NOPE")
-   ======================================== */
-
-.swipe-indicator {
-  position: absolute;
-  top: 0; left: 0;
-  width: 100%; height: 100%;
-  pointer-events: none !important;
-  z-index: 25;
-  opacity: 0;
-  transition: opacity 0.2s ease-out;
-}
-
-.swipe-left-label,
-.swipe-right-label {
-  position: absolute;
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 8px;
-  opacity: 0;
-  transition: opacity 0.2s ease-out;
+  justify-content: space-between;
+  align-items: flex-end;
+  z-index: 60;
+  pointer-events: none;
 }
 
-.swipe-left-label { left: 40px; color: var(--color-accent); } // Rosa para o "Não"
-.swipe-right-label { right: 40px; color: var(--color-primary); } // Dourado para o "Sim"
+.user-main-info { pointer-events: auto; }
 
-.swipe-indicator.show-left .swipe-left-label { opacity: 1; }
-.swipe-indicator.show-right .swipe-right-label { opacity: 1; }
-
-.swipe-icon {
-  font-size: 64px;
-  filter: drop-shadow(0 4px 8px rgba(0, 0, 0, 0.3));
-}
-
-.swipe-text {
-  font-size: 18px;
-  font-weight: 700;
-  text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-  text-transform: uppercase;
-}
-
-/* ========================================
-   USER INFO SECTION (Sobreposta à Galeria)
-   ======================================== */
-
-.lead-info {
-  padding: 24px;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-  color: #ffffff; // Texto sobre o overlay escuro
-}
-
-.user-name {
-  font-size: 28px;
-  font-weight: 700;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-  margin: 0;
+.user-name-age {
+  font-size: 28px; font-weight: 700; margin: 0;
   display: flex; align-items: center; gap: 8px;
+  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
 }
 
-.verified-badge {
-  display: inline-flex; align-items: center; justify-content: center;
-  width: 24px; height: 24px;
-  background: var(--color-primary);
-  color: #121212;
+.user-location-info {
+  font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 6px;
+  margin-top: 4px; opacity: 0.9; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
+}
+
+/* Botões de Ação Inferiores */
+.tinder-actions-footer {
+  height: 100px;
+  min-height: 100px;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+  padding-bottom: 10px;
+  z-index: 100;
+}
+
+.tinder-btn {
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.1);
   border-radius: 50%;
-  font-size: 14px;
-}
-
-.user-location {
-  display: flex; align-items: center; gap: 6px;
-  font-size: 16px;
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
-}
-
-.user-bio {
-  padding: 16px;
-  background: rgba(0, 0, 0, 0.4);
-  border-radius: 12px;
-  border-left: 4px solid var(--color-primary);
-  p { margin: 0; font-size: 14px; line-height: 1.6; }
-}
-
-.hobby-badge {
-  display: inline-block;
-  padding: 6px 12px;
-  background: var(--color-primary);
-  color: #121212;
-  border-radius: 20px;
-  font-size: 12px;
-  font-weight: 600;
-}
-
-.user-meta {
-  display: flex; flex-direction: column; gap: 12px;
-  padding-top: 12px;
-  border-top: 1px solid rgba(255, 255, 255, 0.2);
-  .meta-item { display: flex; justify-content: space-between; font-size: 14px; }
-}
-
-/* ========================================
-   ACTION BUTTONS
-   ======================================== */
-
-.lead-content-overlay {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  z-index: 30;
-  display: flex; flex-direction: column;
-  pointer-events: none !important;
-}
-
-.lead-actions-desktop {
-  display: flex; gap: 16px; padding: 20px;
-  pointer-events: auto !important;
-}
-
-.action-button {
-  flex: 1; padding: 14px 20px;
-  border: none; border-radius: 12px;
-  font-size: 16px; font-weight: 600;
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center; gap: 8px;
-  transition: 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-.reject-button {
-  background: var(--color-accent); // Rosa/Vermelho
-  color: white;
-  &:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(255, 59, 92, 0.3); }
-}
-
-.like-button {
-  background: var(--color-primary); // Dourado
-  color: #121212;
-  &:hover { transform: translateY(-2px); box-shadow: 0 8px 16px rgba(212, 175, 55, 0.3); }
-}
-
-/* ========================================
-   MATCH POPUP
-   ======================================== */
-
-.match-popup {
-  position: fixed;
-  top: 0; left: 0; width: 100%; height: 100%;
   display: flex; align-items: center; justify-content: center;
-  z-index: 1000;
-  animation: fadeIn 0.3s ease-out;
+  cursor: pointer;
+  transition: transform 0.1s ease;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  
+  &:active { transform: scale(0.9); }
 }
 
-.match-overlay {
-  position: absolute;
-  width: 100%; height: 100%;
-  background: rgba(0, 0, 0, 0.8);
-  backdrop-filter: blur(8px);
-}
+.btn-undo, .btn-boost, .btn-superlike { width: 45px; height: 45px; }
+.btn-nope, .btn-like { width: 65px; height: 65px; }
 
-.match-popup-content {
-  position: relative;
-  background: var(--color-section-light);
-  border-radius: 20px;
-  padding: 40px 30px;
-  text-align: center;
-  max-width: 90%;
-  box-shadow: var(--shadow-lg);
-  border: 1px solid var(--color-border);
-  animation: popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
-}
+/* Ajuste para botões do Rails */
+.tinder-actions-footer form { margin: 0; display: flex; }
 
-.match-title {
-  font-size: 32px;
-  font-weight: 700;
-  color: var(--color-primary);
-  margin-bottom: 12px;
-}
-
-.btn-match.btn-primary {
-  background: var(--color-primary);
-  color: #121212;
-  text-decoration: none;
-  padding: 12px 24px;
-  border-radius: 10px;
-  display: block;
-  font-weight: 700;
-}
-
-/* ========================================
-   EMPTY STATE
-   ======================================== */
-
+/* Empty State */
 .lead-empty {
   flex: 1;
   display: flex; flex-direction: column;
   align-items: center; justify-content: center;
-  text-align: center; padding: 40px 20px;
-  background: var(--color-section-light);
-  border-radius: 20px;
-  border: 1px solid var(--color-border);
+  color: white; text-align: center;
 }
 
-.empty-icon {
-  width: 120px; height: 120px;
-  background: var(--color-section-gray);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  margin-bottom: 24px;
-  color: var(--color-text-secondary);
+/* GARANTE QUE A SIDEBAR FIQUE VISÍVEL */
+.sidebar {
+  z-index: 2000 !important; /* Força a sidebar a ficar acima de tudo */
 }
 
-/* ========================================
-   ANIMATIONS & RESPONSIVE
-   ======================================== */
-
-@keyframes slideDown { from { opacity: 0; transform: translateY(-20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
-@keyframes popIn { from { opacity: 0; transform: scale(0.8); } to { opacity: 1; transform: scale(1); } }
-@keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-@media (max-width: 480px) {
-  .lead-container { padding: 12px; }
-  .user-name { font-size: 22px; }
-  .button-text { display: none; }
-  .action-button { padding: 14px; }
+/* Ajuste do layout principal para não ter scroll duplo */
+.site-content {
+  padding: 0 !important;
+  margin: 0 !important;
+  overflow: hidden !important;
 }
-
-.lead-info::-webkit-scrollbar { width: 6px; }
-.lead-info::-webkit-scrollbar-thumb { background: var(--color-primary); border-radius: 3px; }

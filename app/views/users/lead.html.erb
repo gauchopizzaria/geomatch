@@ -1,15 +1,26 @@
-<div class="container lead-container" data-controller="lead-swipe">
+<div class="tinder-screen-wrapper" data-controller="lead-swipe">
+  
+  <!-- Barra Superior (Logo e Filtros) -->
+  <div class="tinder-top-nav">
+    <div class="nav-item">
+      <%= image_tag "logo-geomatch.svg", class: "tinder-logo-img", alt: "GeoMatch" %>
+    </div>
+    <div class="nav-actions">
+      <button class="nav-icon-btn">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M10 18h4v-2h-4v2zM3 6v2h18V6H3zm3 7h12v-2H6v2z"/></svg>
+      </button>
+      <button class="nav-icon-btn purple-flash">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M7 2v11h3v9l7-12h-4l4-8z"/></svg>
+      </button>
+    </div>
+  </div>
 
   <% if @match %>
     <div class="match-popup" data-match-popup>
       <div class="match-popup-content">
-        <div class="match-animation">
-          <span class="match-icon">💕</span>
-        </div>
+        <div class="match-animation"><span class="match-icon">💕</span></div>
         <h2 class="match-title">Deu Match!</h2>
         <p class="match-subtitle">Você e <strong><%= @next_user.display_name %></strong> curtiram um ao outro!</p>
-        <p class="match-description">Deseja iniciar uma conversa agora?</p>
-
         <div class="match-actions">
           <%= link_to "💬 Conversar Agora", match_path(@match), class: "btn btn-match btn-primary" %>
           <%= link_to "➡ Continuar Vendo", lead_path, class: "btn btn-match btn-secondary" %>
@@ -19,187 +30,74 @@
     </div>
   <% end %>
 
-  <div class="lead-header">
-    <h1 class="lead-title">Descubra Pessoas Próximas</h1>
-    <p class="lead-subtitle">Deslize para rejeitar ou curtir</p>
-  </div>
-
-  <% if @next_user %>
-    <div
-      class="lead-card-wrapper"
-      data-lead-swipe-target="card"
-      data-user-id="<%= @next_user.id %>"
-    >
-      
-      <div class="lead-gallery">
-        <div class="gallery-container">
-          <% album_photos = @next_user.album_photos.attached? ? @next_user.album_photos : [] %>
-          <% avatar = @next_user.avatar.attached? %>
-          
-          <% if album_photos.any? || avatar %>
+  <div class="tinder-main-content">
+    <% if @next_user %>
+      <div class="lead-card-wrapper" data-lead-swipe-target="card" data-user-id="<%= @next_user.id %>">
+        
+        <div class="lead-gallery">
+          <!-- Barra de Progresso Superior -->
+          <div class="tinder-progress-bar">
+            <% album_photos = @next_user.album_photos.attached? ? @next_user.album_photos : [] %>
+            <% avatar = @next_user.avatar.attached? %>
             <% photos = [] %>
-            <% if avatar %>
-              <% photos << { url: rails_blob_url(@next_user.avatar), type: 'avatar' } %>
-            <% end %>
-            <% album_photos.each do |photo| %>
-              <% photos << { url: rails_blob_url(photo), type: 'album' } %>
-            <% end %>
+            <% photos << { url: rails_blob_url(@next_user.avatar) } if avatar %>
+            <% album_photos.each { |p| photos << { url: rails_blob_url(p) } } %>
 
-            <div class="gallery-slides">
-              <% photos.each_with_index do |photo, index| %>
-                <div class="gallery-slide <%= 'active' if index == 0 %>" data-lead-swipe-target="slide">
-                  <img src="<%= photo[:url] %>" 
-                       alt="Foto <%= index + 1 %>" 
-                       class="gallery-image no-drag" 
-                       draggable="false" 
-                       ondragstart="return false;"
-                       loading="lazy">
-                  <div class="gallery-overlay"></div>
-                </div>
-              <% end %>
-            </div>
-
-            <div class="gallery-indicators">
-              <% photos.each_with_index do |_, index| %>
-                <div 
-                  class="indicator <%= 'active' if index == 0 %>" 
-                  data-lead-swipe-target="indicator"
-                  data-action="click->lead-swipe#goToSlide"
-                  data-index="<%= index %>"
-                ></div>
-              <% end %>
-            </div>
-
-            <% if photos.length > 1 %>
-              <button 
-                type="button"
-                class="gallery-nav gallery-prev" 
-                data-action="click->lead-swipe#prevSlide" 
-                aria-label="Foto anterior"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="15 18 9 12 15 6"></polyline>
-                </svg>
-              </button>
-              <button 
-                type="button"
-                class="gallery-nav gallery-next" 
-                data-action="click->lead-swipe#nextSlide"
-                aria-label="Próxima foto"
-              >
-                <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <polyline points="9 18 15 12 9 6"></polyline>
-                </svg>
-              </button>
+            <% photos.each_with_index do |_, index| %>
+              <div class="progress-segment <%= 'active' if index == 0 %>" data-lead-swipe-target="indicator"></div>
             <% end %>
-          <% else %>
-            <div class="gallery-fallback">
-              <div class="fallback-avatar">
-                <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-                  <circle cx="12" cy="12" r="10"></circle>
-                  <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-                  <line x1="9" y1="9" x2="9.01" y2="9"></line>
-                  <line x1="15" y1="9" x2="15.01" y2="9"></line>
-                </svg>
+          </div>
+
+          <div class="gallery-slides">
+            <% photos.each_with_index do |photo, index| %>
+              <div class="gallery-slide <%= 'active' if index == 0 %>" data-lead-swipe-target="slide">
+                <img src="<%= photo[:url] %>" class="gallery-image no-drag">
+                <div class="gallery-gradient-overlay"></div>
               </div>
-              <p>Sem fotos disponíveis</p>
-            </div>
-          <% end %>
-        </div>
-
-        <div class="swipe-indicator" data-lead-swipe-target="swipeIndicator">
-          <div class="swipe-left-label">
-            <span class="swipe-icon">❌</span>
-            <span class="swipe-text">Rejeitar</span>
+            <% end %>
           </div>
-          <div class="swipe-right-label">
-            <span class="swipe-icon">❤️</span>
-            <span class="swipe-text">Curtir</span>
-          </div>
-        </div>
 
-        <div class="lead-content-overlay">
-          <div class="lead-info">
-            <div class="user-header">
-              <h2 class="user-name">
-                <%= @next_user.display_name %>
+          <!-- Áreas de clique para navegar nas fotos -->
+          <div class="photo-nav-overlay">
+            <div class="nav-tap-area left" data-action="click->lead-swipe#prevSlide"></div>
+            <div class="nav-tap-area right" data-action="click->lead-swipe#nextSlide"></div>
+          </div>
+
+          <!-- Informações do Usuário -->
+          <div class="lead-user-details">
+            <div class="user-main-info">
+              <h2 class="user-name-age">
+                <%= @next_user.display_name %>, <%= @next_user.age if @next_user.age.present? %>
                 <% if @next_user.respond_to?(:verified) && @next_user.verified %>
-                  <span class="verified-badge" title="Perfil verificado">✓</span>
+                  <span class="tinder-verified-icon">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="#209cee"><path d="M23,12L20.56,9.22L20.9,5.54L17.29,4.72L15.4,1.54L12,3L8.6,1.54L6.71,4.72L3.1,5.53L3.44,9.21L1,12L3.44,14.78L3.1,18.47L6.71,19.29L8.6,22.47L12,21L15.4,22.46L17.29,19.28L20.9,18.46L20.56,14.78L23,12M10,17L6,13L7.41,11.59L10,14.17L16.59,7.58L18,9L10,17Z"></path></svg>
+                  </span>
                 <% end %>
               </h2>
-              <p class="user-location">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                  <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
-                  <circle cx="12" cy="10" r="3"></circle>
-                </svg>
-                <% if @distance %>
-                  <strong><%= @distance %> km</strong> de você
-                <% end %>
-              </p>
-            </div>
-
-            <% if @next_user.bio.present? %>
-              <div class="user-bio">
-                <p><%= @next_user.bio %></p>
+              <div class="user-location-info">
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path><circle cx="12" cy="10" r="3"></circle></svg>
+                <span>A <%= @distance || 1 %> km de distância</span>
               </div>
-            <% end %>
-
-            <% if @next_user.hobbies_list.any? %>
-              <div class="user-hobbies">
-                <h6 class="hobbies-title">Interesses</h6>
-                <div class="hobbies-list">
-                  <% @next_user.hobbies_list.each do |hobby| %>
-                    <span class="hobby-badge"><%= hobby %></span>
-                  <% end %>
-                </div>
-              </div>
-            <% end %>
-
-            <div class="user-meta">
-              <% if @next_user.age.present? %>
-                <div class="meta-item">
-                  <span class="meta-label">Idade:</span>
-                  <span class="meta-value"><%= @next_user.age %> anos</span>
-                </div>
-              <% end %>
-              <% if @next_user.city.present? %>
-                <div class="meta-item">
-                  <span class="meta-label">Cidade:</span>
-                  <span class="meta-value"><%= @next_user.city %></span>
-                </div>
-              <% end %>
             </div>
-          </div>
-
-          <div class="lead-actions-desktop">
-            <%= button_to reject_user_path(user_id: @next_user.id), method: :post, class: "action-button reject-button", title: "Rejeitar (ou deslize para esquerda)" do %>
-              <span class="button-icon">❌</span>
-              <span class="button-text">Rejeitar</span>
-            <% end %>
-
-            <%= button_to likes_path(user_id: @next_user.id), method: :post, class: "action-button like-button", title: "Curtir (ou deslize para direita)" do %>
-              <span class="button-icon">❤️</span>
-              <span class="button-text">Curtir</span>
-            <% end %>
           </div>
         </div>
       </div>
-    </div>
 
-  <% else %>
-    <div class="lead-empty">
-      <div class="empty-icon">
-        <svg width="80" height="80" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M8 14s1.5 2 4 2 4-2 4-2"></path>
-          <line x1="9" y1="9" x2="9.01" y2="9"></line>
-          <line x1="15" y1="9" x2="15.01" y2="9"></line>
-        </svg>
+      <!-- Botões de Ação Inferiores -->
+      <div class="tinder-actions-footer">
+        <button class="tinder-btn btn-undo"><svg viewBox="0 0 24 24" width="22" height="22" fill="#f5d142"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button>
+        <%= button_to reject_user_path(user_id: @next_user.id), method: :post, class: "tinder-btn btn-nope" do %><svg viewBox="0 0 24 24" width="30" height="30" fill="#fd5068"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg><% end %>
+        <button class="tinder-btn btn-superlike"><svg viewBox="0 0 24 24" width="22" height="22" fill="#2db1ff"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z"/></svg></button>
+        <%= button_to likes_path(user_id: @next_user.id), method: :post, class: "tinder-btn btn-like" do %><svg viewBox="0 0 24 24" width="30" height="30" fill="#1be4a1"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg><% end %>
+        <button class="tinder-btn btn-boost"><svg viewBox="0 0 24 24" width="22" height="22" fill="#a65cf4"><path d="M11.5 20l4.86-7.1a.49.49 0 0 0-.4-.78h-2.93l1.81-8.1a.5.5 0 0 0-.85-.43L9.14 10.7a.49.49 0 0 0 .4.78h2.93l-1.81 8.1a.5.5 0 0 0 .84.42z"/></svg></button>
       </div>
-      <h3 class="empty-title">Sem mais usuários</h3>
-      <p class="empty-message">Não há mais usuários elegíveis no momento.</p>
-      <p class="empty-submessage">Tente novamente mais tarde ou ajuste seus filtros.</p>
-      <%= link_to "← Voltar", discover_path, class: "btn btn-outline-primary mt-3" %>
-    </div>
-  <% end %>
+
+    <% else %>
+      <div class="lead-empty">
+        <div class="empty-icon">🔍</div>
+        <h3 class="empty-title">Sem mais usuários</h3>
+        <%= link_to "← Voltar", discover_path, class: "btn btn-outline-primary mt-3" %>
+      </div>
+    <% end %>
+  </div>
 </div>
