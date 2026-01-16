@@ -950,112 +950,135 @@ html, body {
 }
 
 // --------------------------------------------------
-// NOVO LAYOUT AUTENTICADO (SIDEBAR)
+// SIDEBAR (BOTTOM NAV STYLE) - IDÊNTICO À REFERÊNCIA
 // --------------------------------------------------
-
-.authenticated-layout {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-  background-color: #000000; /* Fundo preto para o app */
-}
 
 .sidebar {
   width: 100%;
-  height: 70px;
-  background-color: #111418; /* Cor escura similar ao Tinder */
-  color: #ffffff;
+  height: 85px; /* Altura um pouco maior para acomodar ícone + texto */
+  background-color: #0e0e10; /* Fundo bem escuro, quase preto (Dark Mode) */
   display: flex;
-  flex-direction: row;
-  align-items: center;
   justify-content: center;
-  box-shadow: 0 -2px 10px rgba(0, 0, 0, 0.3);
+  align-items: center;
   position: fixed;
   bottom: 0;
   left: 0;
   z-index: 1000;
-  padding: 0;
+  border-top: 1px solid #222; /* Borda sutil no topo para separar do conteúdo */
+  padding-bottom: 10px; /* Ajuste para iPhone X/11/12+ que tem a barra home embaixo */
 
   .sidebar-nav {
     display: flex;
-    flex-direction: row;
     width: 100%;
-    max-width: 600px;
-    justify-content: space-around;
+    max-width: 500px; /* Limita a largura em telas grandes para não espalhar demais */
+    justify-content: space-between;
     align-items: center;
-    height: 100%;
+    padding: 0 1.5rem;
+  }
 
-    .nav-item {
+  .nav-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    flex: 1;
+    transition: all 0.2s ease;
+    opacity: 0.6; /* Estado inativo: meio transparente */
+
+    // Container relativo para posicionar as badges
+    .icon-container {
+      position: relative;
       display: flex;
-      flex-direction: column;
-      align-items: center;
       justify-content: center;
+      align-items: center;
+      margin-bottom: 4px;
+    }
+
+    // Estilo da imagem SVG
+    .nav-icon {
+      width: 26px; 
+      height: 26px;
+      object-fit: contain;
+      // Filtro para garantir que o SVG fique branco se ele não for originalmente
+      filter: brightness(0) invert(1); 
+    }
+
+    // Texto abaixo do ícone
+    .nav-text {
+      font-size: 0.7rem; // 11px a 12px
+      font-weight: 500;
       color: #ffffff;
-      text-decoration: none;
-      transition: transform 0.2s ease, opacity 0.2s ease;
-      flex: 1;
-      height: 100%;
-      background: transparent;
-      border: none;
-      padding: 0;
+      font-family: 'Poppins', sans-serif;
+    }
 
-      i {
-        font-size: 1.4rem;
-        margin-bottom: 4px;
-        color: #ffffff; /* Ícones brancos */
-      }
+    // ----------------------
+    // ESTADOS (HOVER/ACTIVE)
+    // ----------------------
+    
+    &:hover {
+      opacity: 0.8;
+    }
 
+    &.active {
+      opacity: 1;
+
+      // Deixar o texto da cor Dourada/Primary
       .nav-text {
-        font-size: 0.65rem; /* Texto menor */
-        font-weight: 500;
-        opacity: 0.8;
+        font-weight: 600;
+        color: var(--color-light); // Na imagem original o texto ativo é branco forte
       }
 
-      &:hover {
-        opacity: 1;
-        transform: scale(1.05);
-      }
-
-      &.active {
-        i {
-          color: var(--color-primary); /* Destaque para o item ativo */
-        }
-        .nav-text {
-          opacity: 1;
-          color: var(--color-primary);
-        }
+      // Hack de CSS para transformar o ícone Branco em Dourado/Bege (Opcional)
+      // Se quiser manter branco, remova a linha 'filter' abaixo.
+      .nav-icon {
+         // O filtro abaixo tenta manter o branco brilhante (conforme a imagem 1)
+         // Se quiser DOURADO, use: filter: sepia(100%) saturate(300%) brightness(90%) hue-rotate(5deg);
+         filter: brightness(0) invert(1) drop-shadow(0 0 5px rgba(255, 255, 255, 0.4));
       }
     }
   }
 
-  .notification-icon {
-    position: relative;
-    .badge {
-      position: absolute;
-      top: 8px;
-      right: 25%;
-      background-color: #ff3b5c; /* Vermelho Tinder */
-      color: #ffffff;
-      border-radius: 50%;
-      padding: 2px 5px;
-      font-size: 0.6rem;
-      line-height: 1;
-      font-weight: 700;
-      border: 2px solid #111418;
-      &.hidden {
-        display: none;
-      }
-    }
+  // ----------------------
+  // BADGES (NOTIFICAÇÕES)
+  // ----------------------
+
+  // Contador numérico (Coração)
+  .badge-counter {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    background: linear-gradient(135deg, #c4a16e 0%, #d4af37 100%); /* Fundo Dourado/Bege */
+    color: #121212; /* Texto escuro para contraste */
+    border-radius: 10px; /* Formato pílula */
+    padding: 2px 6px;
+    font-size: 0.65rem;
+    font-weight: 700;
+    min-width: 18px;
+    text-align: center;
+    border: 2px solid #0e0e10; /* Borda da mesma cor do fundo da sidebar para criar o recorte */
+    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+  }
+
+  // Ponto vermelho (Mensagens)
+  .badge-dot {
+    position: absolute;
+    top: 0;
+    right: -2px;
+    width: 10px;
+    height: 10px;
+    background-color: #ff4b4b; /* Vermelho alerta */
+    border-radius: 50%;
+    border: 2px solid #0e0e10; /* Borda para recorte visual */
   }
 }
 
+// Ajuste do padding do conteúdo para não ficar escondido atrás da barra
 .site-content {
-  flex: 1;
-  padding-bottom: 80px; /* Espaço para a bottom nav */
-  width: 100%;
-  max-width: 100%;
-  margin: 0 auto;
-  background-color: var(--color-background);
+  padding-bottom: 100px;
 }
 
 /* Ajuste para telas menores (mobile) */
