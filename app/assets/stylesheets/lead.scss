@@ -1,213 +1,301 @@
-/* ========================================
-   TINDER STYLE - INTEGRADO COM SIDEBAR
-   ======================================== */
+// --------------------------------------------------
+// GEOMATCH - LEAD PREMIUM STYLE
+// --------------------------------------------------
 
-/* Container Principal - Ajustado para não cobrir a sidebar */
-.tinder-screen-wrapper {
-  display: flex;
-  flex-direction: column;
-  background: #000;
-  height: calc(100vh - 70px); /* Subtrai a altura da sidebar inferior no mobile */
-  width: 100%;
-  position: relative;
-  overflow: hidden;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-
-  /* Ajuste para Desktop (quando a sidebar é lateral) */
-  @media (min-width: 769px) {
-    height: 100vh;
-    /* Se sua sidebar lateral tiver uma largura fixa, o conteúdo principal já deve respeitar isso via layout.erb */
-  }
+:root {
+  --gold-primary: #d4af37;
+  --gold-dark: #b4941f;
+  --bg-dark: #000000;
+  --card-bg: #1a1a1a;
+  --text-white: #ffffff;
 }
 
-/* Barra Superior (Logo e Filtros) */
-.tinder-top-nav {
+.geomatch-screen-wrapper {
+  background-color: var(--bg-dark);
+  height: 100vh;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+  font-family: 'Poppins', sans-serif;
+  
+  // Ajuste para não esconder atrás da sidebar
+  padding-bottom: calc(70px + env(safe-area-inset-bottom));
+}
+
+// 1. HEADER
+.geomatch-header {
   height: 60px;
-  min-height: 60px;
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 0 20px;
-  background: #000;
-  z-index: 100;
+  z-index: 50;
+
+  .header-logo {
+    height: 28px; 
+    width: auto;
+    object-fit: contain;
+  }
+
+  .header-right {
+    display: flex;
+    gap: 15px;
+
+    .header-btn {
+      background: none;
+      border: none;
+      padding: 0;
+      cursor: pointer;
+      
+      img {
+        width: 24px;
+        height: 24px;
+      }
+    }
+  }
 }
 
-.tinder-logo-img {
-  height: 30px;
-  filter: brightness(0) invert(1);
-}
-
-.nav-actions {
-  display: flex;
-  gap: 15px;
-  color: #505965;
-}
-
-.nav-icon-btn {
-  background: none;
-  border: none;
-  color: inherit;
-  cursor: pointer;
-  padding: 5px;
-  display: flex;
-  align-items: center;
-  
-  &.purple-flash { color: #a65cf4; }
-}
-
-/* Área do Conteúdo (Card + Botões) */
-.tinder-main-content {
+// 2. MAIN AREA (CARD)
+.geomatch-main-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 0 10px 10px 10px;
+  padding: 10px 15px 0 15px; // Espaço lateral
   position: relative;
-  overflow: hidden;
+  max-width: 600px;
+  margin: 0 auto;
+  width: 100%;
 }
 
-/* Card Wrapper - Ocupa o máximo de espaço disponível */
-.lead-card-wrapper {
+.gold-card-frame {
   flex: 1;
   position: relative;
-  border-radius: 12px;
+  border: 2px solid var(--gold-primary); /* A MOLDURA DOURADA */
+  border-radius: 25px;
+  border-bottom-left-radius: 40px; /* Curva maior embaixo */
+  border-bottom-right-radius: 40px;
   overflow: hidden;
-  background: #1a1a1a;
+  background: var(--card-bg);
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  
+  // Para o swipe funcionar
   touch-action: none;
   user-select: none;
-  will-change: transform, opacity;
   cursor: grab;
-  z-index: 10;
+  
+  // Importante: Deixa espaço embaixo para os botões sobreporem visualmente
+  margin-bottom: 35px; 
 
-  &:active { cursor: grabbing; }
+  &:active {
+    cursor: grabbing;
+  }
 }
 
-/* Galeria de Fotos */
-.lead-gallery {
-  height: 100%;
+// 3. GALERIA
+.card-gallery {
   width: 100%;
+  height: 100%;
   position: relative;
 }
 
-.gallery-slides {
-  height: 100%;
+.slides-container {
   width: 100%;
+  height: 100%;
 }
 
-.gallery-slide {
+.slide-item {
   position: absolute;
   top: 0; left: 0; width: 100%; height: 100%;
   opacity: 0;
-  transition: opacity 0.3s ease;
-  
+  transition: opacity 0.2s ease;
+
   &.active { opacity: 1; }
+
+  .slide-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .slide-gradient {
+    position: absolute;
+    bottom: 0; left: 0; right: 0;
+    height: 50%;
+    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+  }
 }
 
-.gallery-image {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  pointer-events: none;
-}
-
-.gallery-gradient-overlay {
+// Barra de Progresso
+.progress-bar-container {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 40%;
-  background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0.4) 40%, transparent 100%);
-  pointer-events: none;
-}
-
-/* Barra de Progresso Superior */
-.tinder-progress-bar {
-  position: absolute;
-  top: 10px; left: 10px; right: 10px;
-  display: flex; gap: 6px; z-index: 50;
-}
-
-.progress-segment {
-  flex: 1; height: 4px; background: rgba(255,255,255,0.3); border-radius: 2px;
-  &.active { background: #fff; }
-}
-
-/* Navegação por Toque */
-.photo-nav-overlay {
-  position: absolute; top: 0; left: 0; width: 100%; height: 80%;
-  display: flex; z-index: 40;
-}
-.nav-tap-area { flex: 1; height: 100%; }
-
-/* Informações do Usuário Sobrepostas */
-.lead-user-details {
-  position: absolute;
-  bottom: 0; left: 0; right: 0;
-  padding: 20px;
-  color: white;
+  top: 15px; left: 15px; right: 15px;
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
-  z-index: 60;
-  pointer-events: none;
+  gap: 5px;
+  z-index: 10;
+
+  .progress-step {
+    flex: 1;
+    height: 3px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 2px;
+    
+    &.active {
+      background: var(--text-white);
+    }
+  }
 }
 
-.user-main-info { pointer-events: auto; }
-
-.user-name-age {
-  font-size: 28px; font-weight: 700; margin: 0;
-  display: flex; align-items: center; gap: 8px;
-  text-shadow: 0 2px 4px rgba(0,0,0,0.5);
-}
-
-.user-location-info {
-  font-size: 15px; font-weight: 500; display: flex; align-items: center; gap: 6px;
-  margin-top: 4px; opacity: 0.9; text-shadow: 0 1px 2px rgba(0,0,0,0.5);
-}
-
-/* Botões de Ação Inferiores */
-.tinder-actions-footer {
-  height: 100px;
-  min-height: 100px;
-  display: flex;
-  justify-content: space-evenly;
-  align-items: center;
-  padding-bottom: 10px;
-  z-index: 100;
-}
-
-.tinder-btn {
-  background: #1a1a1a;
-  border: 1px solid rgba(255,255,255,0.1);
-  border-radius: 50%;
-  display: flex; align-items: center; justify-content: center;
-  cursor: pointer;
-  transition: transform 0.1s ease;
-  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+// Toque navegação
+.tap-nav-overlay {
+  position: absolute; top: 0; left: 0; width: 100%; height: 75%;
+  display: flex; z-index: 9;
   
-  &:active { transform: scale(0.9); }
+  .tap-left, .tap-right { flex: 1; }
 }
 
-.btn-undo, .btn-boost, .btn-superlike { width: 45px; height: 45px; }
-.btn-nope, .btn-like { width: 65px; height: 65px; }
+// 4. INFORMAÇÕES DO USUÁRIO
+.card-user-info {
+  position: absolute;
+  bottom: 40px; // Espaço para não bater na borda
+  left: 20px;
+  right: 20px;
+  z-index: 20;
+  color: var(--text-white);
+  text-align: left;
 
-/* Ajuste para botões do Rails */
-.tinder-actions-footer form { margin: 0; display: flex; }
+  .location-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: rgba(30, 144, 120, 0.8); /* Verde/Teal translúcido */
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-bottom: 8px;
+    backdrop-filter: blur(4px);
+  }
 
-/* Empty State */
-.lead-empty {
-  flex: 1;
-  display: flex; flex-direction: column;
-  align-items: center; justify-content: center;
-  color: white; text-align: center;
+  .user-title {
+    font-size: 1.8rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+
+    .age {
+      font-size: 1.4rem;
+      font-weight: 400;
+    }
+  }
+
+  .user-distance {
+    font-size: 0.9rem;
+    margin-top: 5px;
+    opacity: 0.9;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
 }
 
-/* GARANTE QUE A SIDEBAR FIQUE VISÍVEL */
-.sidebar {
-  z-index: 2000 !important; /* Força a sidebar a ficar acima de tudo */
+// 5. BOTÕES DE AÇÃO (FLUTUANTES)
+.action-buttons-container {
+  position: absolute;
+  bottom: 0; // Cola no fundo da área principal
+  left: 0;
+  right: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 20px;
+  z-index: 100;
+  transform: translateY(-50%); // Puxa para cima para sobrepor a borda do card
 }
 
-/* Ajuste do layout principal para não ter scroll duplo */
-.site-content {
-  padding: 0 !important;
-  margin: 0 !important;
-  overflow: hidden !important;
+.btn-form {
+  margin: 0;
+  padding: 0;
+}
+
+.action-btn {
+  background: #121212;
+  border: 2px solid var(--gold-primary);
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+  transition: transform 0.1s;
+
+  img {
+    width: 50%;
+    height: 50%;
+    object-fit: contain;
+  }
+
+  &:active {
+    transform: scale(0.95);
+  }
+}
+
+// Tamanhos específicos
+.btn-reject {
+  width: 60px;
+  height: 60px;
+  img { width: 28px; }
+}
+
+.btn-chat {
+  width: 50px;
+  height: 50px;
+  border-color: #666; // Chat geralmente é prata/cinza na imagem referência
+  img { width: 22px; }
+}
+
+.btn-like {
+  width: 60px;
+  height: 60px;
+  // O coração na imagem tem fundo escuro e borda dourada também
+  
+  .heart-icon-wrapper {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    
+    img {
+      width: 30px;
+      // Truque CSS para deixar o SVG dourado se ele for branco/preto
+      // filter: sepia(100%) saturate(500%) hue-rotate(5deg); 
+    }
+  }
+}
+
+// EMPTY STATE
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  color: var(--gold-primary);
+  text-align: center;
+  
+  .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  
+  .btn-gold-outline {
+    margin-top: 20px;
+    padding: 10px 20px;
+    border: 1px solid var(--gold-primary);
+    color: var(--gold-primary);
+    text-decoration: none;
+    border-radius: 20px;
+  }
 }

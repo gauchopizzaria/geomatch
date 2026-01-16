@@ -950,30 +950,45 @@ html, body {
 }
 
 // --------------------------------------------------
-// SIDEBAR (BOTTOM NAV STYLE) - IDÊNTICO À REFERÊNCIA
+// SIDEBAR (CORREÇÃO PARA CELULARES MODERNOS)
 // --------------------------------------------------
 
 .sidebar {
   width: 100%;
-  height: 85px; /* Altura um pouco maior para acomodar ícone + texto */
-  background-color: #0e0e10; /* Fundo bem escuro, quase preto (Dark Mode) */
+  // Altura automática para crescer conforme a área segura do celular
+  height: auto; 
+  min-height: 65px; 
+  
+  background-color: #0e0e10; /* Fundo Dark */
+  // background-color: #ffffff; /* Use este se preferir o fundo Branco da sua foto */
+  
   display: flex;
   justify-content: center;
-  align-items: center;
+  align-items: center; // Centraliza verticalmente
+  
   position: fixed;
   bottom: 0;
   left: 0;
   z-index: 1000;
-  border-top: 1px solid #222; /* Borda sutil no topo para separar do conteúdo */
-  padding-bottom: 10px; /* Ajuste para iPhone X/11/12+ que tem a barra home embaixo */
+  
+  border-top: 1px solid rgba(255, 255, 255, 0.1); 
+  
+  /* --- O TRUQUE MÁGICO PARA CELULARES --- */
+  /* Adiciona um preenchimento extra embaixo se o celular tiver a barra de gestos */
+  padding-bottom: env(safe-area-inset-bottom); 
+  padding-top: 8px; /* Espaço em cima dos ícones */
+  
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2); // Sombra para destacar do conteúdo
 
   .sidebar-nav {
     display: flex;
     width: 100%;
-    max-width: 500px; /* Limita a largura em telas grandes para não espalhar demais */
-    justify-content: space-between;
-    align-items: center;
-    padding: 0 1.5rem;
+    max-width: 500px;
+    justify-content: space-around; // Distribui melhor os ícones
+    align-items: flex-start; // Alinha itens ao topo do container
+    padding: 0 10px;
+    // Garante que a nav não fique colada no fundo da área segura
+    margin-bottom: 5px; 
   }
 
   .nav-item {
@@ -986,99 +1001,76 @@ html, body {
     border: none;
     cursor: pointer;
     flex: 1;
+    opacity: 0.6;
     transition: all 0.2s ease;
-    opacity: 0.6; /* Estado inativo: meio transparente */
+    
+    // Garante que o item não fique gigante
+    max-width: 70px; 
 
-    // Container relativo para posicionar as badges
     .icon-container {
       position: relative;
       display: flex;
       justify-content: center;
       align-items: center;
       margin-bottom: 4px;
+      height: 28px; // Altura fixa para o container do ícone
     }
 
-    // Estilo da imagem SVG
     .nav-icon {
-      width: 26px; 
-      height: 26px;
+      width: 24px; 
+      height: 24px;
       object-fit: contain;
-      // Filtro para garantir que o SVG fique branco se ele não for originalmente
+      // Se usar fundo PRETO, mantenha o invert(1). 
+      // Se usar fundo BRANCO, remova o filter ou use invert(0).
       filter: brightness(0) invert(1); 
     }
 
-    // Texto abaixo do ícone
     .nav-text {
-      font-size: 0.7rem; // 11px a 12px
+      font-size: 0.65rem; // Texto bem pequeno
       font-weight: 500;
-      color: #ffffff;
+      color: #ffffff; // Mude para #333 se o fundo for branco
       font-family: 'Poppins', sans-serif;
-    }
-
-    // ----------------------
-    // ESTADOS (HOVER/ACTIVE)
-    // ----------------------
-    
-    &:hover {
-      opacity: 0.8;
+      margin-top: 2px;
     }
 
     &.active {
       opacity: 1;
-
-      // Deixar o texto da cor Dourada/Primary
-      .nav-text {
-        font-weight: 600;
-        color: var(--color-light); // Na imagem original o texto ativo é branco forte
-      }
-
-      // Hack de CSS para transformar o ícone Branco em Dourado/Bege (Opcional)
-      // Se quiser manter branco, remova a linha 'filter' abaixo.
-      .nav-icon {
-         // O filtro abaixo tenta manter o branco brilhante (conforme a imagem 1)
-         // Se quiser DOURADO, use: filter: sepia(100%) saturate(300%) brightness(90%) hue-rotate(5deg);
-         filter: brightness(0) invert(1) drop-shadow(0 0 5px rgba(255, 255, 255, 0.4));
-      }
+      .nav-text { color: var(--color-primary); font-weight: 700; }
+      .nav-icon { filter: brightness(0) invert(1) drop-shadow(0 0 3px rgba(255,255,255,0.5)); }
     }
   }
 
-  // ----------------------
-  // BADGES (NOTIFICAÇÕES)
-  // ----------------------
-
-  // Contador numérico (Coração)
+  // Badges (Contadores)
   .badge-counter {
     position: absolute;
-    top: -6px;
-    right: -10px;
-    background: linear-gradient(135deg, #c4a16e 0%, #d4af37 100%); /* Fundo Dourado/Bege */
-    color: #121212; /* Texto escuro para contraste */
-    border-radius: 10px; /* Formato pílula */
-    padding: 2px 6px;
-    font-size: 0.65rem;
-    font-weight: 700;
-    min-width: 18px;
-    text-align: center;
-    border: 2px solid #0e0e10; /* Borda da mesma cor do fundo da sidebar para criar o recorte */
-    box-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    top: -5px;
+    right: -8px;
+    background: #d4af37;
+    color: #000;
+    border-radius: 10px;
+    padding: 1px 4px;
+    font-size: 0.6rem;
+    font-weight: bold;
+    border: 2px solid #0e0e10; // Borda da cor do fundo da sidebar
   }
 
-  // Ponto vermelho (Mensagens)
   .badge-dot {
     position: absolute;
     top: 0;
-    right: -2px;
-    width: 10px;
-    height: 10px;
-    background-color: #ff4b4b; /* Vermelho alerta */
+    right: 0;
+    width: 8px;
+    height: 8px;
+    background-color: #ff4b4b;
     border-radius: 50%;
-    border: 2px solid #0e0e10; /* Borda para recorte visual */
+    border: 2px solid #0e0e10;
   }
 }
 
-// Ajuste do padding do conteúdo para não ficar escondido atrás da barra
+// IMPORTANTE: Empurrar o conteúdo da página para cima
+// para que o último item da lista não fique escondido atrás da barra
 .site-content {
-  padding-bottom: 100px;
+  /* 80px base + espaço extra para área segura */
+  padding-bottom: calc(85px + env(safe-area-inset-bottom));
 }
 
 /* Ajuste para telas menores (mobile) */
