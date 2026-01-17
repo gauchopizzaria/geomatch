@@ -1,79 +1,132 @@
-<div class="matches-container">
- 
+<div class="matches-screen-wrapper">
 
-  <%# ======================================================================== %>
-  <%# ATENÇÃO: As variáveis @matches_uninitiated e @matches_initiated devem ser %>
-  <%# populadas no MatchesController conforme o código que enviei anteriormente. %>
-  <%# ======================================================================== %>
+  <%# --- 1. CABEÇALHO --- %>
+  <div class="matches-header">
+    <%# Título "Mensagens" (SVG) %>
+    <div class="header-left">
+      <%= image_tag "texto-mensagens.svg", class: "header-title-svg-small", alt: "Mensagens" %>
+    </div>
 
-  <%# ======================================================================== %>
-  <%# 1. MATCHES NÃO INICIADOS (Topo, lado a lado com scroll horizontal) %>
-  <%# ======================================================================== %>
-  <% if @matches_uninitiated.present? %>
-    <h2 class="section-title">Novos Matches</h2>
-    <div class="matches-uninitiated-grid">
-      <% @matches_uninitiated.each do |match| %>
-        <% other = match.other_user(current_user) %>
+    <%# Ícones do Topo (Escudo e Máscara) - Estilo Pílula %>
+    <div class="header-right-actions">
+      <div class="icons-pill">
+        <%# Ícone Escudo (Segurança) %>
+        <button class="icon-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2L4 5V11.09C4 16.14 7.41 20.85 12 22C16.59 20.85 20 16.14 20 11.09V5L12 2ZM12 11.99H12.01V12H12V11.99ZM13 16H11V14H13V16ZM13 12H11V8H13V12Z" fill="#e0e0e0"/>
+          </svg>
+        </button>
         
-        <div class="match-card-uninitiated">
-          <%= link_to match_path(match) do %>
-            <div class="match-avatar-container">
-              <% if other.avatar.attached? %>
-                <%= image_tag other.avatar, class: "match-avatar" %>
-              <% else %>
-                <div class="match-avatar-placeholder">
-                  <%= other.display_name[0].upcase rescue "?" %>
-                </div>
-              <% end %>
-            </div>
-            <p class="match-name"><%= truncate(other.display_name, length: 8) %></p>
+        <%# Ícone Máscara/Ghost (Modo Oculto) %>
+        <button class="icon-btn">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+            <path d="M12 2C6.48 2 2 6.48 2 12C2 17.52 6.48 22 12 22C17.52 22 22 17.52 22 12C22 6.48 17.52 2 12 2ZM12 4C14.21 4 16 5.79 16 8C16 10.21 14.21 12 12 12C9.79 12 8 10.21 8 8C8 5.79 9.79 4 12 4ZM12 20C9.33 20 7 18 7 15.5C7 13 9.33 11 12 11C14.67 11 17 13 17 15.5C17 18 14.67 20 12 20Z" fill="#e0e0e0"/>
+            <path d="M9 7.5C9 8.33 9.67 9 10.5 9C11.33 9 12 8.33 12 7.5C12 6.67 11.33 6 10.5 6C9.67 6 9 6.67 9 7.5Z" fill="#0e0e10"/>
+            <path d="M13.5 9C14.33 9 15 8.33 15 7.5C15 6.67 14.33 6 13.5 6C12.67 6 12 6.67 12 7.5C12 8.33 12.67 9 13.5 9Z" fill="#0e0e10"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <%# --- 2. MATCHES RECENTES --- %>
+  <div class="recent-matches-section">
+    <div class="section-title-wrapper">
+      <%# Título "Matches recentes" (SVG) %>
+      <%= image_tag "texto-matches-recentes.svg", class: "section-subtitle-svg-small", alt: "Matches Recentes" %>
+    </div>
+
+    <div class="matches-carousel">
+      <%# ITEM 0: CURTIDAS %>
+      <%= link_to notifications_path, class: "match-item likes-item" do %>
+        <div class="avatar-wrapper blur-effect">
+          <div class="blur-bg"></div>
+          <div class="likes-icon-overlay">
+            <%= image_tag "icone-mapa-mensagens.svg", class: "map-heart-icon" %>
+          </div>
+          <% unread_likes = current_user.notifications.unread.count %>
+          <% if unread_likes > 0 %>
+            <div class="likes-badge"><%= unread_likes %></div>
           <% end %>
         </div>
+        <span class="match-name gold-text">Curtidas</span>
       <% end %>
-    </div>
-  <% end %>
 
-  <%# ======================================================================== %>
-  <%# 2. CONVERSAS INICIADAS (Lista abaixo) %>
-  <%# ======================================================================== %>
-  <% if @matches_initiated.present? %>
-    <h2 class="section-title">Conversas</h2>
-    <div class="matches-initiated-list">
-      <% @matches_initiated.each do |match| %>
-        <% other = match.other_user(current_user) %>
-        
-        <%= link_to match_path(match), class: "conversation-item" do %>
-          <%# Avatar %>
-          <% if other.avatar.attached? %>
-            <%= image_tag other.avatar, class: "conversation-avatar" %>
-          <% else %>
-            <div class="conversation-avatar-placeholder">
-              <%= other.display_name[0].upcase rescue "?" %>
+      <%# LOOP MATCHES %>
+      <% if @matches_uninitiated.any? %>
+        <% @matches_uninitiated.each do |match| %>
+          <% other = match.other_user(current_user) %>
+          <%= link_to match_path(match), class: "match-item" do %>
+            <div class="avatar-wrapper">
+              <% if other.avatar.attached? %>
+                <%= image_tag other.avatar, class: "user-avatar-img" %>
+              <% else %>
+                <%= image_tag "default-avatar.png", class: "user-avatar-img" %>
+              <% end %>
+              <%= image_tag "aurea-dourada-mensagens.svg", class: "gold-ring-overlay" %>
             </div>
+            <span class="match-name"><%= other.display_name.split.first %></span>
           <% end %>
-          
-          <%# Informações da Conversa %>
-          <div class="conversation-info">
-            <h3 class="conversation-name"><%= other.display_name %></h3>
-            <%# Opcional: Adicionar a última mensagem aqui se for fácil de buscar %>
-            <%# Se você tiver a última mensagem disponível, descomente o código abaixo %>
-            <p class="last-message"><%= match.messages.last.content.truncate(50) if match.messages.any? %></p> 
-            <%# <p class="last-message">Continue conversando...</p>  %>
-          </div>
         <% end %>
       <% end %>
     </div>
-  <% end %>
+  </div>
 
-  <%# ======================================================================== %>
-  <%# 3. MENSAGEM DE VAZIO (Se ambas as listas estiverem vazias) %>
-  <%# ======================================================================== %>
-  <% if @matches_uninitiated.blank? && @matches_initiated.blank? %>
-    <div class="matches-empty">
-      <div class="empty-icon">💭</div>
-      <h3 class="empty-title">Você ainda não tem nenhum match</h3>
-      <p class="empty-text">Comece curtindo perfis para encontrar alguém interessante!</p>
-      <%= link_to "Descobrir pessoas 🔍", discover_path, class: "btn-discover" %>
+  <%# --- 3. CONVERSAS --- %>
+  <div class="conversations-section">
+    <div class="section-title-wrapper">
+      <%# Título "Conversas" (SVG) %>
+      <%= image_tag "texto-conversas.svg", class: "section-subtitle-svg-small", alt: "Conversas" %>
     </div>
-  <% end %>
+
+    <% if @matches_initiated.any? %>
+      <div class="conversations-list">
+        <% @matches_initiated.each do |match| %>
+          <% other = match.other_user(current_user) %>
+          <%= link_to match_path(match), class: "conversation-row" do %>
+            
+            <div class="conv-avatar-container">
+              <% if other.avatar.attached? %>
+                <%= image_tag other.avatar, class: "conv-avatar" %>
+              <% else %>
+                <div class="conv-avatar-placeholder"><%= other.display_name[0] %></div>
+              <% end %>
+            </div>
+
+            <div class="conv-details">
+              <div class="conv-header">
+                <span class="conv-name"><%= other.display_name %></span>
+                <% if match.respond_to?(:verified) && match.verified %>
+                   <%= image_tag "verified.svg", class: "verified-badge" rescue nil %>
+                <% end %>
+              </div>
+
+              <div class="conv-footer">
+                <p class="conv-last-message">
+                  <% if match.messages.any? %>
+                    <% last_msg = match.messages.last %>
+                    <% if last_msg.sender_id == current_user.id %>
+                      <span class="msg-prefix">Você:</span>
+                    <% end %>
+                    <%= truncate(last_msg.content, length: 30) %>
+                  <% else %>
+                    Comece a conversar...
+                  <% end %>
+                </p>
+                <% if match.messages.any? && match.messages.last.sender_id != current_user.id %>
+                  <span class="badge-your-turn">Sua vez</span>
+                <% end %>
+              </div>
+            </div>
+
+          <% end %>
+        <% end %>
+      </div>
+    <% else %>
+      <div class="empty-conversations">
+        <p>Nenhuma conversa ainda.</p>
+      </div>
+    <% end %>
+  </div>
+
 </div>

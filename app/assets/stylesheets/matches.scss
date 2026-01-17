@@ -1,236 +1,276 @@
-/* ======================================================================== */
-/* ESTILOS REFINADOS PARA A TELA DE MATCHES                                 */
-/* ======================================================================== */
+// =========================================================
+// MENSAGENS - TEMA DARK PREMIUM (TEXTOS PEQUENOS)
+// =========================================================
 
-.matches-container {
-  max-width: 800px;
-  margin: 0 auto;
-  padding: 20px;
-  background-color: var(--color-section-light);
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  border: 1px solid var(--color-border);
+.matches-screen-wrapper {
+  background-color: #0e0e10;
+  min-height: 100vh;
+  width: 100%;
+  color: #ffffff;
+  font-family: 'Poppins', sans-serif;
+  padding-bottom: 90px;
+  overflow-x: hidden;
 }
 
+/* --- 1. HEADER E ÍCONES --- */
 .matches-header {
-  text-align: center;
-  margin-bottom: 30px;
-  padding-bottom: 15px;
-  border-bottom: 1px solid var(--color-border);
-}
-
-.matches-title {
-  font-size: 2.2em;
-  color: var(--color-text);
-  margin-bottom: 5px;
-  font-weight: 800;
-}
-
-.matches-subtitle {
-  color: var(--color-text-secondary);
-  font-size: 1.1em;
-}
-
-.section-title {
-  font-size: 1.2em;
-  color: var(--color-text);
-  margin-top: 30px;
-  margin-bottom: 15px;
-  padding-bottom: 5px;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  border-bottom: 2px solid var(--color-primary); /* Dourado para a seção */
-}
-
-/* ======================================================================== */
-/* 1. MATCHES NÃO INICIADOS (Horizontal Scroll - "Stories")                 */
-/* ======================================================================== */
-
-.matches-uninitiated-grid {
+  padding: 20px 20px 10px 20px;
   display: flex;
-  gap: 15px;
-  padding: 10px 0;
-  overflow-x: auto; 
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none; 
-
-  &::-webkit-scrollbar {
-    display: none; 
-  }
-}
-
-.match-card-uninitiated {
-  flex-shrink: 0;
-  width: 85px;
-  text-align: center;
-  transition: transform 0.2s ease;
-
-  &:hover {
-    transform: translateY(-5px);
-  }
-
-  a {
-    text-decoration: none;
-    color: inherit;
-    display: block;
-  }
-}
-
-.match-avatar-container {
-  position: relative;
-  width: 80px;
-  height: 80px;
-  margin: 0 auto 8px;
-  border-radius: 50%;
-  padding: 3px;
-  /* Gradiente entre Dourado e Rosa/Acento */
-  background: linear-gradient(45deg, var(--color-primary), var(--color-accent)); 
-}
-
-.match-avatar {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  object-fit: cover;
-  border: 3px solid var(--color-section-light); /* Borda interna que simula o fundo */
-}
-
-.match-avatar-placeholder {
-  width: 100%;
-  height: 100%;
-  border-radius: 50%;
-  background-color: var(--color-section-gray);
-  display: flex;
+  justify-content: space-between;
   align-items: center;
-  justify-content: center;
-  font-size: 30px;
-  color: var(--color-text-secondary);
-  border: 3px solid var(--color-section-light);
 }
 
-.match-name {
-  font-size: 0.85em;
-  font-weight: 600;
-  color: var(--color-text);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ======================================================================== */
-/* 2. CONVERSAS INICIADAS (Lista Vertical)                                  */
-/* ======================================================================== */
-
-.matches-initiated-list {
-  display: flex;
-  flex-direction: column;
-}
-
-.conversation-item {
-  display: flex;
-  align-items: center;
-  padding: 15px 10px;
-  border-bottom: 1px solid var(--color-border);
-  text-decoration: none;
-  color: inherit;
-  transition: background-color 0.2s ease;
-
-  &:last-child {
-    border-bottom: none;
-  }
-
-  &:hover {
-    background-color: var(--color-hover-bg); 
-  }
-}
-
-.conversation-avatar {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  object-fit: cover;
-  margin-right: 15px;
-  border: 2px solid var(--color-border);
-}
-
-.conversation-avatar-placeholder {
-  width: 60px;
-  height: 60px;
-  border-radius: 50%;
-  background-color: var(--color-section-gray);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  color: var(--color-text-secondary);
-  margin-right: 15px;
-}
-
-.conversation-info {
-  flex-grow: 1;
-  min-width: 0; /* Necessário para o truncamento de texto funcionar no flex */
-}
-
-.conversation-name {
-  margin: 0;
-  font-size: 1.1em;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.last-message {
-  margin: 2px 0 0;
-  color: var(--color-text-secondary);
-  font-size: 0.9em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-/* ======================================================================== */
-/* 3. MENSAGEM DE VAZIO                                                     */
-/* ======================================================================== */
-
-.matches-empty {
-  text-align: center;
-  padding: 60px 20px;
-  background-color: var(--color-background);
-  border-radius: 12px;
-  margin-top: 30px;
-  border: 1px dashed var(--color-border);
-}
-
-.empty-icon {
-  font-size: 4em;
-  margin-bottom: 15px;
+/* Título Principal: MENSAGENS (Bem menor agora) */
+.header-title-svg-small {
+  height: 22px; /* Reduzido de 28px/auto para 22px */
+  width: auto;
   display: block;
 }
 
-.empty-title {
-  font-size: 1.5em;
-  color: var(--color-text);
-  margin-bottom: 10px;
-  font-weight: 700;
+/* Container dos ícones do topo (Pílula Cinza) */
+.header-right-actions {
+  display: flex;
+  align-items: center;
 }
 
-.empty-text {
-  color: var(--color-text-secondary);
-  margin-bottom: 25px;
+.icons-pill {
+  background-color: #1c1c1e; /* Cinza escuro */
+  border-radius: 20px;
+  padding: 6px 14px;
+  display: flex;
+  gap: 15px;
+  border: 1px solid #333;
 }
 
-.btn-discover {
-  display: inline-block;
-  padding: 12px 30px;
-  background-color: var(--color-primary);
-  color: #121212; /* Texto escuro no botão dourado */
+.icon-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+  transition: opacity 0.2s;
+  color: #e0e0e0;
+
+  &:hover { opacity: 1; }
+}
+
+/* --- TÍTULOS DE SEÇÃO (Matches / Conversas) --- */
+.section-title-wrapper {
+  padding: 10px 20px 15px 20px;
+}
+
+/* Subtítulos (Bem discretos) */
+.section-subtitle-svg-small {
+  height: 13px; /* Bem pequeno, estilo iOS label */
+  width: auto;
+  display: block;
+  opacity: 0.7; /* Levemente transparente para não brigar com o título */
+}
+
+/* --- 2. CAROUSEL --- */
+.recent-matches-section {
+  padding-bottom: 20px;
+}
+
+.matches-carousel {
+  display: flex;
+  gap: 15px;
+  padding: 0 20px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+  &::-webkit-scrollbar { display: none; }
+}
+
+.match-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
   text-decoration: none;
-  border-radius: 30px;
-  font-weight: 800;
-  transition: transform 0.2s ease, filter 0.2s ease;
+  flex-shrink: 0;
+  width: 75px;
+}
 
-  &:hover {
-    transform: scale(1.05);
-    filter: brightness(1.1);
-  }
+.avatar-wrapper {
+  position: relative;
+  width: 74px;
+  height: 74px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+/* Avatar do Usuário */
+.user-avatar-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 2px solid #000;
+}
+
+/* Aurea Dourada */
+.gold-ring-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 2;
+}
+
+.match-name {
+  font-size: 0.8rem;
+  color: #ffffff;
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  text-align: center;
+}
+
+.gold-text { color: hsl(46, 57%, 78%); font-weight: 700; }
+
+/* Ícone de Curtidas */
+.likes-item .blur-bg {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: #222;
+  border: 2px solid hsl(46, 57%, 78%);
+}
+
+.likes-icon-overlay {
+  position: absolute;
+  z-index: 5;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.map-heart-icon {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+.likes-badge {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background-color: hsl(46, 57%, 78%);
+  color: #000;
+  font-size: 0.7rem;
+  font-weight: bold;
+  height: 20px;
+  min-width: 20px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 6;
+  border: 2px solid #0e0e10;
+}
+
+/* --- 3. CONVERSAS --- */
+.conversations-section {
+  padding-bottom: 20px;
+}
+
+.conversations-list {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 0 20px;
+}
+
+.conversation-row {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  text-decoration: none;
+}
+
+.conv-avatar-container {
+  position: relative;
+}
+
+.conv-avatar {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+
+.conv-avatar-placeholder {
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: #333;
+  color: #fff;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.5rem;
+}
+
+.conv-details {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.conv-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.conv-name {
+  color: #ffffff;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.conv-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.conv-last-message {
+  color: #999;
+  font-size: 0.85rem;
+  margin: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 160px;
+}
+
+.msg-prefix { color: #ccc; margin-right: 4px; }
+
+.badge-your-turn {
+  background-color: #fff;
+  color: #000;
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+.empty-conversations {
+  text-align: center;
+  color: #555;
+  padding: 20px;
 }

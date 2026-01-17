@@ -1,72 +1,110 @@
-<div class="chat-container">
-
-    <% @other_user = @match.other_user(current_user) %>
-
-  <div class="chat-header">
-    <%# 1. Envolve a imagem com o link %>
-    <%= link_to user_path(@other_user) do %>
-      <img src="<%= @other_user.avatar_url || '/assets/avatarfoto.jpg' %>"
-           class="avatar" style="width:42px;height:42px;border-radius:50%;">
+<div class="chat-screen-wrapper">
+  
+  <%# --- 1. HEADER MINIMALISTA (Fixo no topo) --- %>
+  <div class="chat-header-dark">
+    <%= link_to matches_path, class: "back-btn" do %>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     <% end %>
 
-    <div class="title">
-      <%# 2. Envolve o nome com o link %>
-      <%= link_to @other_user.display_name, user_path(@other_user) %>
-      <div class="status">
-        <% if @other_user.online? %>
-          🟢 Online
+    <% @other_user = @match.other_user(current_user) %>
+    
+    <div class="header-user-info">
+      <%= link_to user_path(@other_user), class: "header-avatar-link" do %>
+        <% if @other_user.avatar.attached? %>
+          <%= image_tag @other_user.avatar, class: "header-avatar" %>
         <% else %>
-          ⚪ Offline
+          <div class="header-avatar-placeholder"><%= @other_user.display_name[0] %></div>
         <% end %>
+      <% end %>
+
+      <div class="header-text">
+        <h2 class="header-name"><%= @other_user.display_name %></h2>
+        <span class="header-status">
+          <% if @other_user.respond_to?(:online?) && @other_user.online? %>
+            <span class="dot-online">●</span> Online
+          <% else %>
+            <span class="dot-offline">●</span> Offline
+          <% end %>
+        </span>
       </div>
+    </div>
+
+    <div class="header-actions">
+      <button class="icon-btn-dots">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#666"><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="12" r="2"/></svg>
+      </button>
     </div>
   </div>
 
-  <div id="chat-window"
-       class="chat-window"
+  <%# --- 2. ÁREA DE MENSAGENS --- %>
+  <div id="chat-window" class="chat-window-dark" 
        data-match-id="<%= @match.id %>"
        data-current-user-id="<%= current_user.id %>">
 
+    <%# Aviso de Match (Topo) %>
+    <div class="match-date-notice">
+      VOCÊ DEU MATCH COM <%= @other_user.display_name.upcase %> NO DIA <%= @match.created_at.strftime("%d/%m/%Y") %>
+    </div>
+
+    <%# Loop de Mensagens %>
+    <% last_date = nil %>
     <% @messages.each do |message| %>
-      <div id="msg-<%= message.id %>"
+      
+      <%# Separador de Data %>
+      <% msg_date = message.created_at.to_date %>
+      <% if last_date != msg_date %>
+        <div class="date-separator">
+          <%= l(msg_date, format: :long) rescue msg_date.strftime("%d de %b") %>
+        </div>
+        <% last_date = msg_date %>
+      <% end %>
+
+      <%# --- CORREÇÃO AQUI --- %>
+      <%# Adicionamos 'data-sending' e 'data-content' que faltavam %>
+      <%# Mantivemos a classe 'message-row' para o visual, mas adicionei 'message' %>
+      <%# caso seu JS procure especificamente por ela. %>
+      <div id="msg-<%= message.id %>" 
            data-sending="false"
            data-content="<%= message.content %>"
-           class="message <%= message.sender_id == current_user.id ? 'sent' : 'received' %>">
-
-        <div class="message-inner">
-          <% unless message.sender_id == current_user.id %>
-            <img src="<%= message.sender.avatar_url || '/assets/avatarfoto.jpg' %>" class="avatar">
-          <% end %>
-
-          <div class="bubble">
-            <div class="meta">
-              <% unless message.sender_id == current_user.id %>
-                <strong class="name"><%= message.sender.display_name %></strong>
-              <% end %>
-
-              <small class="time"><%= message.created_at.strftime("%H:%M") %></small>
-            </div>
-
-            <p class="content"><%= message.content %></p>
+           class="message message-row <%= message.sender_id == current_user.id ? 'sent' : 'received' %>">
+        
+        <%# Avatar (apenas nas recebidas) %>
+        <% unless message.sender_id == current_user.id %>
+          <div class="msg-avatar-container">
+            <% if message.sender.avatar.attached? %>
+              <%= image_tag message.sender.avatar, class: "msg-avatar" %>
+            <% else %>
+              <div class="msg-avatar-placeholder"><%= message.sender.display_name[0] %></div>
+            <% end %>
           </div>
+        <% end %>
+
+        <div class="message-bubble">
+          <p class="content"><%= message.content %></p>
         </div>
       </div>
     <% end %>
   </div>
 
-  <div id="typing-indicator" class="typing-indicator"></div>
+  <%# --- 3. INPUT (Barra inferior) --- %>
+  <div class="chat-input-dark">
+    <%# Botão GIF (Decorativo) %>
+    <button class="btn-gif">GIF</button>
 
-  <div class="chat-input">
-    <%= form_with url: match_messages_path(@match),
-                  method: :post,
-                  id: "new-message-form",
+    <%= form_with url: match_messages_path(@match), 
+                  method: :post, 
+                  id: "new-message-form", 
+                  class: "dark-form",
                   data: { remote: true } do |form| %>
-
-      <%= form.text_field :content, id: "message-input",
-            placeholder: "Digite sua mensagem...", autocomplete: "off" %>
-
-      <%= form.submit "Enviar", id: "send-button" %>
-
+      
+      <%= form.text_field :content, id: "message-input", 
+            placeholder: "Digite uma mensagem", 
+            autocomplete: "off",
+            class: "dark-input" %>
+      
+      <button type="submit" id="send-button" class="btn-send">
+         ➤
+      </button>
     <% end %>
   </div>
 

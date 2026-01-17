@@ -950,21 +950,19 @@ html, body {
 }
 
 // --------------------------------------------------
-// SIDEBAR (CORREÇÃO PARA CELULARES MODERNOS)
+// SIDEBAR (CORREÇÃO DEFINITIVA PARA GESTOS)
 // --------------------------------------------------
 
 .sidebar {
   width: 100%;
-  // Altura automática para crescer conforme a área segura do celular
   height: auto; 
-  min-height: 65px; 
+  min-height: 70px; /* Aumentei levemente para garantir conforto visual */
   
-  background-color: #0e0e10; /* Fundo Dark */
-  // background-color: #ffffff; /* Use este se preferir o fundo Branco da sua foto */
+  background-color: #0e0e10; 
   
   display: flex;
   justify-content: center;
-  align-items: center; // Centraliza verticalmente
+  align-items: center;
   
   position: fixed;
   bottom: 0;
@@ -973,29 +971,28 @@ html, body {
   
   border-top: 1px solid rgba(255, 255, 255, 0.1); 
   
-  /* --- O TRUQUE MÁGICO PARA CELULARES --- */
-  /* Adiciona um preenchimento extra embaixo se o celular tiver a barra de gestos */
-  padding-bottom: env(safe-area-inset-bottom); 
-  padding-top: 8px; /* Espaço em cima dos ícones */
+  /* --- CORREÇÃO DO PROBLEMA --- */
+  /* Usa a área segura do iPhone. Se for 0 (alguns Androids), soma + 12px de garantia */
+  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
+  padding-top: 10px; 
   
-  box-shadow: 0 -4px 20px rgba(0,0,0,0.2); // Sombra para destacar do conteúdo
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
 
   .sidebar-nav {
     display: flex;
     width: 100%;
     max-width: 500px;
-    justify-content: space-around; // Distribui melhor os ícones
-    align-items: flex-start; // Alinha itens ao topo do container
+    justify-content: space-around;
+    align-items: flex-end; /* Alinha itens na base para ficarem uniformes */
     padding: 0 10px;
-    // Garante que a nav não fique colada no fundo da área segura
-    margin-bottom: 5px; 
+    margin-bottom: 0; /* Remove margem extra para controlar tudo pelo padding */
   }
 
   .nav-item {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-end; /* Empurra conteúdo para baixo */
     text-decoration: none;
     background: transparent;
     border: none;
@@ -1003,8 +1000,6 @@ html, body {
     flex: 1;
     opacity: 0.6;
     transition: all 0.2s ease;
-    
-    // Garante que o item não fique gigante
     max-width: 70px; 
 
     .icon-container {
@@ -1013,22 +1008,20 @@ html, body {
       justify-content: center;
       align-items: center;
       margin-bottom: 4px;
-      height: 28px; // Altura fixa para o container do ícone
+      height: 28px;
     }
 
     .nav-icon {
       width: 24px; 
       height: 24px;
       object-fit: contain;
-      // Se usar fundo PRETO, mantenha o invert(1). 
-      // Se usar fundo BRANCO, remova o filter ou use invert(0).
       filter: brightness(0) invert(1); 
     }
 
     .nav-text {
-      font-size: 0.65rem; // Texto bem pequeno
+      font-size: 0.65rem;
       font-weight: 500;
-      color: #ffffff; // Mude para #333 se o fundo for branco
+      color: #ffffff;
       font-family: 'Poppins', sans-serif;
       margin-top: 2px;
     }
@@ -1040,18 +1033,28 @@ html, body {
     }
   }
 
-  // Badges (Contadores)
+  // Badges (Contadores) - Mantendo sua configuração do círculo dourado
   .badge-counter {
     position: absolute;
-    top: -5px;
+    top: -6px;
     right: -8px;
-    background: #d4af37;
-    color: #000;
-    border-radius: 10px;
-    padding: 1px 4px;
-    font-size: 0.6rem;
-    font-weight: bold;
-    border: 2px solid #0e0e10; // Borda da cor do fundo da sidebar
+    background-image: url("circulo-dourado.svg");
+    background-size: contain;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-color: transparent;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    color: #000000;
+    font-size: 0.65rem;
+    font-weight: 800;
+    border: 2px solid #0e0e10;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
 
   .badge-dot {
@@ -1067,10 +1070,10 @@ html, body {
 }
 
 // IMPORTANTE: Empurrar o conteúdo da página para cima
-// para que o último item da lista não fique escondido atrás da barra
 .site-content {
-  /* 80px base + espaço extra para área segura */
-  padding-bottom: calc(85px + env(safe-area-inset-bottom));
+  /* Aumentamos o cálculo para garantir que o último item da lista apareça */
+  /* 85px (altura base estimada) + área segura + 15px de folga */
+  padding-bottom: calc(90px + env(safe-area-inset-bottom));
 }
 
 /* Ajuste para telas menores (mobile) */

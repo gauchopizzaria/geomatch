@@ -1,5 +1,5 @@
 // --------------------------------------------------
-// GEOMATCH - LEAD PREMIUM STYLE
+// GEOMATCH - LEAD PREMIUM STYLE (CORRIGIDO IPHONE)
 // --------------------------------------------------
 
 :root {
@@ -8,35 +8,48 @@
   --bg-dark: #000000;
   --card-bg: #1a1a1a;
   --text-white: #ffffff;
+  
+  /* Alturas fixas para cálculo */
+  --header-height: 60px;
+  --sidebar-height: 85px; /* Altura visual da sidebar inferior */
 }
 
 .geomatch-screen-wrapper {
   background-color: var(--bg-dark);
-  height: 100vh;
+  /* dvh = Dynamic Viewport Height (ajusta se a barra de endereço sumir ou aparecer) */
+  height: 100dvh; 
   width: 100%;
   display: flex;
   flex-direction: column;
   overflow: hidden;
   position: relative;
   font-family: 'Poppins', sans-serif;
-  
-  // Ajuste para não esconder atrás da sidebar
-  padding-bottom: calc(70px + env(safe-area-inset-bottom));
 }
 
-// 1. HEADER
+// 1. HEADER (TOPO)
 .geomatch-header {
-  height: 60px;
+  /* Altura fixa + espaço seguro do iPhone (entalhe) */
+  height: calc(var(--header-height) + env(safe-area-inset-top));
+  padding-top: env(safe-area-inset-top); /* O PULO DO GATO: Empurra conteúdo pra baixo do notch */
+  
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 0 20px;
+  padding-left: 20px;
+  padding-right: 20px;
   z-index: 50;
+  background-color: var(--bg-dark); /* Garante que o fundo atrás do notch seja preto */
+
+  .header-left {
+    display: flex;
+    align-items: center;
+  }
 
   .header-logo {
     height: 28px; 
     width: auto;
     object-fit: contain;
+    display: block; /* Remove espaços fantasmas */
   }
 
   .header-right {
@@ -48,6 +61,8 @@
       border: none;
       padding: 0;
       cursor: pointer;
+      display: flex;
+      align-items: center;
       
       img {
         width: 24px;
@@ -57,43 +72,49 @@
   }
 }
 
-// 2. MAIN AREA (CARD)
+// 2. MAIN AREA (ÁREA DO CARTÃO)
 .geomatch-main-area {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 10px 15px 0 15px; // Espaço lateral
+  padding: 10px 15px 0 15px; 
+  
+  /* AUMENTADO: Garante que o cartão tenha respiro em baixo */
+  /* Sidebar (~90px) + Espaço para botões flutuarem (~80px) */
+  padding-bottom: calc(160px + env(safe-area-inset-bottom));
+  
   position: relative;
   max-width: 600px;
   margin: 0 auto;
   width: 100%;
+  box-sizing: border-box;
 }
 
 .gold-card-frame {
-  flex: 1;
+  flex: 1; /* O cartão vai esticar para ocupar todo o espaço disponível na main-area */
   position: relative;
-  border: 2px solid var(--gold-primary); /* A MOLDURA DOURADA */
+  border: 2px solid var(--gold-primary);
   border-radius: 25px;
-  border-bottom-left-radius: 40px; /* Curva maior embaixo */
+  /* Curvas maiores embaixo conforme design */
+  border-bottom-left-radius: 40px; 
   border-bottom-right-radius: 40px;
   overflow: hidden;
   background: var(--card-bg);
   box-shadow: 0 10px 30px rgba(0,0,0,0.5);
   
-  // Para o swipe funcionar
   touch-action: none;
   user-select: none;
   cursor: grab;
   
-  // Importante: Deixa espaço embaixo para os botões sobreporem visualmente
-  margin-bottom: 35px; 
+  /* IMPORTANTE: Removemos a margin-bottom fixa gigante e controlamos pelo padding da main-area */
+  margin-bottom: 0; 
 
   &:active {
     cursor: grabbing;
   }
 }
 
-// 3. GALERIA
+// 3. GALERIA & INTERNOS DO CARD
 .card-gallery {
   width: 100%;
   height: 100%;
@@ -122,8 +143,8 @@
   .slide-gradient {
     position: absolute;
     bottom: 0; left: 0; right: 0;
-    height: 50%;
-    background: linear-gradient(to top, rgba(0,0,0,0.9) 0%, rgba(0,0,0,0) 100%);
+    height: 60%; /* Gradiente um pouco maior para garantir leitura */
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%);
   }
 }
 
@@ -140,86 +161,101 @@
     height: 3px;
     background: rgba(255, 255, 255, 0.3);
     border-radius: 2px;
-    
-    &.active {
-      background: var(--text-white);
-    }
+    &.active { background: var(--text-white); }
   }
 }
 
-// Toque navegação
+// Navegação toque
 .tap-nav-overlay {
   position: absolute; top: 0; left: 0; width: 100%; height: 75%;
   display: flex; z-index: 9;
-  
   .tap-left, .tap-right { flex: 1; }
 }
 
 // 4. INFORMAÇÕES DO USUÁRIO
 .card-user-info {
   position: absolute;
-  bottom: 40px; // Espaço para não bater na borda
+  /* Subimos um pouco mais as infos para não ficarem atrás dos botões */
+  bottom: 110px; 
+  
   left: 20px;
   right: 20px;
   z-index: 20;
   color: var(--text-white);
   text-align: left;
+  pointer-events: none;/* Deixa clicar nos botões se eles sobrepuserem */
 
   .location-badge {
     display: inline-flex;
     align-items: center;
     gap: 5px;
-    background: rgba(30, 144, 120, 0.8); /* Verde/Teal translúcido */
-    padding: 4px 10px;
-    border-radius: 12px;
+    background: rgba(30, 144, 120, 0.9);
+    padding: 5px 12px;
+    border-radius: 15px;
     font-size: 0.75rem;
     font-weight: 600;
-    margin-bottom: 8px;
+    margin-bottom: 10px;
     backdrop-filter: blur(4px);
   }
 
   .user-title {
-    font-size: 1.8rem;
+    font-size: 2rem;
     font-weight: 700;
     margin: 0;
     display: flex;
     align-items: baseline;
     gap: 8px;
     text-shadow: 0 2px 4px rgba(0,0,0,0.8);
+    line-height: 1.2;
 
     .age {
-      font-size: 1.4rem;
+      font-size: 1.5rem;
       font-weight: 400;
+    }
+    
+    .verified-icon {
+      height: 20px;
+      width: auto;
     }
   }
 
   .user-distance {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     margin-top: 5px;
     opacity: 0.9;
     display: flex;
     align-items: center;
     gap: 6px;
+    font-weight: 500;
   }
 }
 
 // 5. BOTÕES DE AÇÃO (FLUTUANTES)
 .action-buttons-container {
   position: absolute;
-  bottom: 0; // Cola no fundo da área principal
+  
+  /* --- CORREÇÃO FINAL DE POSIÇÃO --- */
+  /* 85px (Sidebar) + ~55px (Gap Visual) + Safe Area */
+  /* Isso vai deixar os botões "dentro" do cartão, como na foto da Maria */
+  bottom: calc(180px + env(safe-area-inset-bottom)); 
+  
   left: 0;
   right: 0;
   display: flex;
   justify-content: center;
   align-items: center;
-  gap: 20px;
-  z-index: 100;
-  transform: translateY(-50%); // Puxa para cima para sobrepor a borda do card
+  gap: 25px;
+  
+  /* Z-index alto para ficar acima de tudo */
+  z-index: 2001; 
+  
+  height: 0; 
 }
 
+
 .btn-form {
-  margin: 0;
-  padding: 0;
+  margin: 0; padding: 0;
+  display: flex; /* Remove altura extra de forms */
 }
 
 .action-btn {
@@ -230,8 +266,9 @@
   justify-content: center;
   align-items: center;
   cursor: pointer;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.4);
+  box-shadow: 0 5px 15px rgba(0,0,0,0.6);
   transition: transform 0.1s;
+  position: relative;
 
   img {
     width: 50%;
@@ -239,46 +276,41 @@
     object-fit: contain;
   }
 
-  &:active {
-    transform: scale(0.95);
-  }
+  &:active { transform: scale(0.95); }
 }
 
 // Tamanhos específicos
 .btn-reject {
-  width: 60px;
-  height: 60px;
-  img { width: 28px; }
+  width: 65px;
+  height: 65px;
+  border-color: #ff4b4b; /* Opcional: Borda vermelha se quiser igual tinder, ou dourada */
+  border: 2px solid var(--gold-primary); /* Mantendo dourada conforme pedido */
+  
+  img { width: 26px; }
 }
 
 .btn-chat {
   width: 50px;
   height: 50px;
-  border-color: #666; // Chat geralmente é prata/cinza na imagem referência
+  border-color: #d4af37; 
+  background: rgba(20, 20, 20, 0.95);
+  
   img { width: 22px; }
 }
 
 .btn-like {
-  width: 60px;
-  height: 60px;
-  // O coração na imagem tem fundo escuro e borda dourada também
+  width: 65px;
+  height: 65px;
+  border: 2px solid var(--gold-primary);
   
   .heart-icon-wrapper {
-    width: 100%;
-    height: 100%;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    
-    img {
-      width: 30px;
-      // Truque CSS para deixar o SVG dourado se ele for branco/preto
-      // filter: sepia(100%) saturate(500%) hue-rotate(5deg); 
-    }
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    img { width: 32px; }
   }
 }
 
-// EMPTY STATE
+// ESTADO VAZIO
 .empty-state {
   display: flex;
   flex-direction: column;
@@ -292,10 +324,11 @@
   
   .btn-gold-outline {
     margin-top: 20px;
-    padding: 10px 20px;
+    padding: 10px 24px;
     border: 1px solid var(--gold-primary);
     color: var(--gold-primary);
     text-decoration: none;
-    border-radius: 20px;
+    border-radius: 25px;
+    font-weight: 600;
   }
 }

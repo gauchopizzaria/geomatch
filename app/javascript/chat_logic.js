@@ -21,33 +21,27 @@ document.addEventListener('DOMContentLoaded', () => {
     {
       connected() {
         console.log("Conectado ao match", matchId);
+        scrollToBottom(); // Rola para o fim ao conectar
       },
 
       received(data) {
-
         // -------------------------
         //    INDICADOR DE DIGITAÇÃO
         // -------------------------
         if (Object.prototype.hasOwnProperty.call(data, "typing")) {
-
-          // ignora se for o próprio usuário
           if (data.user_id == currentUserId) return;
-
           updateTypingIndicator(data);
-          return; // <- MUITO IMPORTANTE
+          return;
         }
 
         // -------------------------
         //     MENSAGEM RECEBIDA
         // -------------------------
         if (data.message) {
-          // A mensagem real (com ID do banco de dados) chega via ActionCable.
-          // O remetente também recebe o broadcast.
           appendMessageToDOM(data.message);
         }
       },
 
-      // envia indicação "digitando"
       sendTypingStatus(isTyping) {
         this.perform("receive", { typing: isTyping });
       }
@@ -59,16 +53,16 @@ document.addEventListener('DOMContentLoaded', () => {
   // =======================================================
   function updateTypingIndicator(data) {
     const typing = document.getElementById("typing-indicator");
+    if (!typing) return; // Segurança caso o elemento não exista
 
     if (data.typing === true) {
       typing.innerHTML = `
-        <div class="typing-user">
-          <img src="${data.user_avatar || '/assets/avatarfoto.jpg'}" class="typing-avatar">
-          <span>${data.user_name || "Usuário"} está digitando</span>
-          <span class="dots"><span></span><span></span><span></span></span>
+        <div class="typing-user" style="color: #888; font-size: 0.8rem; margin-left: 20px;">
+           ${data.user_name || "Alguém"} está digitando...
         </div>
       `;
       typing.style.display = "block";
+      scrollToBottom();
     } else {
       typing.style.display = "none";
     }
@@ -77,31 +71,38 @@ document.addEventListener('DOMContentLoaded', () => {
   // =======================================================
   //   CAPTURA DE "ESTÁ DIGITANDO"
   // =======================================================
-  messageInput.addEventListener("input", () => {
-    matchChannel.sendTypingStatus(true);
-
-    clearTimeout(typingTimer);
-    typingTimer = setTimeout(() => {
-      matchChannel.sendTypingStatus(false);
-    }, TYPING_TIMEOUT);
-  });
+  if (messageInput) {
+    messageInput.addEventListener("input", () => {
+      matchChannel.sendTypingStatus(true);
+      clearTimeout(typingTimer);
+      typingTimer = setTimeout(() => {
+        matchChannel.sendTypingStatus(false);
+      }, TYPING_TIMEOUT);
+    });
+  }
 
   // =======================================================
   //   SUBMIT DA MENSAGEM
   // =======================================================
   newMessageForm.addEventListener("submit", (e) => {
+    // Nota: Se você usa data-remote="true" no Rails form, 
+    // o Rails já lida com o envio via AJAX (ujs/turbo).
+    // Aqui estamos apenas limpando o input visualmente para UX rápida.
+    
+    // Se você quiser controlar o fetch manualmente, mantenha o e.preventDefault().
+    // Se quiser deixar o Rails controlar, remova o e.preventDefault() e o fetch abaixo,
+    // mas garanta que o controller responda com head :ok ou JS.
+    
+    // Vamos manter o padrão manual para garantir compatibilidade com o código anterior:
     e.preventDefault();
 
     const content = messageInput.value.trim();
     if (!content) return;
 
-    // Não cria mensagem temporária. O ActionCable fará o broadcast para todos,
-    // incluindo o remetente, que irá adicionar a mensagem real ao DOM.
-
     messageInput.value = "";
+    messageInput.focus();
     matchChannel.sendTypingStatus(false);
 
-   // envia para backend
     fetch(newMessageForm.action, {
       method: "POST",
       headers: {
@@ -112,66 +113,65 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .then(async (response) => {
       if (!response.ok) {
-        // Se der erro 500 ou 400, forçamos o erro para cair no catch
-        const text = await response.text(); 
-        console.error("Erro do servidor:", text); // VAI MOSTRAR O ERRO NO CONSOLE
-        throw new Error("Erro na resposta do servidor");
+        console.error("Erro ao enviar mensagem");
       }
-      // Não precisamos processar o JSON aqui, pois o broadcast do ActionCable
-      // já irá adicionar a mensagem ao DOM.
-      return response;
+      // O ActionCable vai devolver a mensagem via broadcast, 
+      // então não precisamos adicioná-la aqui manualmente para evitar duplicatas.
     })
-    .catch((error) => {
-      console.error(error);
-      // Não há mais tempId para marcar como falha, pois a mensagem só é
-      // adicionada via ActionCable. Se falhar, não aparece.
-      // Opcionalmente, você pode adicionar uma notificação de erro aqui.
-    });
+    .catch((error) => console.error(error));
   });
-  
-  // Função replaceOrAppend removida, pois a mensagem é adicionada
-  // diretamente via ActionCable. O remetente também recebe o broadcast.
 
   // =======================================================
-  //   APPEND NO DOM
+  //   APPEND NO DOM (DESIGN NOVO CORRIGIDO)
   // =======================================================
   function appendMessageToDOM(message) {
-    // evita duplicado
     if (document.getElementById(`msg-${message.id}`)) return;
 
+    const isSender = message.sender_id === currentUserId;
     const el = document.createElement("div");
 
-    el.className = `message ${message.sender_id === currentUserId ? "sent" : "received"}`;
+    // 1. Usa as classes novas: 'message-row' e 'sent'/'received'
+    el.className = `message-row ${isSender ? "sent" : "received"}`;
     el.id = `msg-${message.id}`;
-    // Não há mais necessidade de data-sending e data-content, pois a mensagem
-    // só é adicionada ao DOM quando o ActionCable a envia.
-    // el.dataset.sending = message.sending ? "true" : "false";
-    // el.dataset.content = message.content;
 
-    el.innerHTML = `
-      <div class="message-inner">
-        ${message.sender_id !== currentUserId
-          ? `<img class="avatar" src="${message.avatar_url || '/assets/avatarfoto.jpg'}">`
-          : ""
+    // 2. Monta o HTML do Avatar (apenas para recebidas)
+    let avatarHtml = "";
+    if (!isSender) {
+        const avatarSrc = message.avatar_url; 
+        const displayName = message.user_name || "?";
+        
+        avatarHtml = `<div class="msg-avatar-container">`;
+        
+        if (avatarSrc) {
+            avatarHtml += `<img class="msg-avatar" src="${avatarSrc}">`;
+        } else {
+            // Placeholder circular
+            avatarHtml += `<div class="msg-avatar-placeholder">${displayName.charAt(0).toUpperCase()}</div>`;
         }
-        <div class="bubble">
-           <div class="meta">
-            ${message.sender_id !== currentUserId ? `<strong class="name">${message.user_name || ""}</strong>` : ""}
-            <small class="time">${new Date(message.created_at).toLocaleTimeString([], {hour: "2-digit", minute:"2-digit"})}</small>
-          </div>
-          <p class="content">${escapeHtml(message.content)}</p>
-        </div>
+        
+        avatarHtml += `</div>`;
+    }
+
+    // 3. Monta o HTML do Balão (message-bubble)
+    // Nota: Removido o .meta (hora/nome) de dentro do balão para ficar igual ao design limpo
+    const bubbleHtml = `
+      <div class="message-bubble">
+        <p class="content">${escapeHtml(message.content)}</p>
       </div>
     `;
 
+    // 4. Junta tudo
+    el.innerHTML = avatarHtml + bubbleHtml;
+
     chatWindow.appendChild(el);
-    chatWindow.scrollTop = chatWindow.scrollHeight;
+    scrollToBottom();
   }
 
   // =======================================================
   //   FUNÇÕES ÚTEIS
   // =======================================================
   function escapeHtml(str) {
+    if (!str) return "";
     return str.replace(/[&<>'"]/g, (c) => ({
       "&": "&amp;",
       "<": "&lt;",
@@ -181,10 +181,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }[c]));
   }
 
-  // Função markMessageFailed removida, pois a mensagem só é adicionada
-  // ao DOM via ActionCable após o sucesso no servidor.
-  // function markMessageFailed(id) {
-  //   const el = document.getElementById(id);
-  //   if (el) el.classList.add("failed");
-  // }
+  function scrollToBottom() {
+    chatWindow.scrollTop = chatWindow.scrollHeight;
+  }
 });
