@@ -1,14 +1,43 @@
-<li class="notification-item <%= 'notification-unread' if notification.read_at.nil? %>" data-notification-id="<%= notification.id %>">
-  <%= link_to user_path(notification.actor), class: "notification-link" do %>
-    <%# Avatar %>
-    <%= image_tag notification.actor.avatar.attached? ? url_for(notification.actor.avatar) : 'default-avatar.png', class: 'notification-avatar' %>
+<% actor = notification.actor %>
+<div class="like-card" data-notification-id="<%= notification.id %>">
+  <%= link_to user_path(actor), class: "like-card-link" do %>
     
-    <%# Conteúdo da Notificação %>
-    <div class="notification-content">
-      <p class="notification-text">
-        <strong><%= notification.actor.username %></strong> <%= notification.action %>
-      </p>
-      <small class="notification-time"><%= time_ago_in_words(notification.created_at) %> atrás</small>
+    <%# Imagem de Fundo (Capa) %>
+    <% if actor.avatar.attached? %>
+      <%= image_tag actor.avatar, class: "like-card-img" %>
+    <% else %>
+      <%= image_tag "default-avatar.png", class: "like-card-img" %>
+    <% end %>
+
+    <%# Gradiente Sobreposto %>
+    <div class="like-card-gradient"></div>
+
+    <%# Informações Sobrepostas %>
+    <div class="like-card-info">
+      <%# Badge "Perto de mim" (Estático ou Dinâmico) %>
+      <div class="location-badge-small">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C8.13 2 5 5.13 5 9c0 5.25 7 13 7 13s7-7.75 7-13c0-3.87-3.13-7-7-7zm0 9.5c-1.38 0-2.5-1.12-2.5-2.5s1.12-2.5 2.5-2.5 2.5 1.12 2.5 2.5-1.12 2.5-2.5 2.5z"/></svg>
+        Perto de mim
+      </div>
+
+      <div class="user-details">
+        <span class="name"><%= actor.display_name.split.first %></span>
+        <span class="age"><%= actor.age rescue "24" %></span>
+        <% if actor.respond_to?(:verified) && actor.verified %>
+           <%= image_tag "verificado.svg", class: "verified-icon-small" rescue nil %>
+        <% end %>
+      </div>
+
+      <div class="distance-info">
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s-8-4-8-10V5l8-3 8 3v7c0 6-8 10-8 10z"/></svg>
+        a 1 km de distância
+      </div>
     </div>
+
+    <%# Pequeno ícone de ação no canto (Decorativo) %>
+    <div class="like-action-icon">
+      <%= image_tag "coracao-vazada.svg" %>
+    </div>
+
   <% end %>
-</li>
+</div>
