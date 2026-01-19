@@ -59,6 +59,9 @@ Rails.application.routes.draw do
   # O 'show' é o perfil público.
   resources :users, only: [:show, :update]
 
+  # Rota para a NOVA tela de visualização do meu perfil (Dashboard)
+  get "/meu-perfil", to: "users#me_profile", as: :my_profile
+
   # Meu Perfil (Rota customizada para edição do usuário logado)
   # O 'resource' cria as rotas /profile/edit e PATCH /profile
   resource :profile, controller: 'users', only: [:edit, :update]

@@ -1,0 +1,84 @@
+<div class="profile-dashboard-wrapper">
+  
+  <%# --- 1. HEADER (Apenas o Título) --- %>
+  <div class="profile-header-container">
+    <div class="header-left">
+      <%= image_tag "texto-perfil.png", alt: "Perfil", class: "header-title-sm" %>
+    </div>
+    <%# O botão de ajuda SAIU daqui %>
+  </div>
+
+  <%# --- 2. HERO SECTION (Avatar | Info | Ajuda) --- %>
+  <div class="profile-hero">
+    
+    <%# ESQUERDA: Avatar %>
+    <div class="hero-avatar-container">
+      <% if @user.avatar.attached? %>
+        <%= image_tag @user.avatar, class: "hero-avatar-img" %>
+      <% else %>
+        <%= image_tag "default-avatar.png", class: "hero-avatar-img" %>
+      <% end %>
+      <%= image_tag "aurea-dourada-mensagens.svg", class: "hero-ring" %>
+    </div>
+
+    <%# CENTRO: Nome e Botão Editar %>
+    <div class="hero-info">
+      <h2 class="hero-name">
+        <%= @user.display_name.split.first %>, <%= @user.age %>
+        <%= image_tag "icone-verificar.png", class: "verified-icon-name" %>
+      </h2>
+      
+      <%= link_to edit_profile_path, class: "btn-edit-pill" do %>
+        <i class="fas fa-pen"></i> Completar perfil
+      <% end %>
+    </div>
+
+    <%# DIREITA: Botão Ajuda (NOVO LOCAL) %>
+    <div class="hero-help">
+      <button class="btn-help-png">
+        <%= image_tag "botao-ajuda.png", alt: "Ajuda" %>
+      </button>
+      <span class="help-label">Ajuda</span>
+    </div>
+
+  </div>
+
+  <%# --- 3. BANNER VERIFICAÇÃO --- %>
+  <div class="verification-banner">
+    <div class="icon-box">
+      <%= image_tag "icone-verificar.png", class: "verify-icon-lg" %>
+    </div>
+    <div class="banner-text">
+      <strong>Verifique seu Perfil</strong>
+      <p class="banner-description">
+        Ajuda a proteger os usuários contra perfis que tentam se passar por outros para enganar as pessoas.
+      </p>
+      <div class="progress-bar-lines">
+        <span class="line full"></span>
+        <span class="line full"></span>
+        <span class="line"></span>
+      </div>
+    </div>
+    <div class="banner-arrow">›</div>
+  </div>
+
+  <%# --- 4. SEÇÃO DESTAQUE --- %>
+  <div class="highlight-section">
+    <div class="highlight-photo">
+      <%= image_tag "mao_comprimento.png", class: "photo-cover" %>
+    </div>
+    
+    <div class="highlight-text-content">
+      <h3 class="highlight-title">Integração com Eventos</h3>
+      <p class="highlight-description">
+        Participe de eventos especiais, faça check-in com QR code e descubra pessoas com interesses similares em festivais e encontros.
+      </p>
+    </div>
+  </div>
+
+  <%# --- 5. BLOCO UPGRADE --- %>
+  <div class="upgrade-block-container">
+    <%= image_tag "bloco-upgrade.png", class: "upgrade-img-full" %>
+  </div>
+
+</div>

@@ -41,13 +41,13 @@
         <span class="nav-text">Mensagens</span>
       <% end %>
 
-      <%= link_to edit_profile_path, class: "nav-item #{'active' if current_page?(edit_profile_path)}" do %>
+      <%= link_to my_profile_path, class: "nav-item #{'active' if current_page?(my_profile_path)}" do %>
         <div class="icon-container">
           <%= image_tag "perfil-vazada.svg", class: "nav-icon", alt: "Perfil" %>
         </div>
         <span class="nav-text">Perfil</span>
       <% end %>
-
+      
     <% end %>
   </nav>
 </aside>

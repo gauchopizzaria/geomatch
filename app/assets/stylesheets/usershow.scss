@@ -24,3 +24,250 @@
 }
 
 /* Reutilize os estilos .photo-album-grid, .album-photo-item, etc., que definimos antes. */
+
+
+// =========================================================
+// MEU PERFIL (DASHBOARD) - AJUSTE LAYOUT
+// =========================================================
+
+.profile-dashboard-wrapper {
+  background-color: #0e0e10;
+  min-height: 100vh;
+  width: 100%;
+  padding-bottom: 100px;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  padding-top: calc(20px + env(safe-area-inset-top));
+}
+
+/* 1. Header (Apenas Título) */
+.profile-header-container {
+  display: flex;
+  align-items: center;
+  padding: 0 20px 10px 20px; /* Reduzi padding inferior pois a hero já tem */
+}
+
+.header-title-sm {
+  height: 20px;
+  width: auto;
+  display: block;
+  opacity: 0.8; /* Levemente mais escuro como na img */
+}
+
+/* 2. Hero Section (Avatar | Info | Ajuda) */
+.profile-hero {
+  display: flex;
+  align-items: center;
+  /* Espalha os itens: Avatar -- Info -- Ajuda */
+  justify-content: space-between; 
+  padding: 0 20px 25px 20px;
+  gap: 15px;
+}
+
+.hero-avatar-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
+}
+
+.hero-avatar-img {
+  width: 70px;
+  height: 70px;
+  border-radius: 50%;
+  object-fit: cover;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid #000;
+}
+
+.hero-ring {
+  width: 100%;
+  height: 100%;
+  position: absolute;
+  top: 0;
+  left: 0;
+}
+
+/* Área central (Nome e Botão) */
+.hero-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  flex: 1; /* Ocupa o espaço disponível no meio */
+}
+
+.hero-name {
+  margin: 0 0 8px 0;
+  font-size: 1.4rem;
+  font-weight: 700;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Área Direita (Botão Ajuda) */
+.hero-help {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.btn-help-png {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  width: 32px; /* Tamanho do triângulo */
+  height: 32px;
+  
+  img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+  }
+}
+
+.help-label {
+  font-size: 0.65rem;
+  color: #ccc;
+  font-weight: 500;
+}
+
+/* Ícone Verificado */
+.verified-icon-name {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+/* Botão Completar Perfil */
+.btn-edit-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  background-color: #fff;
+  color: #000;
+  text-decoration: none;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 0.75rem;
+  font-weight: 700;
+  width: fit-content;
+  i { font-size: 0.7rem; }
+}
+
+/* 3. Banner Verificação */
+.verification-banner {
+  margin: 0 20px 25px 20px;
+  background-color: #0e0e10;
+  border: 1px solid #222;
+  border-radius: 24px;
+  padding: 20px;
+  display: flex;
+  align-items: flex-start;
+  gap: 15px;
+  position: relative;
+}
+
+.icon-box {
+  width: 36px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.verify-icon-lg { width: 100%; height: auto; }
+
+.banner-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  strong { font-size: 1rem; font-weight: 600; }
+}
+
+.banner-description {
+  font-size: 0.75rem;
+  color: #aaa;
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+  max-width: 95%;
+}
+
+.progress-bar-lines {
+  display: flex;
+  gap: 5px;
+  width: 100%;
+  .line {
+    height: 3px;
+    flex: 1;
+    background-color: #333;
+    border-radius: 2px;
+    &.full { background-color: #fff; }
+  }
+}
+
+.banner-arrow {
+  color: #666;
+  font-size: 1.5rem;
+  align-self: center;
+}
+
+/* 4. Seção Destaque */
+.highlight-section {
+  display: flex;
+  padding: 0 20px 30px 20px;
+  gap: 15px;
+  align-items: center;
+}
+
+.highlight-photo {
+  width: 130px;
+  height: 130px;
+  flex-shrink: 0;
+  border-radius: 20px;
+  overflow: hidden;
+  
+  .photo-cover {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.highlight-text-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.highlight-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #fff;
+  margin: 0 0 8px 0;
+  line-height: 1.2;
+}
+
+.highlight-description {
+  font-size: 0.75rem;
+  color: #ccc;
+  line-height: 1.4;
+  margin: 0;
+}
+
+/* 5. Bloco Upgrade */
+.upgrade-block-container {
+  padding: 0 10px;
+  display: flex;
+  justify-content: center;
+  
+  .upgrade-img-full {
+    width: 100%;
+    height: auto;
+  }
+}

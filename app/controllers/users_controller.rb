@@ -18,6 +18,11 @@ class UsersController < ApplicationController
     redirect_to discover_path, alert: "Usuário não encontrado."
   end
 
+  # Action para a nova tela de Dashboard do Perfil
+  def me_profile
+    @user = current_user
+  end
+
   # Nova tela de Descoberta (Lead/Swipe)
   def lead
     # 🚨 1. CASO SEJA POPUP DE MATCH
