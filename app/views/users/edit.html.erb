@@ -1,106 +1,124 @@
-<div class="profile-container">
-  <h1>Meu Perfil</h1>
+<div class="edit-profile-wrapper">
 
-  <div class="profile-card">
+  <%= form_with model: @user, url: profile_path, method: :patch, multipart: true, id: "edit-profile-form", data: { turbo: false } do |f| %>
 
-    <%= form_with model: @user, url: profile_path, method: :patch, multipart: true, data: { turbo: false } do |f| %>
+    <%# --- 1. HEADER --- %>
+    <div class="edit-header">
+      <%# Botão Cancelar (Menor e mais cinza) %>
+      <%= link_to my_profile_path, class: "header-btn-left" do %>
+        <span>Cancelar</span>
+      <% end %>
 
-      <!-- Avatar (com fallback) -->
-      <div class="profile-avatar-box">
-        <%= image_tag @user.avatar_or_default, id: "avatar-preview" %>
+      <%# Título Imagem (Menor) %>
+      <div class="header-title">
+        <%= image_tag "texto-editar-perfil.png", class: "title-img" %>
       </div>
 
-      <label class="avatar-button">
-        Alterar foto
-        <%= f.file_field :avatar, class: "hidden", onchange: "previewImage(event)" %>
-      </label>
-
-      <!-- Grid de campos -->
-      <div class="profile-grid">
-
-        <div class="profile-field">
-          <%= f.label :username, "Nome de Usuário" %>
-          <%= f.text_field :username, class: "profile-input" %>
+      <%# Botão Salvar %>
+      <button type="submit" class="header-btn-right">
+        <div class="check-circle">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
         </div>
-
-        <div class="profile-field">
-          <%= f.label :birthdate, "Data de Nascimento" %>
-          <%= f.date_field :birthdate, class: "profile-input" %>
-        </div>
-
-        <div class="profile-field">
-          <%= f.label :gender, "Gênero" %>
-          <%= f.select :gender,
-              [["Homem","homem"],["Mulher","mulher"],
-              ["Outro","outro"]],
-              {},
-              class: "profile-select" %>
-        </div>
-
-        <div class="profile-field">
-          <%= f.label :interested_in, "Interessado em conhecer" %>
-          <%= f.select :interested_in,
-              [["Homem","homem"],["Mulher","mulher"],["Outro","outro"]],
-               {},
-               class: "profile-select" %>
-        </div>
-
-        <div class="profile-field" style="grid-column: 1 / -1;">
-          <%= f.label :bio, "Biografia" %>
-          <%= f.text_area :bio, rows: 3, class: "profile-textarea" %>
-        </div>
-
-          <!-- NOVO: Campo de Upload para o Álbum de Fotos -->
-        <div class="profile-field" style="grid-column: 1 / -1; margin-top: 20px;">
-          <%= f.label :album_photos, "Adicionar Fotos ao Álbum" %>
-          <%= f.file_field :album_photos, multiple: true, accept: "image/*", class: "profile-input" %>
-          <p class="text-sm text-gray-500 mt-1">Você pode selecionar várias fotos de uma vez.</p>
-        </div>
-
-
-        <!-- HOBBIES -->
-        <div class="hobbies-box">
-          <%= f.label :hobbies_list, "Hobbys" %>
-
-          <div class="hobbies-list">
-            <% ["praia","cinema","futebol","arte","culinaria","viagem","livros","fitness","outros"].each do |hobby| %>
-              <label class="hobby-item">
-                <%= check_box_tag "user[hobbies_list][]", hobby, @user.hobbies_list.include?(hobby) %>
-                <span><%= hobby.capitalize %></span>
-              </label>
-            <% end %>
-          </div>
-        </div>
-
-      </div> <!-- /profile-grid -->
-
-
-      <%= f.submit "Salvar Alterações", class: "profile-submit" %>
-      <%= link_to "Editar Senha", edit_user_registration_path,
-          class: "bg-gray-500 hover:bg-gray-700 text-white font-bold py-2 px-4 rounded" %>
-
-    <% end %>
-
-  </div> <!-- /profile-card -->
-  
-<div class="photo-album-grid">
-      <% @user.album_photos.each do |photo| %>
-        <div class="album-photo-item">
-          <%= image_tag photo, class: "album-photo-image" %>
-
-          <%# O link de exclusão usa o Turbo/Rails para enviar um DELETE separado %>
-          <%= link_to "X", delete_album_photo_path(photo),
-              data: { turbo_method: :delete, turbo_confirm: "Tem certeza que deseja excluir esta foto?" },
-              class: "delete-photo-button" %>
-        </div>
-      <% end %>
+      </button>
     </div>
-  </div>
 
+    <%# --- 2. ABAS (TABS) --- %>
+    <div class="edit-tabs">
+      <div class="tab active">Editar</div>
+      <%= link_to "Visualizar", preview_profile_path, class: "tab inactive" %>
+    </div>
+
+    <div class="edit-scroll-content">
+      
+      <%# --- 3. GRADE DE FOTOS (Lógica Exata de 6 Slots) --- %>
+      <div class="photos-section">
+        <label class="photos-label">Adicionar fotos</label>
+        
+        <div class="photos-grid">
+          
+          <%# Variável para contar slots usados (Limite 6) %>
+          <% slots_used = 0 %>
+
+          <%# SLOT 1: AVATAR (Sempre o primeiro) %>
+          <div class="photo-slot filled">
+            <%= image_tag @user.avatar_or_default, class: "slot-img", id: "avatar-preview" %>
+            <label class="edit-badge" for="user_avatar">
+              <i class="fas fa-pen"></i>
+            </label>
+            <%= f.file_field :avatar, id: "user_avatar", class: "hidden-input", onchange: "previewAvatar(event)" %>
+          </div>
+          <% slots_used += 1 %>
+
+          <%# SLOT 2 a N: FOTOS EXISTENTES %>
+          <% @user.album_photos.each do |photo| %>
+            <% break if slots_used >= 6 %>
+            <div class="photo-slot filled">
+              <%= image_tag photo, class: "slot-img" %>
+              <%= link_to delete_album_photo_path(photo), data: { turbo_method: :delete }, class: "delete-badge" do %>
+                ✕
+              <% end %>
+            </div>
+            <% slots_used += 1 %>
+          <% end %>
+
+          <%# SLOT DE UPLOAD (Só aparece se tiver espaço sobrando) %>
+          <% if slots_used < 6 %>
+            <label class="photo-slot empty">
+              <div class="plus-icon">+</div>
+              <%= f.file_field :album_photos, multiple: true, class: "hidden-input", onchange: "form.submit()" %>
+            </label>
+            <% slots_used += 1 %>
+          <% end %>
+
+          <%# SLOTS VAZIOS (Preenche o resto até dar 6) %>
+          <% (slots_used...6).each do %>
+             <div class="photo-slot empty-placeholder">
+               <div class="plus-icon" style="opacity: 0.3;">+</div>
+             </div>
+          <% end %>
+
+        </div>
+      </div>
+
+      <%# --- 4. CAMPOS DO FORMULÁRIO --- %>
+      <div class="form-fields">
+        
+        <div class="field-group">
+          <%= f.label :bio, "Bio", class: "dark-label" %>
+          <%= f.text_area :bio, placeholder: "Fale um pouco sobre você", rows: 3, class: "dark-input textarea" %>
+        </div>
+
+        <div class="field-group">
+          <%= f.label :gender, "Gênero", class: "dark-label" %>
+          <%= f.select :gender, [["Homem", "homem"], ["Mulher", "mulher"], ["Outro", "outro"]], {}, class: "dark-input" %>
+        </div>
+
+        <div class="field-group">
+          <%= f.label :interested_in, "Quero conhecer", class: "dark-label" %>
+          <%= f.select :interested_in, [["Homem", "homem"], ["Mulher", "mulher"], ["Ambos", "ambos"]], {}, class: "dark-input" %>
+        </div>
+
+        <div class="field-group">
+          <%= f.label :age, "Idade (Data de Nascimento)", class: "dark-label" %>
+          <%= f.date_field :birthdate, class: "dark-input" %>
+        </div>
+
+        <div class="field-group">
+          <%= f.label :hobbies_list, "Hobbys", class: "dark-label" %>
+          <%= f.text_field :hobbies_list, value: @user.hobbies_list.join(", "), placeholder: "Praia, Cinema, Esportes", class: "dark-input" %>
+          <p class="field-hint">Separe por vírgulas</p>
+        </div>
+
+      </div>
+      
+      <br><br><br>
+    </div>
+
+  <% end %>
 </div>
 
 <script>
-function previewImage(event) {
+function previewAvatar(event) {
   const reader = new FileReader();
   reader.onload = function() {
     document.getElementById("avatar-preview").src = reader.result;

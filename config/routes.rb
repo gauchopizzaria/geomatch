@@ -64,7 +64,10 @@ Rails.application.routes.draw do
 
   # Meu Perfil (Rota customizada para edição do usuário logado)
   # O 'resource' cria as rotas /profile/edit e PATCH /profile
-  resource :profile, controller: 'users', only: [:edit, :update]
+  resource :profile, controller: 'users', only: [:edit, :update] do
+    # NOVA ROTA: Pré-visualizar perfil (Aba Visualizar)
+    get "preview", on: :collection
+  end
 
   
 

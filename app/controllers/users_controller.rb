@@ -23,6 +23,12 @@ class UsersController < ApplicationController
     @user = current_user
   end
 
+  # Action da aba "Visualizar"
+  def preview
+    @user = current_user
+    # Renderiza a view 'app/views/users/preview.html.erb'
+  end
+
   # Nova tela de Descoberta (Lead/Swipe)
   def lead
     # 🚨 1. CASO SEJA POPUP DE MATCH
