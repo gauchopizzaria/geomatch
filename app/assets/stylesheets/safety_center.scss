@@ -1,0 +1,225 @@
+// =========================================================
+// CENTRAL DE SEGURANÇA (SAFETY CENTER)
+// =========================================================
+
+.safety-wrapper {
+  background-color: #050507; /* Fundo bem escuro */
+  min-height: 100vh;
+  width: 100%;
+  font-family: 'Poppins', sans-serif;
+  color: #fff;
+  display: flex;
+  flex-direction: column;
+}
+
+/* --- 1. HEADER --- */
+.safety-header {
+  padding: 20px 25px;
+  padding-top: calc(20px + env(safe-area-inset-top));
+  margin-bottom: 10px;
+}
+
+.header-top-row {
+  display: flex;
+  align-items: flex-start; /* Alinha no topo */
+  gap: 15px;
+}
+
+.btn-back {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+  margin-top: 5px; /* Ajuste fino */
+}
+
+.icon-arrow {
+  width: 28px;
+  height: 28px;
+  object-fit: contain;
+}
+
+.header-text-block {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.title-img {
+  width: 180px; /* Ajuste conforme tamanho do PNG */
+  height: auto;
+  display: block;
+}
+
+.subtitle {
+  font-size: 0.75rem;
+  color: #ccc;
+  margin: 0;
+  font-weight: 400;
+}
+
+.header-icon-right {
+  margin-top: 0;
+}
+
+.icon-shield {
+  width: 32px;
+  height: 32px;
+  object-fit: contain;
+}
+
+/* --- 2. BODY (GRID) --- */
+.safety-body {
+  padding: 0 25px;
+  flex: 1;
+}
+
+.section-label {
+  font-size: 0.9rem;
+  color: #fff;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+}
+
+/* Card Genérico */
+.safety-card {
+  border-radius: 20px;
+  padding: 20px 15px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  gap: 15px;
+  position: relative;
+  min-height: 140px;
+  cursor: pointer;
+  transition: transform 0.2s;
+  
+  &:active { transform: scale(0.98); }
+}
+
+/* Cores dos Cards */
+.card-pink { background-color: #ffdcd9; color: #5c1e1e; }
+.card-blue { background-color: #dbe4ff; color: #1e2b5c; }
+.card-purple { background-color: #e2dfff; color: #2e1e5c; }
+.card-pink-light { background-color: #ffdad6; color: #5c1e1e; }
+
+/* Ícones Circulares dentro dos Cards */
+.card-icon-circle {
+  width: 45px;
+  height: 45px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  svg { width: 24px; height: 24px; }
+}
+
+.icon-red { background-color: #ff5449; color: #fff; }
+.icon-blue-dark { background-color: #3b5ba9; color: #fff; }
+.icon-purple-dark { background-color: #5256a9; color: #fff; }
+.icon-red-light { background-color: #ba1a1a; color: #fff; opacity: 0.4; } /* Simulado */
+
+/* Badge de Alerta (!) */
+.card-badge {
+  position: absolute;
+  top: 15px;
+  right: 15px;
+  width: 18px;
+  height: 18px;
+  background-color: #ff5449;
+  color: #fff;
+  font-size: 0.7rem;
+  font-weight: bold;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.card-text {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  
+  strong {
+    font-size: 0.85rem;
+    font-weight: 700;
+    line-height: 1.2;
+  }
+  
+  span {
+    font-size: 0.7rem;
+    opacity: 0.8;
+  }
+}
+
+/* --- 3. FOOTER (INSTRUÇÕES) --- */
+.safety-footer {
+  background-color: #e3e3e3; /* Cinza claro */
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+  padding: 30px 25px;
+  margin-top: 30px;
+  color: #1a1a1a;
+}
+
+.footer-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: #ba1a1a; /* Vermelho escuro */
+  font-size: 1rem;
+  margin: 0 0 20px 0;
+  font-weight: 700;
+}
+
+.warning-icon {
+  background-color: #ba1a1a;
+  color: #fff;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.instruction-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+  
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    
+    strong {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: #000;
+    }
+    
+    p {
+      margin: 0;
+      font-size: 0.8rem;
+      color: #555;
+      line-height: 1.3;
+    }
+  }
+}

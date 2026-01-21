@@ -59,6 +59,12 @@ Rails.application.routes.draw do
   # O 'show' é o perfil público.
   resources :users, only: [:show, :update]
 
+  # Tela de Central de Segurança (Ajuda)
+  get "/safety_center", to: "users#safety_center", as: :safety_center
+
+  # Tela de Denúncia Rápida
+  get "/report_incident", to: "users#report_incident", as: :report_incident
+
   # Rota para a NOVA tela de visualização do meu perfil (Dashboard)
   get "/meu-perfil", to: "users#me_profile", as: :my_profile
 

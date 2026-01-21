@@ -33,11 +33,11 @@
       <% end %>
     </div>
 
-    <%# DIREITA: Botão Ajuda (NOVO LOCAL) %>
+   <%# DIREITA: Botão Ajuda (AGORA COM LINK) %>
     <div class="hero-help">
-      <button class="btn-help-png">
+      <%= link_to safety_center_path, class: "btn-help-png" do %>
         <%= image_tag "botao-ajuda.png", alt: "Ajuda" %>
-      </button>
+      <% end %>
       <span class="help-label">Ajuda</span>
     </div>
 

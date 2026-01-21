@@ -1,0 +1,105 @@
+<div class="safety-wrapper">
+
+  <%# --- 1. HEADER --- %>
+  <div class="safety-header">
+    <div class="header-top-row">
+      <%# Botão Voltar (Seta PNG) %>
+      <%= link_to my_profile_path, class: "btn-back" do %>
+        <%= image_tag "seta-esqueda-png.png", class: "icon-arrow" %>
+      <% end %>
+
+      <%# Título e Subtítulo %>
+      <div class="header-text-block">
+        <%= image_tag "texto-central-de-seguranca.png", class: "title-img" %>
+        <p class="subtitle">Recursos e ferramentas para sua proteção</p>
+      </div>
+
+      <%# Ícone Escudo (Direita) %>
+      <div class="header-icon-right">
+        <%= image_tag "icone-central-de-seguranca.png", class: "icon-shield" %>
+      </div>
+    </div>
+  </div>
+
+  <%# --- 2. AÇÕES RÁPIDAS (GRID) --- %>
+  <div class="safety-body">
+    <h3 class="section-label">Ações Rápidas</h3>
+
+    <div class="cards-grid">
+      
+      <%# CARD 1: Polícia (Rosa) %>
+      <div class="safety-card card-pink">
+        <div class="card-icon-circle icon-red">
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+        </div>
+        <div class="card-badge">!</div>
+        <div class="card-text">
+          <strong>Ações Rápidas</strong>
+          <span>Policia Militar</span>
+        </div>
+      </div>
+
+    <%# CARD 2: Denúncias (LINK ATUALIZADO) %>
+      <%= link_to report_incident_path, class: "safety-card card-blue", style: "text-decoration: none;" do %>
+        <div class="card-icon-circle icon-blue-dark">
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+        </div>
+        <div class="card-text">
+          <strong>Denúncias Rápidas</strong>
+          <span>Reportar Incidencia</span>
+        </div>
+      <% end %>
+
+      <%# CARD 3: Compartilhar (Lilás) %>
+      <div class="safety-card card-purple">
+        <div class="card-icon-circle icon-purple-dark">
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+           <%# Ícone de refresh simplificado para simular o da imagem %>
+        </div>
+        <div class="card-text">
+          <strong>Compartilhar Local</strong>
+          <span>Ações Rápidas</span>
+        </div>
+      </div>
+
+      <%# CARD 4: Modo Pânico (Rosa Claro) %>
+      <div class="safety-card card-pink-light">
+        <div class="card-icon-circle icon-red-light">
+           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22M12 6l7.53 13H4.47M11 10v4h2v-4m-2 6v2h2v-2"/></svg>
+        </div>
+        <div class="card-text">
+          <strong>Modo Pânico</strong>
+          <span>Alerta de Emergência</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <%# --- 3. INSTRUÇÕES DE EMERGÊNCIA (RODAPÉ) --- %>
+  <div class="safety-footer">
+    <h4 class="footer-title">
+      <span class="warning-icon">!</span> Instrução de Emergência
+    </h4>
+
+    <ul class="instruction-list">
+      <li>
+        <strong>1. Mantenha a calma e avalie a situação</strong>
+        <p>Respire fundo e tente entender o que está acontecendo</p>
+      </li>
+      <li>
+        <strong>2. Saia do local se não se sentir seguro</strong>
+        <p>Procure um local público e movimentado</p>
+      </li>
+      <li>
+        <strong>3. Use ações rápidas confirme necessario</strong>
+        <p>Ligue para Emergencia ou compartilhe sua localização.</p>
+      </li>
+      <li>
+        <strong>4. Documente incidente</strong>
+        <p>Faça uma denuncia detalhada para a segurança*</p>
+      </li>
+    </ul>
+  </div>
+
+</div>

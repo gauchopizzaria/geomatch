@@ -23,6 +23,14 @@ class UsersController < ApplicationController
     @user = current_user
   end
 
+  def safety_center
+    # Renderiza app/views/users/safety_center.html.erb
+  end
+
+  def report_incident
+    # Renderiza app/views/users/report_incident.html.erb
+  end
+
   # Action da aba "Visualizar"
   def preview
     @user = current_user
