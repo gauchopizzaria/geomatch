@@ -2,708 +2,521 @@ import L from "leaflet";
 window.L = L;
 
 // Constantes
-const INITIAL_RANGE_KM = 5;
-const MAX_RANGE_KM = 500;
-  const STORAGE_KEYS = {
-    RANGE: "geomatch_range",
-    GENDER_FILTER: "geomatch_gender_filter",
-    INVISIBLE_MODE: "geomatch_invisible_mode",
-  };
+const INITIAL_RANGE_METERS = 150; // Padrão 150m
+const STORAGE_KEYS = {
+  RANGE: "geomatch_range",
+  GENDER_FILTER: "geomatch_gender_filter",
+  INVISIBLE_MODE: "geomatch_invisible_mode",
+};
 
 ["DOMContentLoaded", "turbo:load"].forEach((evt) => {
   document.addEventListener(evt, () => {
     const mapContainer = document.getElementById("map");
     if (!mapContainer) return;
 
+    // --- PEGA URL DA MOLDURA (DO HTML) ---
+    const assetsData = document.getElementById('assets-data');
+    const frameUrl = assetsData ? assetsData.dataset.frameUrl : ''; 
+
     // ========================================
-    // CONFIGURAÇÃO INICIAL
+    // 1. CONFIGURAÇÃO DO MAPA
     // ========================================
     const defaultLat = -14.788;
     const defaultLng = -39.278;
-    const defaultZoom = 13;
+    const defaultZoom = 15;
 
-    const map = L.map("map").setView([defaultLat, defaultLng], defaultZoom);
+    const map = L.map("map", {
+      zoomControl: false,
+      attributionControl: false
+    }).setView([defaultLat, defaultLng], defaultZoom);
 
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
-      attribution: "© OpenStreetMap",
+      maxZoom: 19,
     }).addTo(map);
 
-    let userMarker = null;
-    let radarCircle = null;
-    let currentRangeKm = INITIAL_RANGE_KM;
-    let currentGenderFilter = "all"; // "all", "male", "female"
+    let currentRangeMeters = INITIAL_RANGE_METERS;
+    let currentGenderFilter = "all";
     let userLatitude = null;
     let userLongitude = null;
-    let isLoadingUsers = false;
+    let radarCircle = null;
+    let userMarker = null;
 
-    // Recuperar preferências do localStorage
+    // Recuperar preferências
     const savedRange = localStorage.getItem(STORAGE_KEYS.RANGE);
     const savedGender = localStorage.getItem(STORAGE_KEYS.GENDER_FILTER);
 
-    if (savedRange) currentRangeKm = parseInt(savedRange, 10);
+    if (savedRange) currentRangeMeters = parseInt(savedRange, 10);
     if (savedGender) currentGenderFilter = savedGender;
 
-    // Usar um grupo de marcadores simples (sem clustering)
     const userMarkersGroup = L.featureGroup();
     map.addLayer(userMarkersGroup);
 
     // ========================================
-    // ELEMENTOS DO DOM
+    // 2. SELEÇÃO DE ELEMENTOS DOM
     // ========================================
     const rangeSlider = document.getElementById("radar-range");
-    const rangeValueSpan = document.getElementById("range-value-floating");
-    const headerLocation = document.getElementById("header-location");
-    const headerDistanceInfo = document.getElementById("header-distance-info");
-    const fabCenterMap = document.getElementById("fab-center-map");
-    const userPopup = document.getElementById("user-popup");
-    const closePopupBtn = document.getElementById("close-popup-btn");
-    const usersBottomSheet = document.querySelector(".users-bottom-sheet");
-    const bottomSheetHandle = document.querySelector(".bottom-sheet-handle");
+    const rangeValueText = document.getElementById("range-value-text");
+    const radarControl = document.querySelector('.radar-control-floating');
+    
     const usersList = document.getElementById("users-list");
     const usersCountElement = document.getElementById("nearby-count");
-    const usersTotalText = document.getElementById("users-total-text");
+    
+    const userPopup = document.getElementById("user-popup");
+    const closePopupBtn = document.getElementById("close-popup-btn");
+    const popupOverlay = document.querySelector(".popup-overlay");
+    
+    const fabCenterMap = document.getElementById("fab-center-map");
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
+    const genderToggleBtn = document.getElementById("gender-filter-toggle");
+
+    // Stories Elements
+    const storiesSection = document.getElementById("stories-section");
+    const storiesToggleBtn = document.getElementById("stories-toggle-btn");
+    const addStoryBtn = document.getElementById("add-story-btn");
+    const addStoryModal = document.getElementById("add-story-modal");
+    const modalOverlay = document.getElementById("modal-overlay");
+    const closeModalBtn = document.getElementById("close-modal-btn");
+    const cancelStoryBtn = document.getElementById("cancel-story-btn");
 
     // ========================================
-    // FILTROS DE GÊNERO
+    // 3. SLIDER DE RAIO (Visual Bege + Lógica)
     // ========================================
-    const genderFilterContainer = document.getElementById("gender-filter-container");
-    if (genderFilterContainer) {
-      // Criar botões de filtro se não existirem
-      if (!document.getElementById("filter-all")) {
-        genderFilterContainer.innerHTML = `
-          <button id="filter-all" class="gender-filter-btn active" data-filter="all">
-            <span class="filter-icon">👥</span> Ambos
-          </button>
-          <button id="filter-male" class="gender-filter-btn" data-filter="male">
-            <span class="filter-icon">♂️</span> Homem
-          </button>
-          <button id="filter-female" class="gender-filter-btn" data-filter="female">
-            <span class="filter-icon">♀️</span> Mulher
-          </button>
-        `;
-      }
+    if (rangeSlider && rangeValueText) {
+      const updateSliderVisuals = (val) => {
+        rangeValueText.textContent = `${val}m`;
+        const max = rangeSlider.max || 300;
+        const percent = (val / max) * 100;
+        // Background Bege (#f4e4bc) preenchendo até a porcentagem
+        rangeSlider.style.backgroundImage = `linear-gradient(to right, #f4e4bc 0%, #f4e4bc ${percent}%, transparent ${percent}%, transparent 100%)`;
+      };
 
-      // Atualizar estado dos botões
-      updateGenderFilterUI();
-
-      // Adicionar listeners aos botões
-      document.querySelectorAll(".gender-filter-btn").forEach((btn) => {
-        btn.addEventListener("click", (e) => {
-          currentGenderFilter = e.currentTarget.dataset.filter;
-          localStorage.setItem(STORAGE_KEYS.GENDER_FILTER, currentGenderFilter);
-          updateGenderFilterUI();
-
-          // Recarregar usuários com novo filtro
-          if (userLatitude && userLongitude) {
-            loadNearbyUsers(userLatitude, userLongitude, currentRangeKm, currentGenderFilter);
-          }
-        });
-      });
-    }
-
-    function updateGenderFilterUI() {
-      document.querySelectorAll(".gender-filter-btn").forEach((btn) => {
-        if (btn.dataset.filter === currentGenderFilter) {
-          btn.classList.add("active");
-        } else {
-          btn.classList.remove("active");
-        }
-      });
-    }
-
-    // ========================================
-    // ANIMAÇÃO DE CARREGAMENTO
-    // ========================================
-    function showLoadingAnimation() {
-      isLoadingUsers = true;
-      if (usersList) {
-        usersList.innerHTML = `
-          <li class="loading-skeleton">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-text">
-              <div class="skeleton-line"></div>
-              <div class="skeleton-line short"></div>
-            </div>
-          </li>
-          <li class="loading-skeleton">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-text">
-              <div class="skeleton-line"></div>
-              <div class="skeleton-line short"></div>
-            </div>
-          </li>
-          <li class="loading-skeleton">
-            <div class="skeleton-avatar"></div>
-            <div class="skeleton-text">
-              <div class="skeleton-line"></div>
-              <div class="skeleton-line short"></div>
-            </div>
-          </li>
-        `;
-      }
-
-      if (usersCountElement) {
-        usersCountElement.innerHTML = `
-          <span class="loading-spinner"></span>
-        `;
-      }
-
-      if (usersTotalText) {
-        usersTotalText.textContent = "Carregando usuários...";
-      }
-    }
-
-    function hideLoadingAnimation() {
-      isLoadingUsers = false;
-    }
-
-    // ========================================
-    // CONTROLE DO SLIDER
-    // ========================================
-    if (rangeSlider && rangeValueSpan) {
-      rangeSlider.value = currentRangeKm;
-      rangeSlider.max = MAX_RANGE_KM;
-      rangeValueSpan.textContent = currentRangeKm;
+      // Inicializa
+      rangeSlider.value = currentRangeMeters;
+      updateSliderVisuals(currentRangeMeters);
 
       rangeSlider.addEventListener("input", (e) => {
-        currentRangeKm = parseInt(e.target.value, 10);
-        rangeValueSpan.textContent = currentRangeKm;
+        const val = parseInt(e.target.value, 10);
+        currentRangeMeters = val;
+        updateSliderVisuals(val);
         updateRadarCircle();
       });
 
       rangeSlider.addEventListener("change", () => {
-        localStorage.setItem(STORAGE_KEYS.RANGE, currentRangeKm);
+        localStorage.setItem(STORAGE_KEYS.RANGE, currentRangeMeters);
+        if (userLatitude && userLongitude) {
+          loadNearbyUsers(userLatitude, userLongitude, currentRangeMeters, currentGenderFilter);
+        }
+      });
+    }
+
+    // ========================================
+    // 4. CONTROLE DE RADAR MÓVEL (Drag & Drop)
+    // ========================================
+    if (radarControl) {
+      let isDragging = false;
+      let startX, startY, initialLeft, initialTop;
+
+      const dragStart = (e) => {
+        if (e.target.tagName.toLowerCase() === 'input') return;
+        isDragging = true;
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        startX = clientX;
+        startY = clientY;
+        const style = window.getComputedStyle(radarControl);
+        initialLeft = parseInt(style.left, 10) || 0;
+        initialTop = parseInt(style.top, 10) || 0;
+      };
+
+      const dragMove = (e) => {
+        if (!isDragging) return;
+        e.preventDefault(); 
+        const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+        const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+        const deltaX = clientX - startX;
+        const deltaY = clientY - startY;
+        radarControl.style.left = `${initialLeft + deltaX}px`;
+        radarControl.style.top = `${initialTop + deltaY}px`;
+      };
+
+      const dragEnd = () => { isDragging = false; };
+
+      radarControl.addEventListener('mousedown', dragStart);
+      window.addEventListener('mousemove', dragMove);
+      window.addEventListener('mouseup', dragEnd);
+      radarControl.addEventListener('touchstart', dragStart, { passive: false });
+      window.addEventListener('touchmove', dragMove, { passive: false });
+      window.addEventListener('touchend', dragEnd);
+    }
+
+    // ========================================
+    // 5. FILTRO DE GÊNERO (Botão Único)
+    // ========================================
+    if (genderToggleBtn) {
+      genderToggleBtn.addEventListener("click", () => {
+        if (currentGenderFilter === "all") {
+          currentGenderFilter = "male";
+        } else if (currentGenderFilter === "male") {
+          currentGenderFilter = "female";
+        } else {
+          currentGenderFilter = "all";
+        }
+
+        localStorage.setItem(STORAGE_KEYS.GENDER_FILTER, currentGenderFilter);
+        
+        genderToggleBtn.style.opacity = "0.5";
+        setTimeout(() => genderToggleBtn.style.opacity = "1", 200);
+
         if (userLatitude && userLongitude) {
           showLoadingAnimation();
-          loadNearbyUsers(userLatitude, userLongitude, currentRangeKm, currentGenderFilter);
+          loadNearbyUsers(userLatitude, userLongitude, currentRangeMeters, currentGenderFilter);
         }
       });
     }
 
     // ========================================
-    // BOTÃO FAB - CENTRALIZAR NO MAPA
+    // 6. BOTTOM SHEET (DRAG & DROP COM SNAP)
     // ========================================
-    if (fabCenterMap) {
-      fabCenterMap.addEventListener("click", () => {
-        if (userLatitude && userLongitude) {
-          map.setView([userLatitude, userLongitude], 13);
-          map.flyTo([userLatitude, userLongitude], 13, { duration: 1 });
-        }
-      });
-    }
+    const bottomSheet = document.querySelector(".users-bottom-sheet");
+    const handle = document.querySelector(".bottom-sheet-handle");
+    const content = document.querySelector(".bottom-sheet-content");
 
-    // ========================================
-    // MODO INVISÍVEL
-    // ========================================
-    if (toggleVisibilityBtn) {
-      let isInvisible = localStorage.getItem(STORAGE_KEYS.INVISIBLE_MODE) === "true";
-      
-      const updateVisibilityUI = () => {
-        const eyeOpen = toggleVisibilityBtn.querySelector(".eye-open");
-        const eyeClosed = toggleVisibilityBtn.querySelector(".eye-closed");
+    if (bottomSheet && handle) {
+      let startY = 0;
+      let startHeight = 0;
+      let isDraggingSheet = false;
+
+      // Pontos de parada (Snap points em vh)
+      const SNAP_MIN = 25; // 25% da tela (recolhido)
+      const SNAP_MAX = 85; // 85% da tela (expandido)
+      const SNAP_THRESHOLD = 50; // Ponto de decisão
+
+      const onDragStart = (e) => {
+        isDraggingSheet = true;
+        bottomSheet.classList.add("dragging"); // Remove transição CSS para ficar fluido
         
-        if (isInvisible) {
-          toggleVisibilityBtn.classList.add("active");
-          eyeOpen.classList.add("hidden");
-          eyeClosed.classList.remove("hidden");
-          toggleVisibilityBtn.title = "Modo Invisível: Ativado";
+        // Pega a posição Y inicial (mouse ou touch)
+        startY = e.touches ? e.touches[0].clientY : e.clientY;
+        
+        // Pega a altura atual em pixels
+        startHeight = bottomSheet.getBoundingClientRect().height;
+      };
+
+      const onDragMove = (e) => {
+        if (!isDraggingSheet) return;
+        e.preventDefault(); // Evita scroll da página
+
+        const currentY = e.touches ? e.touches[0].clientY : e.clientY;
+        const deltaY = startY - currentY; // Invertido pois arrastar pra cima aumenta a altura
+        
+        let newHeight = startHeight + deltaY;
+        
+        // Limites físicos (pixels)
+        const minH = window.innerHeight * (SNAP_MIN / 100);
+        const maxH = window.innerHeight * (SNAP_MAX / 100);
+
+        if (newHeight < minH) newHeight = minH + (newHeight - minH) * 0.2; // Resistência elástica
+        if (newHeight > maxH) newHeight = maxH + (newHeight - maxH) * 0.2;
+
+        bottomSheet.style.height = `${newHeight}px`;
+      };
+
+      const onDragEnd = () => {
+        if (!isDraggingSheet) return;
+        isDraggingSheet = false;
+        bottomSheet.classList.remove("dragging"); // Reativa transição CSS
+
+        // Lógica de SNAP (Grudar)
+        const currentHeight = bottomSheet.getBoundingClientRect().height;
+        const viewportHeight = window.innerHeight;
+        const currentVh = (currentHeight / viewportHeight) * 100;
+
+        if (currentVh > SNAP_THRESHOLD) {
+          // Vai para o máximo
+          bottomSheet.style.height = `${SNAP_MAX}vh`;
         } else {
-          toggleVisibilityBtn.classList.remove("active");
-          eyeOpen.classList.remove("hidden");
-          eyeClosed.classList.add("hidden");
-          toggleVisibilityBtn.title = "Modo Invisível: Desativado";
+          // Vai para o mínimo
+          bottomSheet.style.height = `${SNAP_MIN}vh`;
         }
       };
 
-      // Inicializar UI
-      updateVisibilityUI();
+      // Eventos na Alça (Handle)
+      handle.addEventListener("mousedown", onDragStart);
+      handle.addEventListener("touchstart", onDragStart, { passive: false });
 
-      toggleVisibilityBtn.addEventListener("click", () => {
-        isInvisible = !isInvisible;
-        localStorage.setItem(STORAGE_KEYS.INVISIBLE_MODE, isInvisible);
-        updateVisibilityUI();
-        
-        // Aqui você pode adicionar uma chamada de API para atualizar o status no servidor
-        // fetch('/users/update_visibility', { method: 'POST', body: JSON.stringify({ invisible: isInvisible }) });
-        
-        console.log(`Modo invisível: ${isInvisible ? 'Ativado' : 'Desativado'}`);
-      });
+      // Eventos Globais de Movimento e Soltura
+      window.addEventListener("mousemove", onDragMove);
+      window.addEventListener("touchmove", onDragMove, { passive: false });
+      
+      window.addEventListener("mouseup", onDragEnd);
+      window.addEventListener("touchend", onDragEnd);
     }
 
     // ========================================
-    // GEOLOCALIZAÇÃO
+    // 7. STORIES E MODAIS
     // ========================================
-    function initializeMap(lat, lng) {
-      userLatitude = lat;
-      userLongitude = lng;
-
-      map.setView([lat, lng], 13);
-      addUserMarker(lat, lng);
-      updateRadarCircle(lat, lng);
-      updateHeaderLocation(lat, lng);
-
-      // Mostrar animação de carregamento
-      showLoadingAnimation();
-
-      // Carregar usuários
-      loadNearbyUsers(lat, lng, currentRangeKm, currentGenderFilter);
+    if (storiesToggleBtn && storiesSection) {
+        storiesToggleBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            storiesSection.classList.toggle("expanded");
+        });
+        document.addEventListener("click", (e) => {
+            if (!storiesSection.contains(e.target)) storiesSection.classList.remove("expanded");
+        });
     }
 
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        initializeMap(position.coords.latitude, position.coords.longitude);
-      },
-      () => {
-        // Fallback para localização padrão
-        initializeMap(defaultLat, defaultLng);
+    if (addStoryBtn) {
+        addStoryBtn.addEventListener("click", (e) => {
+            e.stopPropagation();
+            if(addStoryModal) {
+                addStoryModal.classList.remove("hidden");
+                if(modalOverlay) modalOverlay.classList.remove("hidden");
+            }
+        });
+    }
+
+    const hideAddStoryModal = () => {
+        if(addStoryModal) addStoryModal.classList.add("hidden");
+        if(modalOverlay) modalOverlay.classList.add("hidden");
+    };
+
+    if (closeModalBtn) closeModalBtn.addEventListener("click", hideAddStoryModal);
+    if (cancelStoryBtn) cancelStoryBtn.addEventListener("click", hideAddStoryModal);
+    if (modalOverlay) modalOverlay.addEventListener("click", hideAddStoryModal);
+
+
+    // ========================================
+    // 8. FUNÇÕES DE SUPORTE (API, MAPA, UI)
+    // ========================================
+    
+    function showLoadingAnimation() {
+      isLoadingUsers = true;
+      if (usersList) {
+        usersList.innerHTML = `
+          <li class="loading-skeleton"><div class="skeleton-avatar"></div><div class="skeleton-text"><div class="skeleton-line"></div></div></li>
+          <li class="loading-skeleton"><div class="skeleton-avatar"></div><div class="skeleton-text"><div class="skeleton-line"></div></div></li>
+        `;
       }
-    );
-
-    // ========================================
-    // ATUALIZAR HEADER COM LOCALIZAÇÃO
-    // ========================================
-    function updateHeaderLocation(lat, lng) {
-      if (headerLocation) {
-        headerLocation.textContent = `${lat.toFixed(2)}, ${lng.toFixed(2)}`;
-      }
-      if (headerDistanceInfo) {
-        headerDistanceInfo.textContent = `Raio: ${currentRangeKm} km`;
-      }
+      if (usersCountElement) usersCountElement.textContent = "...";
     }
 
-    // ========================================
-    // MARCADOR DO USUÁRIO ATUAL
-    // ========================================
-    function addUserMarker(lat, lng) {
-      if (userMarker) map.removeLayer(userMarker);
+    function hideLoadingAnimation() { isLoadingUsers = false; }
 
-      const userIcon = L.divIcon({
-        html: `
-          <div class="user-location-marker">
-            <div class="user-location-pulse"></div>
-            <div class="user-location-dot"></div>
-          </div>
-        `,
-        className: "user-marker",
-        iconSize: [40, 40],
-      });
-
-      userMarker = L.marker([lat, lng], { icon: userIcon }).addTo(map);
-    }
-
-    // ========================================
-    // RADAR GEOGRÁFICO (L.Circle)
-    // ========================================
+    // Atualiza o Círculo no Mapa
     function updateRadarCircle(lat = null, lng = null) {
       const centerLat = lat || userLatitude || defaultLat;
       const centerLng = lng || userLongitude || defaultLng;
-      const radiusInMeters = currentRangeKm * 1000;
+      const radius = currentRangeMeters; 
 
       if (radarCircle) {
-        radarCircle.setRadius(radiusInMeters);
+        radarCircle.setRadius(radius);
         radarCircle.setLatLng([centerLat, centerLng]);
       } else {
         radarCircle = L.circle([centerLat, centerLng], {
-          radius: radiusInMeters,
-          className: "radar-circle-dynamic",
+          radius: radius,
+          color: '#d4af37',
+          fillColor: '#d4af37',
+          fillOpacity: 0.1,
+          weight: 1,
           interactive: false,
         }).addTo(map);
       }
-
-      if (currentRangeKm > 100) {
-        map.fitBounds(radarCircle.getBounds(), { padding: [50, 50] });
-      }
     }
 
-    // ========================================
-    // BUSCAR USUÁRIOS PRÓXIMOS
-    // ========================================
-    async function loadNearbyUsers(latitude = null, longitude = null, range = INITIAL_RANGE_KM, genderFilter = "all") {
+    // Marcador do Próprio Usuário
+    function addUserMarker(lat, lng) {
+      if (userMarker) map.removeLayer(userMarker);
+      const userIcon = L.divIcon({
+        html: `<div class="user-location-marker"><div class="user-location-pulse"></div><div class="user-location-dot"></div></div>`,
+        className: "user-marker",
+        iconSize: [40, 40],
+      });
+      userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
+    }
+
+    // Inicialização do Mapa
+    function initializeMap(lat, lng) {
+      userLatitude = lat;
+      userLongitude = lng;
+      map.setView([lat, lng], defaultZoom);
+      addUserMarker(lat, lng);
+      updateRadarCircle(lat, lng);
+      showLoadingAnimation();
+      loadNearbyUsers(lat, lng, currentRangeMeters, currentGenderFilter);
+    }
+
+    // Busca de Usuários (API) - COM FILTRAGEM RIGOROSA
+    async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
       try {
-        let url = "/users/nearby";
-        if (latitude && longitude) {
-          url += `?latitude=${latitude}&longitude=${longitude}&range=${range}`;
-          if (genderFilter !== "all") {
-            url += `&gender=${genderFilter}`;
-          }
-        }
+        // Envia metros para o backend (ajuste para /1000.0 se precisar de KM)
+        let url = `/users/nearby?latitude=${latitude}&longitude=${longitude}&range=${rangeMeters}`;
+        if (genderFilter !== "all") url += `&gender=${genderFilter}`;
 
         const response = await fetch(url);
+        if (!response.ok) throw new Error("Falha na rede");
         const users = await response.json();
 
-        // Filtrar por gênero no frontend como backup
-        let filteredUsers = users;
-        if (genderFilter !== "all") {
-          filteredUsers = users.filter((user) => {
-            if (genderFilter === "male") return user.gender === "male" || user.gender === "m";
-            if (genderFilter === "female") return user.gender === "female" || user.gender === "f";
-            return true;
-          });
-        }
+        // Filtragem Client-side
+        let filteredUsers = users.filter((user) => {
+          // 1. Gênero
+          const g = (user.gender || "").toLowerCase();
+          const matchesGender = 
+            (genderFilter === "all") ||
+            (genderFilter === "male" && (g === "male" || g === "m" || g === "homem")) ||
+            (genderFilter === "female" && (g === "female" || g === "f" || g === "mulher"));
 
-        // Atualizar contadores
-        if (usersCountElement) {
-          usersCountElement.textContent = filteredUsers.length;
-        }
+          // 2. Distância (Raio Rigoroso)
+          let matchesDistance = true;
+          if (user.distance_km !== undefined && user.distance_km !== null) {
+             const distMeters = parseFloat(user.distance_km) * 1000;
+             matchesDistance = distMeters <= (rangeMeters + 10); // Margem de 10m
+          }
 
-        if (usersTotalText) {
-          usersTotalText.textContent = `${filteredUsers.length} ${filteredUsers.length === 1 ? "usuário" : "usuários"} próximo${filteredUsers.length === 1 ? "" : "s"}`;
-        }
-
-        // Limpar marcadores antigos
-        userMarkersGroup.clearLayers();
-
-        // Adicionar novos marcadores sem clustering
-        filteredUsers.forEach((user) => {
-          if (!user.latitude || !user.longitude) return;
-
-          const icon = L.divIcon({
-            html: `<img src="${user.avatar_url || "/default-avatar.png"}" class="marker-avatar" alt="${user.username}">`,
-            className: "custom-marker",
-            iconSize: [40, 40],
-            popupAnchor: [0, -20],
-          });
-
-          const marker = L.marker([user.latitude, user.longitude], { icon });
-          marker.on("click", () => showUserPopup(user));
-          userMarkersGroup.addLayer(marker);
+          return matchesGender && matchesDistance;
         });
 
-        // Atualizar lista lateral
-        updateUserList(filteredUsers);
-
-        // Disparar evento customizado
-        document.dispatchEvent(
-          new CustomEvent("usersLoaded", { detail: filteredUsers })
-        );
-
+        updateUIWithUsers(filteredUsers);
         hideLoadingAnimation();
+
       } catch (error) {
-        console.error("Erro ao carregar usuários próximos:", error);
+        console.error("Erro ao carregar:", error);
         hideLoadingAnimation();
+        if (usersList) usersList.innerHTML = '<li class="text-center loading-text">Ninguém encontrado</li>';
+      }
+    }
+
+    // Atualização da UI (Lista e Marcadores)
+    function updateUIWithUsers(users) {
+        if (usersCountElement) usersCountElement.textContent = users.length;
+        userMarkersGroup.clearLayers();
+        
         if (usersList) {
-          usersList.innerHTML = '<li class="text-center loading-text">Erro ao carregar usuários</li>';
+            usersList.innerHTML = "";
+            if (users.length === 0) {
+                usersList.innerHTML = '<li class="text-center loading-text">Ninguém por perto...</li>';
+                return;
+            }
+            users.forEach(user => {
+                // HTML COM MOLDURA DOURADA
+                const avatarHtml = `
+                  <div class="avatar-frame-wrapper">
+                    <img src="${user.avatar_url || '/default-avatar.png'}" class="avatar-user-img">
+                    <img src="${frameUrl}" class="avatar-frame-overlay">
+                  </div>
+                `;
+
+                // 1. Marcador no Mapa
+                if (user.latitude && user.longitude) {
+                    const icon = L.divIcon({
+                        html: avatarHtml,
+                        className: "custom-marker",
+                        iconSize: [56, 56],
+                        popupAnchor: [0, -20]
+                    });
+                    const marker = L.marker([user.latitude, user.longitude], { icon });
+                    marker.on("click", () => showUserPopup(user));
+                    userMarkersGroup.addLayer(marker);
+                }
+
+                // 2. Item da Lista
+                const li = document.createElement("li");
+                li.className = "user-list-item";
+                li.innerHTML = `
+                    ${avatarHtml}
+                    <div class="user-list-info">
+                        <span class="user-list-name">${user.username || 'Usuário'}</span>
+                        <span class="user-list-distance">${user.distance_km ? user.distance_km + ' km' : 'Perto'}</span>
+                    </div>
+                `;
+                li.addEventListener("click", () => {
+                    map.flyTo([user.latitude, user.longitude], 16);
+                    showUserPopup(user);
+                });
+                usersList.appendChild(li);
+            });
         }
-      }
     }
 
-    // ========================================
-    // LISTA LATERAL (Bottom Sheet)
-    // ========================================
-    function updateUserList(users) {
-      if (!usersList) return;
-
-      usersList.innerHTML = "";
-
-      if (users.length === 0) {
-        usersList.innerHTML =
-          '<li class="text-center loading-text">Nenhum usuário próximo</li>';
-        return;
-      }
-
-      users.forEach((user) => {
-        const li = document.createElement("li");
-        li.className = "user-list-item";
-        li.innerHTML = `
-          <img src="${user.avatar_url || "/default-avatar.png"}" class="avatar" alt="${user.username}">
-          <div class="user-list-info">
-            <span class="user-list-name">${user.username || "Usuário"}</span>
-            <span class="user-list-distance">${
-              user.distance_km ? `${user.distance_km} km` : "Próximo"
-            }</span>
-          </div>
-        `;
-
-        li.addEventListener("click", () => {
-          map.setView([user.latitude, user.longitude], 15);
-          map.flyTo([user.latitude, user.longitude], 15, { duration: 1 });
-          showUserPopup(user);
-        });
-
-        usersList.appendChild(li);
-      });
-    }
-
-    // ========================================
-    // POPUP DO USUÁRIO
-    // ========================================
+    // Exibir Popup
     function showUserPopup(user) {
       if (!userPopup) return;
-
       userPopup.dataset.userId = user.id;
-      userPopup.querySelector("#popup-avatar").src =
-        user.avatar_url || "/default-avatar.png";
-      userPopup.querySelector("#popup-username").textContent =
-        user.username || "Usuário";
-      userPopup.querySelector("#popup-location").textContent =
-        user.city || "Localização não informada";
-
-      const distanceBadge = userPopup.querySelector("#popup-distance");
-      if (distanceBadge) {
-        distanceBadge.textContent = user.distance_km
-          ? `${user.distance_km} km`
-          : "Próximo";
-      }
+      const img = userPopup.querySelector("#popup-avatar");
+      if(img) img.src = user.avatar_url || "/default-avatar.png";
+      const name = userPopup.querySelector("#popup-username");
+      if(name) name.textContent = user.username || "Usuário";
+      const loc = userPopup.querySelector("#popup-location");
+      if(loc) loc.textContent = user.city || "";
+      
+      const distBadge = userPopup.querySelector("#popup-distance");
+      if(distBadge) distBadge.textContent = user.distance_km ? `${user.distance_km} km` : "";
 
       userPopup.classList.remove("hidden");
       userPopup.classList.add("show");
     }
 
-    // ========================================
-    // FECHAR POPUP
-    // ========================================
+    // Listener para Fechar Popup
     if (closePopupBtn) {
-      closePopupBtn.addEventListener("click", () => {
-        if (userPopup) {
-          userPopup.classList.add("hidden");
-          userPopup.classList.remove("show");
-        }
-      });
-    }
-
-    const popupOverlay = document.querySelector(".popup-overlay");
-    if (popupOverlay) {
-      popupOverlay.addEventListener("click", () => {
-        if (userPopup) {
-          userPopup.classList.add("hidden");
-          userPopup.classList.remove("show");
-        }
-      });
-    }
-
-    // ========================================
-    // DRAG DO BOTTOM SHEET (Opcional)
-    // ========================================
-    if (bottomSheetHandle && usersBottomSheet) {
-      let startY = 0;
-      let currentY = 0;
-
-      bottomSheetHandle.addEventListener("touchstart", (e) => {
-        startY = e.touches[0].clientY;
-      });
-
-      bottomSheetHandle.addEventListener("touchmove", (e) => {
-        currentY = e.touches[0].clientY - startY;
-        usersBottomSheet.style.transform = `translateY(${Math.max(0, currentY)}px)`;
-      });
-
-      bottomSheetHandle.addEventListener("touchend", () => {
-        if (currentY > 50) {
-          usersBottomSheet.style.transform = "translateY(100%)";
-        } else {
-          usersBottomSheet.style.transform = "translateY(0)";
-        }
-        currentY = 0;
-      });
-    }
-
-    // ========================================
-    // AÇÕES DO POPUP
-    // ========================================
-    const likeBtn = document.getElementById("like-btn");
-    const messageBtn = document.getElementById("message-btn");
-    const rejectBtn = document.getElementById("reject-btn");
-
-    if (likeBtn) {
-      likeBtn.addEventListener("click", () => {
-        const userId = userPopup?.dataset.userId;
-        if (userId) {
-          console.log("Curtir usuário:", userId);
-        }
-      });
-    }
-
-    if (messageBtn) {
-      messageBtn.addEventListener("click", () => {
-        const userId = userPopup?.dataset.userId;
-        if (userId) {
-          console.log("Enviar mensagem para:", userId);
-        }
-      });
-    }
-
-    if (rejectBtn) {
-      rejectBtn.addEventListener("click", () => {
-        if (userPopup) {
-          userPopup.classList.add("hidden");
-          userPopup.classList.remove("show");
-        }
-      });
-    }
-
-    // ========================================
-    // CONTROLE DE EXPANSÃO DAS STORIES
-    // ========================================
-    const storiesSection = document.getElementById("stories-section");
-    const storiesToggleBtn = document.getElementById("stories-toggle-btn");
-    const addStoryBtn = document.getElementById("add-story-btn");
-
-    if (storiesSection && storiesToggleBtn) {
-      function toggleStoriesExpansion() {
-        storiesSection.classList.toggle("expanded");
-      }
-
-      storiesToggleBtn.addEventListener("click", (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        toggleStoriesExpansion();
-      });
-
-      if (addStoryBtn) {
-        addStoryBtn.addEventListener("click", (e) => {
-          e.preventDefault();
-          e.stopPropagation();
+        closePopupBtn.addEventListener("click", () => {
+            userPopup.classList.add("hidden");
+            userPopup.classList.remove("show");
         });
-      }
-
-      document.addEventListener("click", (e) => {
-        if (!storiesSection.contains(e.target) && storiesSection.classList.contains("expanded")) {
-          storiesSection.classList.remove("expanded");
-        }
-      });
-
-      storiesSection.addEventListener("click", (e) => {
-        e.stopPropagation();
-      });
+    }
+    if (popupOverlay) {
+        popupOverlay.addEventListener("click", () => {
+            userPopup.classList.add("hidden");
+            userPopup.classList.remove("show");
+        });
     }
 
-    // ========================================
-    // ESTILOS DOS MARCADORES E ANIMAÇÕES
-    // ========================================
+    // Botões FAB
+    if (fabCenterMap) {
+        fabCenterMap.addEventListener("click", () => {
+            if (userLatitude) { map.setView([userLatitude, userLongitude], 15); map.flyTo([userLatitude, userLongitude], 15, {duration:1}); }
+        });
+    }
+    if (toggleVisibilityBtn) {
+        toggleVisibilityBtn.addEventListener("click", () => {
+            let isInvisible = localStorage.getItem(STORAGE_KEYS.INVISIBLE_MODE) === "true";
+            isInvisible = !isInvisible;
+            localStorage.setItem(STORAGE_KEYS.INVISIBLE_MODE, isInvisible);
+            
+            const eyeOpen = toggleVisibilityBtn.querySelector(".eye-open");
+            const eyeClosed = toggleVisibilityBtn.querySelector(".eye-closed");
+            if (isInvisible) {
+                toggleVisibilityBtn.classList.add("active");
+                if(eyeOpen) eyeOpen.classList.add("hidden");
+                if(eyeClosed) eyeClosed.classList.remove("hidden");
+            } else {
+                toggleVisibilityBtn.classList.remove("active");
+                if(eyeOpen) eyeOpen.classList.remove("hidden");
+                if(eyeClosed) eyeClosed.classList.add("hidden");
+            }
+        });
+    }
+
+    // Inicialização via Geolocalização
+    if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+            (position) => initializeMap(position.coords.latitude, position.coords.longitude),
+            () => initializeMap(defaultLat, defaultLng),
+            { enableHighAccuracy: true }
+        );
+    } else {
+        initializeMap(defaultLat, defaultLng);
+    }
+
+    // CSS Injetado dinamicamente para os Marcadores e Animações
     const style = document.createElement("style");
     style.textContent = `
-    .marker-avatar {
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 3px solid #d4af37;
-      object-fit: cover;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
-    }
-    .user-location-marker {
-      position: relative;
-      width: 40px;
-      height: 40px;
-    }
-    .user-location-dot {
-      width: 12px;
-      height: 12px;
-      background: #d4af37;
-      border-radius: 50%;
-      border: 3px solid white;
-      position: relative;
-      z-index: 10;
-    }
-    .user-location-pulse {
-      position: absolute;
-      width: 40px;
-      height: 40px;
-      border-radius: 50%;
-      border: 2px solid #d4af37;
-      animation: pulse 2s infinite;
-    }
-    @keyframes pulse {
-      from { transform: scale(1); opacity: 1; }
-      to { transform: scale(2); opacity: 0; }
-    }
-
-    /* Animações de Carregamento */
-    .loading-spinner {
-      display: inline-block;
-      width: 16px;
-      height: 16px;
-      border: 2px solid #f3f3f3;
-      border-top: 2px solid #d4af37;
-      border-radius: 50%;
-      animation: spin 1s linear infinite;
-    }
-
-    @keyframes spin {
-      0% { transform: rotate(0deg); }
-      100% { transform: rotate(360deg); }
-    }
-
-    .loading-skeleton {
-      display: flex;
-      gap: 0.75rem;
-      padding: 1rem;
-      background: #f5f5f5;
-      border-radius: 8px;
-      margin-bottom: 0.5rem;
-      animation: pulse-skeleton 1.5s ease-in-out infinite;
-    }
-
-    .skeleton-avatar {
-      width: 48px;
-      height: 48px;
-      border-radius: 50%;
-      background: #e0e0e0;
-      flex-shrink: 0;
-    }
-
-    .skeleton-text {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      gap: 0.5rem;
-    }
-
-    .skeleton-line {
-      height: 10px;
-      background: #e0e0e0;
-      border-radius: 4px;
-    }
-
-    .skeleton-line.short {
-      width: 60%;
-    }
-
-    @keyframes pulse-skeleton {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.5; }
-    }
-
-    /* Filtros de Gênero */
-    #gender-filter-container {
-      display: flex;
-      gap: 0.5rem;
-      padding: 0.75rem;
-      background: rgba(255, 255, 255, 0.9);
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-    }
-
-    .gender-filter-btn {
-      padding: 0.5rem 1rem;
-      border: 2px solid #e0e0e0;
-      background: white;
-      border-radius: 20px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 600;
-      transition: all 0.3s ease;
-      display: flex;
-      align-items: center;
-      gap: 0.5rem;
-      color: #666;
-    }
-
-    .gender-filter-btn:hover {
-      border-color: #d4af37;
-      color: #d4af37;
-    }
-
-    .gender-filter-btn.active {
-      background: #d4af37;
-      border-color: #d4af37;
-      color: white;
-      box-shadow: 0 2px 8px rgba(212, 175, 55, 0.3);
-    }
-
-    .filter-icon {
-      font-size: 1.1rem;
-    }
+    .user-location-marker { position: relative; width: 40px; height: 40px; }
+    .user-location-dot { width: 12px; height: 12px; background: #d4af37; border-radius: 50%; border: 2px solid #fff; position: relative; z-index: 10; top: 14px; left: 14px; }
+    .user-location-pulse { position: absolute; width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(212, 175, 55, 0.5); animation: pulse 2s infinite; }
+    @keyframes pulse { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+    .loading-skeleton { display: flex; gap: 10px; padding: 10px; background: #252527; border-radius: 8px; margin-bottom: 5px; }
+    .skeleton-avatar { width: 40px; height: 40px; background: #444; border-radius: 50%; }
+    .skeleton-text { flex: 1; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
+    .skeleton-line { height: 10px; background: #444; border-radius: 4px; width: 80%; }
     `;
     document.head.appendChild(style);
   });
