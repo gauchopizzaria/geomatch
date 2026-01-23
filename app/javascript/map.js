@@ -58,6 +58,9 @@ const STORAGE_KEYS = {
     const rangeValueText = document.getElementById("range-value-text");
     const radarControl = document.querySelector('.radar-control-floating');
     
+    // Container principal para injetar a variável CSS do spotlight
+    const containerElement = document.querySelector('.discover-fullscreen-container');
+
     const usersList = document.getElementById("users-list");
     const usersCountElement = document.getElementById("nearby-count");
     
@@ -79,15 +82,24 @@ const STORAGE_KEYS = {
     const cancelStoryBtn = document.getElementById("cancel-story-btn");
 
     // ========================================
-    // 3. SLIDER DE RAIO (Visual Bege + Lógica)
+    // 3. SLIDER DE RAIO (Visual Bege + Lógica + Spotlight)
     // ========================================
+    let updateSliderVisuals = () => {}; 
+
     if (rangeSlider && rangeValueText) {
-      const updateSliderVisuals = (val) => {
+      updateSliderVisuals = (val) => {
+        // 1. Atualiza o texto
         rangeValueText.textContent = `${val}m`;
+        
+        // 2. Atualiza a cor de preenchimento do slider
         const max = rangeSlider.max || 300;
         const percent = (val / max) * 100;
-        // Background Bege (#f4e4bc) preenchendo até a porcentagem
         rangeSlider.style.backgroundImage = `linear-gradient(to right, #f4e4bc 0%, #f4e4bc ${percent}%, transparent ${percent}%, transparent 100%)`;
+
+        // 3. Atualiza o Raio do Spotlight
+        if (containerElement) {
+           containerElement.style.setProperty('--radar-radius', `${val}px`);
+        }
       };
 
       // Inicializa
@@ -97,12 +109,13 @@ const STORAGE_KEYS = {
       rangeSlider.addEventListener("input", (e) => {
         const val = parseInt(e.target.value, 10);
         currentRangeMeters = val;
-        updateSliderVisuals(val);
-        updateRadarCircle();
+        updateSliderVisuals(val); 
+        updateRadarCircle();      
       });
-
+      
       rangeSlider.addEventListener("change", () => {
         localStorage.setItem(STORAGE_KEYS.RANGE, currentRangeMeters);
+        // Recarrega usuários na nova posição (centro do mapa)
         if (userLatitude && userLongitude) {
           loadNearbyUsers(userLatitude, userLongitude, currentRangeMeters, currentGenderFilter);
         }
@@ -179,75 +192,53 @@ const STORAGE_KEYS = {
     // ========================================
     const bottomSheet = document.querySelector(".users-bottom-sheet");
     const handle = document.querySelector(".bottom-sheet-handle");
-    const content = document.querySelector(".bottom-sheet-content");
 
     if (bottomSheet && handle) {
       let startY = 0;
       let startHeight = 0;
       let isDraggingSheet = false;
-
-      // Pontos de parada (Snap points em vh)
-      const SNAP_MIN = 25; // 25% da tela (recolhido)
-      const SNAP_MAX = 85; // 85% da tela (expandido)
-      const SNAP_THRESHOLD = 50; // Ponto de decisão
+      const SNAP_MIN = 25; 
+      const SNAP_MAX = 85; 
+      const SNAP_THRESHOLD = 50; 
 
       const onDragStart = (e) => {
         isDraggingSheet = true;
-        bottomSheet.classList.add("dragging"); // Remove transição CSS para ficar fluido
-        
-        // Pega a posição Y inicial (mouse ou touch)
+        bottomSheet.classList.add("dragging"); 
         startY = e.touches ? e.touches[0].clientY : e.clientY;
-        
-        // Pega a altura atual em pixels
         startHeight = bottomSheet.getBoundingClientRect().height;
       };
 
       const onDragMove = (e) => {
         if (!isDraggingSheet) return;
-        e.preventDefault(); // Evita scroll da página
-
+        e.preventDefault(); 
         const currentY = e.touches ? e.touches[0].clientY : e.clientY;
-        const deltaY = startY - currentY; // Invertido pois arrastar pra cima aumenta a altura
-        
+        const deltaY = startY - currentY; 
         let newHeight = startHeight + deltaY;
-        
-        // Limites físicos (pixels)
         const minH = window.innerHeight * (SNAP_MIN / 100);
         const maxH = window.innerHeight * (SNAP_MAX / 100);
-
-        if (newHeight < minH) newHeight = minH + (newHeight - minH) * 0.2; // Resistência elástica
+        if (newHeight < minH) newHeight = minH + (newHeight - minH) * 0.2; 
         if (newHeight > maxH) newHeight = maxH + (newHeight - maxH) * 0.2;
-
         bottomSheet.style.height = `${newHeight}px`;
       };
 
       const onDragEnd = () => {
         if (!isDraggingSheet) return;
         isDraggingSheet = false;
-        bottomSheet.classList.remove("dragging"); // Reativa transição CSS
-
-        // Lógica de SNAP (Grudar)
+        bottomSheet.classList.remove("dragging"); 
         const currentHeight = bottomSheet.getBoundingClientRect().height;
         const viewportHeight = window.innerHeight;
         const currentVh = (currentHeight / viewportHeight) * 100;
-
         if (currentVh > SNAP_THRESHOLD) {
-          // Vai para o máximo
           bottomSheet.style.height = `${SNAP_MAX}vh`;
         } else {
-          // Vai para o mínimo
           bottomSheet.style.height = `${SNAP_MIN}vh`;
         }
       };
 
-      // Eventos na Alça (Handle)
       handle.addEventListener("mousedown", onDragStart);
       handle.addEventListener("touchstart", onDragStart, { passive: false });
-
-      // Eventos Globais de Movimento e Soltura
       window.addEventListener("mousemove", onDragMove);
       window.addEventListener("touchmove", onDragMove, { passive: false });
-      
       window.addEventListener("mouseup", onDragEnd);
       window.addEventListener("touchend", onDragEnd);
     }
@@ -290,7 +281,6 @@ const STORAGE_KEYS = {
     // ========================================
     
     function showLoadingAnimation() {
-      isLoadingUsers = true;
       if (usersList) {
         usersList.innerHTML = `
           <li class="loading-skeleton"><div class="skeleton-avatar"></div><div class="skeleton-text"><div class="skeleton-line"></div></div></li>
@@ -300,9 +290,9 @@ const STORAGE_KEYS = {
       if (usersCountElement) usersCountElement.textContent = "...";
     }
 
-    function hideLoadingAnimation() { isLoadingUsers = false; }
+    function hideLoadingAnimation() { }
 
-    // Atualiza o Círculo no Mapa
+    // Atualiza o Círculo (Leaflet)
     function updateRadarCircle(lat = null, lng = null) {
       const centerLat = lat || userLatitude || defaultLat;
       const centerLng = lng || userLongitude || defaultLng;
@@ -323,6 +313,19 @@ const STORAGE_KEYS = {
       }
     }
 
+    // --- NOVA FUNÇÃO: Atualiza a Posição X/Y do Spotlight (Luz + Borda Dourada) ---
+    function updateSpotlightPosition() {
+      // Só roda se tivermos localização e container
+      if (userLatitude !== null && userLongitude !== null && containerElement) {
+        // Converte Lat/Lng do CENTRO para Pixels (X, Y)
+        const point = map.latLngToContainerPoint([userLatitude, userLongitude]);
+        
+        // Atualiza variáveis CSS para mover o foco e a máscara
+        containerElement.style.setProperty('--radar-x', `${point.x}px`);
+        containerElement.style.setProperty('--radar-y', `${point.y}px`);
+      }
+    }
+
     // Marcador do Próprio Usuário
     function addUserMarker(lat, lng) {
       if (userMarker) map.removeLayer(userMarker);
@@ -338,17 +341,42 @@ const STORAGE_KEYS = {
     function initializeMap(lat, lng) {
       userLatitude = lat;
       userLongitude = lng;
+      
       map.setView([lat, lng], defaultZoom);
       addUserMarker(lat, lng);
+      
       updateRadarCircle(lat, lng);
+      updateSliderVisuals(currentRangeMeters);
+      updateSpotlightPosition(); // Força a posição inicial
+      
       showLoadingAnimation();
       loadNearbyUsers(lat, lng, currentRangeMeters, currentGenderFilter);
     }
 
-    // Busca de Usuários (API) - COM FILTRAGEM RIGOROSA
+    // --- EVENTO CRÍTICO: FIXAR O PONTO NO CENTRO ENQUANTO O MAPA MOVE ---
+    // Faz com que o Marcador, o Círculo e o Spotlight acompanhem o movimento
+    map.on('move', () => {
+        // 1. Pega o novo centro (para onde o usuário arrastou o mapa)
+        const newCenter = map.getCenter();
+        
+        // 2. Atualiza estado global
+        userLatitude = newCenter.lat;
+        userLongitude = newCenter.lng;
+
+        // 3. Move o marcador visual (pino) e o círculo (área) para o novo centro
+        if (userMarker) userMarker.setLatLng(newCenter);
+        if (radarCircle) radarCircle.setLatLng(newCenter);
+
+        // 4. Atualiza o efeito visual (buraco na máscara)
+        updateSpotlightPosition();
+    });
+
+    // Eventos de redimensionamento (ajusta o spotlight se girar a tela)
+    map.on('resize', updateSpotlightPosition);
+
+    // Busca de Usuários (API)
     async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
       try {
-        // Envia metros para o backend (ajuste para /1000.0 se precisar de KM)
         let url = `/users/nearby?latitude=${latitude}&longitude=${longitude}&range=${rangeMeters}`;
         if (genderFilter !== "all") url += `&gender=${genderFilter}`;
 
@@ -397,7 +425,6 @@ const STORAGE_KEYS = {
                 return;
             }
             users.forEach(user => {
-                // HTML COM MOLDURA DOURADA
                 const avatarHtml = `
                   <div class="avatar-frame-wrapper">
                     <img src="${user.avatar_url || '/default-avatar.png'}" class="avatar-user-img">
@@ -405,7 +432,6 @@ const STORAGE_KEYS = {
                   </div>
                 `;
 
-                // 1. Marcador no Mapa
                 if (user.latitude && user.longitude) {
                     const icon = L.divIcon({
                         html: avatarHtml,
@@ -418,7 +444,6 @@ const STORAGE_KEYS = {
                     userMarkersGroup.addLayer(marker);
                 }
 
-                // 2. Item da Lista
                 const li = document.createElement("li");
                 li.className = "user-list-item";
                 li.innerHTML = `
@@ -455,7 +480,6 @@ const STORAGE_KEYS = {
       userPopup.classList.add("show");
     }
 
-    // Listener para Fechar Popup
     if (closePopupBtn) {
         closePopupBtn.addEventListener("click", () => {
             userPopup.classList.add("hidden");
@@ -472,7 +496,10 @@ const STORAGE_KEYS = {
     // Botões FAB
     if (fabCenterMap) {
         fabCenterMap.addEventListener("click", () => {
-            if (userLatitude) { map.setView([userLatitude, userLongitude], 15); map.flyTo([userLatitude, userLongitude], 15, {duration:1}); }
+            // Se clicar em centralizar, voltamos para a localização GPS original se disponível
+            // ou mantemos o centro atual. Se quiser voltar pro GPS, precisa salvar a "gpsLat/gpsLng" separadamente.
+            // Por enquanto, centraliza no visual atual com animação:
+            if (userLatitude) { map.setView([userLatitude, userLongitude], 15); }
         });
     }
     if (toggleVisibilityBtn) {
@@ -506,7 +533,6 @@ const STORAGE_KEYS = {
         initializeMap(defaultLat, defaultLng);
     }
 
-    // CSS Injetado dinamicamente para os Marcadores e Animações
     const style = document.createElement("style");
     style.textContent = `
     .user-location-marker { position: relative; width: 40px; height: 40px; }
