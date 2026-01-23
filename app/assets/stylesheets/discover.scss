@@ -47,7 +47,14 @@
     transition: width 0.1s linear, height 0.1s linear; // Apenas tamanho anima suave
   }
 }
-.map-fullscreen { width: 100%; height: 100%; z-index: 1; }
+
+.map-fullscreen { 
+  width: 100%; 
+  height: 100%; 
+  z-index: 1; 
+  // ADICIONE ESTA LINHA:
+  pointer-events: auto; // Reativa a interação (arrastar/zoom) no mapa
+}
 
 // 2. HEADER FLUTUANTE
 .discover-header-floating {

@@ -34,10 +34,18 @@ const STORAGE_KEYS = {
       maxZoom: 19,
     }).addTo(map);
 
+    // --- VARIÁVEIS DE ESTADO ---
     let currentRangeMeters = INITIAL_RANGE_METERS;
     let currentGenderFilter = "all";
-    let userLatitude = null;
-    let userLongitude = null;
+    
+    // GPS FIXO (Onde o usuário realmente está)
+    let fixedUserLat = null;
+    let fixedUserLng = null;
+
+    // CENTRO VISUAL (Onde o usuário está olhando/mirando)
+    let currentCenterLat = null;
+    let currentCenterLng = null;
+
     let radarCircle = null;
     let userMarker = null;
 
@@ -116,8 +124,8 @@ const STORAGE_KEYS = {
       rangeSlider.addEventListener("change", () => {
         localStorage.setItem(STORAGE_KEYS.RANGE, currentRangeMeters);
         // Recarrega usuários na nova posição (centro do mapa)
-        if (userLatitude && userLongitude) {
-          loadNearbyUsers(userLatitude, userLongitude, currentRangeMeters, currentGenderFilter);
+        if (currentCenterLat && currentCenterLng) {
+          loadNearbyUsers(currentCenterLat, currentCenterLng, currentRangeMeters, currentGenderFilter);
         }
       });
     }
@@ -180,9 +188,9 @@ const STORAGE_KEYS = {
         genderToggleBtn.style.opacity = "0.5";
         setTimeout(() => genderToggleBtn.style.opacity = "1", 200);
 
-        if (userLatitude && userLongitude) {
+        if (currentCenterLat && currentCenterLng) {
           showLoadingAnimation();
-          loadNearbyUsers(userLatitude, userLongitude, currentRangeMeters, currentGenderFilter);
+          loadNearbyUsers(currentCenterLat, currentCenterLng, currentRangeMeters, currentGenderFilter);
         }
       });
     }
@@ -293,9 +301,10 @@ const STORAGE_KEYS = {
     function hideLoadingAnimation() { }
 
     // Atualiza o Círculo (Leaflet)
+    // AGORA USA O CENTRO DO MAPA (ONDE A MIRA ESTÁ)
     function updateRadarCircle(lat = null, lng = null) {
-      const centerLat = lat || userLatitude || defaultLat;
-      const centerLng = lng || userLongitude || defaultLng;
+      const centerLat = lat || currentCenterLat || defaultLat;
+      const centerLng = lng || currentCenterLng || defaultLng;
       const radius = currentRangeMeters; 
 
       if (radarCircle) {
@@ -313,20 +322,56 @@ const STORAGE_KEYS = {
       }
     }
 
-    // --- NOVA FUNÇÃO: Atualiza a Posição X/Y do Spotlight (Luz + Borda Dourada) ---
+    // ========================================
+    // LOGICA DE SPOTLIGHT E MOVIMENTO (CORRIGIDA)
+    // ========================================
+
+    // --- 1. Atualiza a Posição Visual do Spotlight ---
     function updateSpotlightPosition() {
-      // Só roda se tivermos localização e container
-      if (userLatitude !== null && userLongitude !== null && containerElement) {
-        // Converte Lat/Lng do CENTRO para Pixels (X, Y)
-        const point = map.latLngToContainerPoint([userLatitude, userLongitude]);
-        
-        // Atualiza variáveis CSS para mover o foco e a máscara
-        containerElement.style.setProperty('--radar-x', `${point.x}px`);
-        containerElement.style.setProperty('--radar-y', `${point.y}px`);
-      }
+      if (!containerElement) return;
+
+      // Pega o ponto central exato do CONTAINER DO MAPA em pixels
+      const mapSize = map.getSize();
+      const centerX = mapSize.x / 2;
+      const centerY = mapSize.y / 2;
+      
+      // Atualiza as variáveis CSS para centralizar a máscara e o aro dourado na TELA
+      containerElement.style.setProperty('--radar-x', `${centerX}px`);
+      containerElement.style.setProperty('--radar-y', `${centerY}px`);
     }
 
-    // Marcador do Próprio Usuário
+    // --- 2. Evento: Ao Mover o Mapa (Drag) ---
+    // IMPORTANTE: Aqui atualizamos a MIRA (Radar), mas NÃO o marcador do usuário (Pino)
+    map.on('move', () => {
+        const newCenter = map.getCenter();
+        
+        // Atualiza as coordenadas do CENTRO VISUAL (Onde estamos buscando)
+        currentCenterLat = newCenter.lat;
+        currentCenterLng = newCenter.lng;
+
+        // Move a ÁREA DE BUSCA (Círculo Amarelo) para acompanhar a mira
+        if (radarCircle) radarCircle.setLatLng(newCenter);
+
+        // Garante que o spotlight (máscara) esteja alinhado
+        updateSpotlightPosition();
+
+        // NOTA: userMarker NÃO é movido aqui. Ele fica fixo no GPS.
+    });
+
+    // --- 3. Evento: Ao Redimensionar a Tela ---
+    map.on('resize', updateSpotlightPosition);
+
+    // --- 4. Evento: Ao Terminar de Mover ---
+    map.on('moveend', () => {
+        const newCenter = map.getCenter();
+        currentCenterLat = newCenter.lat;
+        currentCenterLng = newCenter.lng;
+        
+        // SE QUISER BUSCAR AUTOMATICAMENTE AO SOLTAR O MAPA, DESCOMENTE:
+        // loadNearbyUsers(currentCenterLat, currentCenterLng, currentRangeMeters, currentGenderFilter);
+    });
+
+    // Marcador do Próprio Usuário (SÓ É CHAMADO NA INICIALIZAÇÃO OU ATUALIZAÇÃO DE GPS)
     function addUserMarker(lat, lng) {
       if (userMarker) map.removeLayer(userMarker);
       const userIcon = L.divIcon({
@@ -339,40 +384,28 @@ const STORAGE_KEYS = {
 
     // Inicialização do Mapa
     function initializeMap(lat, lng) {
-      userLatitude = lat;
-      userLongitude = lng;
+      // 1. Salva a localização GPS (FIXA)
+      fixedUserLat = lat;
+      fixedUserLng = lng;
+
+      // 2. Define o centro inicial do mapa
+      currentCenterLat = lat;
+      currentCenterLng = lng;
       
       map.setView([lat, lng], defaultZoom);
+      
+      // 3. Adiciona o pino na localização FIXA
       addUserMarker(lat, lng);
       
+      // 4. Cria o radar e o spotlight no centro
       updateRadarCircle(lat, lng);
       updateSliderVisuals(currentRangeMeters);
-      updateSpotlightPosition(); // Força a posição inicial
+      updateSpotlightPosition(); 
       
+      // 5. Busca inicial
       showLoadingAnimation();
       loadNearbyUsers(lat, lng, currentRangeMeters, currentGenderFilter);
     }
-
-    // --- EVENTO CRÍTICO: FIXAR O PONTO NO CENTRO ENQUANTO O MAPA MOVE ---
-    // Faz com que o Marcador, o Círculo e o Spotlight acompanhem o movimento
-    map.on('move', () => {
-        // 1. Pega o novo centro (para onde o usuário arrastou o mapa)
-        const newCenter = map.getCenter();
-        
-        // 2. Atualiza estado global
-        userLatitude = newCenter.lat;
-        userLongitude = newCenter.lng;
-
-        // 3. Move o marcador visual (pino) e o círculo (área) para o novo centro
-        if (userMarker) userMarker.setLatLng(newCenter);
-        if (radarCircle) radarCircle.setLatLng(newCenter);
-
-        // 4. Atualiza o efeito visual (buraco na máscara)
-        updateSpotlightPosition();
-    });
-
-    // Eventos de redimensionamento (ajusta o spotlight se girar a tela)
-    map.on('resize', updateSpotlightPosition);
 
     // Busca de Usuários (API)
     async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
@@ -496,10 +529,10 @@ const STORAGE_KEYS = {
     // Botões FAB
     if (fabCenterMap) {
         fabCenterMap.addEventListener("click", () => {
-            // Se clicar em centralizar, voltamos para a localização GPS original se disponível
-            // ou mantemos o centro atual. Se quiser voltar pro GPS, precisa salvar a "gpsLat/gpsLng" separadamente.
-            // Por enquanto, centraliza no visual atual com animação:
-            if (userLatitude) { map.setView([userLatitude, userLongitude], 15); }
+            // Volta para a Localização GPS FIXA
+            if (fixedUserLat && fixedUserLng) { 
+                map.flyTo([fixedUserLat, fixedUserLng], 15); 
+            }
         });
     }
     if (toggleVisibilityBtn) {
