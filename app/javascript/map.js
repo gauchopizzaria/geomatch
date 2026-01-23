@@ -1,8 +1,7 @@
 import L from "leaflet";
 window.L = L;
 
-// Constantes
-const INITIAL_RANGE_METERS = 150; // Padrão 150m
+const INITIAL_RANGE_METERS = 150; 
 const STORAGE_KEYS = {
   RANGE: "geomatch_range",
   GENDER_FILTER: "geomatch_gender_filter",
@@ -14,7 +13,6 @@ const STORAGE_KEYS = {
     const mapContainer = document.getElementById("map");
     if (!mapContainer) return;
 
-    // --- PEGA URL DA MOLDURA (DO HTML) ---
     const assetsData = document.getElementById('assets-data');
     const frameUrl = assetsData ? assetsData.dataset.frameUrl : ''; 
 
@@ -38,18 +36,13 @@ const STORAGE_KEYS = {
     let currentRangeMeters = INITIAL_RANGE_METERS;
     let currentGenderFilter = "all";
     
-    // GPS FIXO (Onde o usuário realmente está)
+    // ONDE O USUÁRIO ESTÁ (A LUZ FICA AQUI)
     let fixedUserLat = null;
     let fixedUserLng = null;
-
-    // CENTRO VISUAL (Onde o usuário está olhando/mirando)
-    let currentCenterLat = null;
-    let currentCenterLng = null;
 
     let radarCircle = null;
     let userMarker = null;
 
-    // Recuperar preferências
     const savedRange = localStorage.getItem(STORAGE_KEYS.RANGE);
     const savedGender = localStorage.getItem(STORAGE_KEYS.GENDER_FILTER);
 
@@ -60,27 +53,22 @@ const STORAGE_KEYS = {
     map.addLayer(userMarkersGroup);
 
     // ========================================
-    // 2. SELEÇÃO DE ELEMENTOS DOM
+    // 2. ELEMENTOS DO DOM
     // ========================================
     const rangeSlider = document.getElementById("radar-range");
     const rangeValueText = document.getElementById("range-value-text");
     const radarControl = document.querySelector('.radar-control-floating');
-    
-    // Container principal para injetar a variável CSS do spotlight
     const containerElement = document.querySelector('.discover-fullscreen-container');
-
     const usersList = document.getElementById("users-list");
     const usersCountElement = document.getElementById("nearby-count");
-    
     const userPopup = document.getElementById("user-popup");
     const closePopupBtn = document.getElementById("close-popup-btn");
     const popupOverlay = document.querySelector(".popup-overlay");
-    
     const fabCenterMap = document.getElementById("fab-center-map");
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
     const genderToggleBtn = document.getElementById("gender-filter-toggle");
 
-    // Stories Elements
+    // Stories Elements (Mantido igual)
     const storiesSection = document.getElementById("stories-section");
     const storiesToggleBtn = document.getElementById("stories-toggle-btn");
     const addStoryBtn = document.getElementById("add-story-btn");
@@ -90,27 +78,20 @@ const STORAGE_KEYS = {
     const cancelStoryBtn = document.getElementById("cancel-story-btn");
 
     // ========================================
-    // 3. SLIDER DE RAIO (Visual Bege + Lógica + Spotlight)
+    // 3. SLIDER DE RAIO
     // ========================================
     let updateSliderVisuals = () => {}; 
-
     if (rangeSlider && rangeValueText) {
       updateSliderVisuals = (val) => {
-        // 1. Atualiza o texto
         rangeValueText.textContent = `${val}m`;
-        
-        // 2. Atualiza a cor de preenchimento do slider
         const max = rangeSlider.max || 300;
         const percent = (val / max) * 100;
         rangeSlider.style.backgroundImage = `linear-gradient(to right, #f4e4bc 0%, #f4e4bc ${percent}%, transparent ${percent}%, transparent 100%)`;
-
-        // 3. Atualiza o Raio do Spotlight
+        
         if (containerElement) {
            containerElement.style.setProperty('--radar-radius', `${val}px`);
         }
       };
-
-      // Inicializa
       rangeSlider.value = currentRangeMeters;
       updateSliderVisuals(currentRangeMeters);
 
@@ -123,20 +104,19 @@ const STORAGE_KEYS = {
       
       rangeSlider.addEventListener("change", () => {
         localStorage.setItem(STORAGE_KEYS.RANGE, currentRangeMeters);
-        // Recarrega usuários na nova posição (centro do mapa)
-        if (currentCenterLat && currentCenterLng) {
-          loadNearbyUsers(currentCenterLat, currentCenterLng, currentRangeMeters, currentGenderFilter);
+        // Recarrega usuários na posição do USUÁRIO (não do centro da tela)
+        if (fixedUserLat && fixedUserLng) {
+          loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
         }
       });
     }
 
     // ========================================
-    // 4. CONTROLE DE RADAR MÓVEL (Drag & Drop)
+    // 4. RADAR DRAGGABLE
     // ========================================
     if (radarControl) {
       let isDragging = false;
       let startX, startY, initialLeft, initialTop;
-
       const dragStart = (e) => {
         if (e.target.tagName.toLowerCase() === 'input') return;
         isDragging = true;
@@ -148,7 +128,6 @@ const STORAGE_KEYS = {
         initialLeft = parseInt(style.left, 10) || 0;
         initialTop = parseInt(style.top, 10) || 0;
       };
-
       const dragMove = (e) => {
         if (!isDragging) return;
         e.preventDefault(); 
@@ -159,9 +138,7 @@ const STORAGE_KEYS = {
         radarControl.style.left = `${initialLeft + deltaX}px`;
         radarControl.style.top = `${initialTop + deltaY}px`;
       };
-
       const dragEnd = () => { isDragging = false; };
-
       radarControl.addEventListener('mousedown', dragStart);
       window.addEventListener('mousemove', dragMove);
       window.addEventListener('mouseup', dragEnd);
@@ -171,51 +148,39 @@ const STORAGE_KEYS = {
     }
 
     // ========================================
-    // 5. FILTRO DE GÊNERO (Botão Único)
+    // 5. FILTRO GÊNERO
     // ========================================
     if (genderToggleBtn) {
       genderToggleBtn.addEventListener("click", () => {
-        if (currentGenderFilter === "all") {
-          currentGenderFilter = "male";
-        } else if (currentGenderFilter === "male") {
-          currentGenderFilter = "female";
-        } else {
-          currentGenderFilter = "all";
-        }
+        if (currentGenderFilter === "all") currentGenderFilter = "male";
+        else if (currentGenderFilter === "male") currentGenderFilter = "female";
+        else currentGenderFilter = "all";
 
         localStorage.setItem(STORAGE_KEYS.GENDER_FILTER, currentGenderFilter);
-        
         genderToggleBtn.style.opacity = "0.5";
         setTimeout(() => genderToggleBtn.style.opacity = "1", 200);
 
-        if (currentCenterLat && currentCenterLng) {
+        if (fixedUserLat && fixedUserLng) {
           showLoadingAnimation();
-          loadNearbyUsers(currentCenterLat, currentCenterLng, currentRangeMeters, currentGenderFilter);
+          loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
         }
       });
     }
 
     // ========================================
-    // 6. BOTTOM SHEET (DRAG & DROP COM SNAP)
+    // 6. BOTTOM SHEET
     // ========================================
     const bottomSheet = document.querySelector(".users-bottom-sheet");
     const handle = document.querySelector(".bottom-sheet-handle");
-
     if (bottomSheet && handle) {
-      let startY = 0;
-      let startHeight = 0;
-      let isDraggingSheet = false;
-      const SNAP_MIN = 25; 
-      const SNAP_MAX = 85; 
-      const SNAP_THRESHOLD = 50; 
-
+      let startY = 0; let startHeight = 0; let isDraggingSheet = false;
+      const SNAP_MIN = 25; const SNAP_MAX = 85; const SNAP_THRESHOLD = 50; 
       const onDragStart = (e) => {
         isDraggingSheet = true;
         bottomSheet.classList.add("dragging"); 
         startY = e.touches ? e.touches[0].clientY : e.clientY;
         startHeight = bottomSheet.getBoundingClientRect().height;
       };
-
       const onDragMove = (e) => {
         if (!isDraggingSheet) return;
         e.preventDefault(); 
@@ -228,7 +193,6 @@ const STORAGE_KEYS = {
         if (newHeight > maxH) newHeight = maxH + (newHeight - maxH) * 0.2;
         bottomSheet.style.height = `${newHeight}px`;
       };
-
       const onDragEnd = () => {
         if (!isDraggingSheet) return;
         isDraggingSheet = false;
@@ -236,13 +200,9 @@ const STORAGE_KEYS = {
         const currentHeight = bottomSheet.getBoundingClientRect().height;
         const viewportHeight = window.innerHeight;
         const currentVh = (currentHeight / viewportHeight) * 100;
-        if (currentVh > SNAP_THRESHOLD) {
-          bottomSheet.style.height = `${SNAP_MAX}vh`;
-        } else {
-          bottomSheet.style.height = `${SNAP_MIN}vh`;
-        }
+        if (currentVh > SNAP_THRESHOLD) bottomSheet.style.height = `${SNAP_MAX}vh`;
+        else bottomSheet.style.height = `${SNAP_MIN}vh`;
       };
-
       handle.addEventListener("mousedown", onDragStart);
       handle.addEventListener("touchstart", onDragStart, { passive: false });
       window.addEventListener("mousemove", onDragMove);
@@ -252,42 +212,26 @@ const STORAGE_KEYS = {
     }
 
     // ========================================
-    // 7. STORIES E MODAIS
+    // 7. STORIES
     // ========================================
     if (storiesToggleBtn && storiesSection) {
-        storiesToggleBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            storiesSection.classList.toggle("expanded");
-        });
-        document.addEventListener("click", (e) => {
-            if (!storiesSection.contains(e.target)) storiesSection.classList.remove("expanded");
-        });
+        storiesToggleBtn.addEventListener("click", (e) => { e.stopPropagation(); storiesSection.classList.toggle("expanded"); });
+        document.addEventListener("click", (e) => { if (!storiesSection.contains(e.target)) storiesSection.classList.remove("expanded"); });
     }
-
     if (addStoryBtn) {
         addStoryBtn.addEventListener("click", (e) => {
             e.stopPropagation();
-            if(addStoryModal) {
-                addStoryModal.classList.remove("hidden");
-                if(modalOverlay) modalOverlay.classList.remove("hidden");
-            }
+            if(addStoryModal) { addStoryModal.classList.remove("hidden"); if(modalOverlay) modalOverlay.classList.remove("hidden"); }
         });
     }
-
-    const hideAddStoryModal = () => {
-        if(addStoryModal) addStoryModal.classList.add("hidden");
-        if(modalOverlay) modalOverlay.classList.add("hidden");
-    };
-
+    const hideAddStoryModal = () => { if(addStoryModal) addStoryModal.classList.add("hidden"); if(modalOverlay) modalOverlay.classList.add("hidden"); };
     if (closeModalBtn) closeModalBtn.addEventListener("click", hideAddStoryModal);
     if (cancelStoryBtn) cancelStoryBtn.addEventListener("click", hideAddStoryModal);
     if (modalOverlay) modalOverlay.addEventListener("click", hideAddStoryModal);
 
-
     // ========================================
-    // 8. FUNÇÕES DE SUPORTE (API, MAPA, UI)
+    // 8. HELPERS
     // ========================================
-    
     function showLoadingAnimation() {
       if (usersList) {
         usersList.innerHTML = `
@@ -297,21 +241,22 @@ const STORAGE_KEYS = {
       }
       if (usersCountElement) usersCountElement.textContent = "...";
     }
-
     function hideLoadingAnimation() { }
 
-    // Atualiza o Círculo (Leaflet)
-    // AGORA USA O CENTRO DO MAPA (ONDE A MIRA ESTÁ)
-    function updateRadarCircle(lat = null, lng = null) {
-      const centerLat = lat || currentCenterLat || defaultLat;
-      const centerLng = lng || currentCenterLng || defaultLng;
+    // ========================================
+    // LÓGICA CORE: POSIÇÃO DA LUZ E RADAR
+    // ========================================
+
+    // Atualiza o Círculo (Leaflet) -> FIXO NA POSIÇÃO GEOGRÁFICA DO USUÁRIO
+    function updateRadarCircle() {
+      if (!fixedUserLat || !fixedUserLng) return;
       const radius = currentRangeMeters; 
 
       if (radarCircle) {
         radarCircle.setRadius(radius);
-        radarCircle.setLatLng([centerLat, centerLng]);
+        radarCircle.setLatLng([fixedUserLat, fixedUserLng]); // Sempre no GPS
       } else {
-        radarCircle = L.circle([centerLat, centerLng], {
+        radarCircle = L.circle([fixedUserLat, fixedUserLng], {
           radius: radius,
           color: '#d4af37',
           fillColor: '#d4af37',
@@ -322,56 +267,19 @@ const STORAGE_KEYS = {
       }
     }
 
-    // ========================================
-    // LOGICA DE SPOTLIGHT E MOVIMENTO (CORRIGIDA)
-    // ========================================
-
-    // --- 1. Atualiza a Posição Visual do Spotlight ---
+    // Atualiza o Spotlight (CSS) -> CALCULA ONDE O USUÁRIO ESTÁ NA TELA
     function updateSpotlightPosition() {
-      if (!containerElement) return;
+      if (!containerElement || !fixedUserLat || !fixedUserLng) return;
 
-      // Pega o ponto central exato do CONTAINER DO MAPA em pixels
-      const mapSize = map.getSize();
-      const centerX = mapSize.x / 2;
-      const centerY = mapSize.y / 2;
+      // MÁGICA: Converte Lat/Lng do Usuário para Pixels na tela (X, Y)
+      // Se você arrastar o mapa, esse ponto X/Y vai mudar, movendo a luz
+      const point = map.latLngToContainerPoint([fixedUserLat, fixedUserLng]);
       
-      // Atualiza as variáveis CSS para centralizar a máscara e o aro dourado na TELA
-      containerElement.style.setProperty('--radar-x', `${centerX}px`);
-      containerElement.style.setProperty('--radar-y', `${centerY}px`);
+      containerElement.style.setProperty('--radar-x', `${point.x}px`);
+      containerElement.style.setProperty('--radar-y', `${point.y}px`);
     }
 
-    // --- 2. Evento: Ao Mover o Mapa (Drag) ---
-    // IMPORTANTE: Aqui atualizamos a MIRA (Radar), mas NÃO o marcador do usuário (Pino)
-    map.on('move', () => {
-        const newCenter = map.getCenter();
-        
-        // Atualiza as coordenadas do CENTRO VISUAL (Onde estamos buscando)
-        currentCenterLat = newCenter.lat;
-        currentCenterLng = newCenter.lng;
-
-        // Move a ÁREA DE BUSCA (Círculo Amarelo) para acompanhar a mira
-        if (radarCircle) radarCircle.setLatLng(newCenter);
-
-        // Garante que o spotlight (máscara) esteja alinhado
-        updateSpotlightPosition();
-
-        // NOTA: userMarker NÃO é movido aqui. Ele fica fixo no GPS.
-    });
-
-    // --- 3. Evento: Ao Redimensionar a Tela ---
-    map.on('resize', updateSpotlightPosition);
-
-    // --- 4. Evento: Ao Terminar de Mover ---
-    map.on('moveend', () => {
-        const newCenter = map.getCenter();
-        currentCenterLat = newCenter.lat;
-        currentCenterLng = newCenter.lng;
-        
-        // SE QUISER BUSCAR AUTOMATICAMENTE AO SOLTAR O MAPA, DESCOMENTE:
-        // loadNearbyUsers(currentCenterLat, currentCenterLng, currentRangeMeters, currentGenderFilter);
-    });
-
-    // Marcador do Próprio Usuário (SÓ É CHAMADO NA INICIALIZAÇÃO OU ATUALIZAÇÃO DE GPS)
+    // Marcador do Usuário -> FIXO
     function addUserMarker(lat, lng) {
       if (userMarker) map.removeLayer(userMarker);
       const userIcon = L.divIcon({
@@ -382,34 +290,43 @@ const STORAGE_KEYS = {
       userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
     }
 
-    // Inicialização do Mapa
+    // Inicialização
     function initializeMap(lat, lng) {
-      // 1. Salva a localização GPS (FIXA)
       fixedUserLat = lat;
       fixedUserLng = lng;
-
-      // 2. Define o centro inicial do mapa
-      currentCenterLat = lat;
-      currentCenterLng = lng;
       
       map.setView([lat, lng], defaultZoom);
       
-      // 3. Adiciona o pino na localização FIXA
       addUserMarker(lat, lng);
-      
-      // 4. Cria o radar e o spotlight no centro
-      updateRadarCircle(lat, lng);
+      updateRadarCircle(); // Cria o círculo no usuário
       updateSliderVisuals(currentRangeMeters);
-      updateSpotlightPosition(); 
+      updateSpotlightPosition(); // Alinha a luz com o usuário
       
-      // 5. Busca inicial
       showLoadingAnimation();
       loadNearbyUsers(lat, lng, currentRangeMeters, currentGenderFilter);
     }
 
-    // Busca de Usuários (API)
+    // --- EVENTO CRÍTICO: MOVER O MAPA ---
+    map.on('move', () => {
+        // Quando arrasta o mapa:
+        // 1. O Mapa move (nativo do Leaflet)
+        // 2. O Marcador e o Círculo Amarelo movem junto com o mapa (comportamento padrão de camadas)
+        
+        // 3. Precisamos apenas atualizar a MÁSCARA (Spotlight) para seguir o pino visualmente
+        updateSpotlightPosition();
+        
+        // Nota: Se arrastar muito longe, o 'point.x' vai ser negativo ou muito grande
+        // e a luz vai sair da tela, deixando tudo escuro. É o esperado.
+    });
+
+    map.on('resize', updateSpotlightPosition);
+
+    // ========================================
+    // API
+    // ========================================
     async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
       try {
+        // Busca baseada na posição do USUÁRIO, não do centro da tela
         let url = `/users/nearby?latitude=${latitude}&longitude=${longitude}&range=${rangeMeters}`;
         if (genderFilter !== "all") url += `&gender=${genderFilter}`;
 
@@ -417,28 +334,22 @@ const STORAGE_KEYS = {
         if (!response.ok) throw new Error("Falha na rede");
         const users = await response.json();
 
-        // Filtragem Client-side
         let filteredUsers = users.filter((user) => {
-          // 1. Gênero
           const g = (user.gender || "").toLowerCase();
-          const matchesGender = 
-            (genderFilter === "all") ||
+          const matchesGender = (genderFilter === "all") ||
             (genderFilter === "male" && (g === "male" || g === "m" || g === "homem")) ||
             (genderFilter === "female" && (g === "female" || g === "f" || g === "mulher"));
-
-          // 2. Distância (Raio Rigoroso)
+          
           let matchesDistance = true;
           if (user.distance_km !== undefined && user.distance_km !== null) {
              const distMeters = parseFloat(user.distance_km) * 1000;
-             matchesDistance = distMeters <= (rangeMeters + 10); // Margem de 10m
+             matchesDistance = distMeters <= (rangeMeters + 10);
           }
-
           return matchesGender && matchesDistance;
         });
 
         updateUIWithUsers(filteredUsers);
         hideLoadingAnimation();
-
       } catch (error) {
         console.error("Erro ao carregar:", error);
         hideLoadingAnimation();
@@ -446,11 +357,9 @@ const STORAGE_KEYS = {
       }
     }
 
-    // Atualização da UI (Lista e Marcadores)
     function updateUIWithUsers(users) {
         if (usersCountElement) usersCountElement.textContent = users.length;
         userMarkersGroup.clearLayers();
-        
         if (usersList) {
             usersList.innerHTML = "";
             if (users.length === 0) {
@@ -464,19 +373,12 @@ const STORAGE_KEYS = {
                     <img src="${frameUrl}" class="avatar-frame-overlay">
                   </div>
                 `;
-
                 if (user.latitude && user.longitude) {
-                    const icon = L.divIcon({
-                        html: avatarHtml,
-                        className: "custom-marker",
-                        iconSize: [56, 56],
-                        popupAnchor: [0, -20]
-                    });
+                    const icon = L.divIcon({ html: avatarHtml, className: "custom-marker", iconSize: [56, 56], popupAnchor: [0, -20] });
                     const marker = L.marker([user.latitude, user.longitude], { icon });
                     marker.on("click", () => showUserPopup(user));
                     userMarkersGroup.addLayer(marker);
                 }
-
                 const li = document.createElement("li");
                 li.className = "user-list-item";
                 li.innerHTML = `
@@ -495,7 +397,6 @@ const STORAGE_KEYS = {
         }
     }
 
-    // Exibir Popup
     function showUserPopup(user) {
       if (!userPopup) return;
       userPopup.dataset.userId = user.id;
@@ -505,42 +406,29 @@ const STORAGE_KEYS = {
       if(name) name.textContent = user.username || "Usuário";
       const loc = userPopup.querySelector("#popup-location");
       if(loc) loc.textContent = user.city || "";
-      
       const distBadge = userPopup.querySelector("#popup-distance");
       if(distBadge) distBadge.textContent = user.distance_km ? `${user.distance_km} km` : "";
-
       userPopup.classList.remove("hidden");
       userPopup.classList.add("show");
     }
 
-    if (closePopupBtn) {
-        closePopupBtn.addEventListener("click", () => {
-            userPopup.classList.add("hidden");
-            userPopup.classList.remove("show");
-        });
-    }
-    if (popupOverlay) {
-        popupOverlay.addEventListener("click", () => {
-            userPopup.classList.add("hidden");
-            userPopup.classList.remove("show");
-        });
-    }
+    if (closePopupBtn) closePopupBtn.addEventListener("click", () => { userPopup.classList.add("hidden"); userPopup.classList.remove("show"); });
+    if (popupOverlay) popupOverlay.addEventListener("click", () => { userPopup.classList.add("hidden"); userPopup.classList.remove("show"); });
 
-    // Botões FAB
+    // Botão Centralizar (Volta para o usuário)
     if (fabCenterMap) {
         fabCenterMap.addEventListener("click", () => {
-            // Volta para a Localização GPS FIXA
             if (fixedUserLat && fixedUserLng) { 
                 map.flyTo([fixedUserLat, fixedUserLng], 15); 
             }
         });
     }
+
     if (toggleVisibilityBtn) {
         toggleVisibilityBtn.addEventListener("click", () => {
             let isInvisible = localStorage.getItem(STORAGE_KEYS.INVISIBLE_MODE) === "true";
             isInvisible = !isInvisible;
             localStorage.setItem(STORAGE_KEYS.INVISIBLE_MODE, isInvisible);
-            
             const eyeOpen = toggleVisibilityBtn.querySelector(".eye-open");
             const eyeClosed = toggleVisibilityBtn.querySelector(".eye-closed");
             if (isInvisible) {
@@ -555,7 +443,6 @@ const STORAGE_KEYS = {
         });
     }
 
-    // Inicialização via Geolocalização
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             (position) => initializeMap(position.coords.latitude, position.coords.longitude),
