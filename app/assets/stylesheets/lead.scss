@@ -332,3 +332,111 @@
     font-weight: 600;
   }
 }
+
+/* --- FILTER MODAL DARK MODE --- */
+
+.filter-modal {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  z-index: 9999;
+  display: flex;
+  align-items: flex-end;
+  transition: opacity 0.3s ease;
+  
+  &.hidden { 
+    pointer-events: none; opacity: 0;
+    .filter-content { transform: translateY(100%); }
+  }
+}
+
+.filter-backdrop {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8); /* Escurece bem o fundo */
+  backdrop-filter: blur(5px);
+}
+
+.filter-content {
+  position: relative; width: 100%;
+  
+  /* DARK THEME BACKGROUND */
+  background: #121212; 
+  color: #ffffff;
+  
+  border-top-left-radius: 25px;
+  border-top-right-radius: 25px;
+  padding: 25px;
+  padding-bottom: calc(30px + env(safe-area-inset-bottom));
+  box-shadow: 0 -5px 30px rgba(0,0,0,0.9);
+  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+
+  /* Elementos internos Dark */
+  h2 { color: #fff; margin: 0; font-size: 1.4rem; font-weight: 700; }
+  .close-btn { color: #888; background: none; border: none; font-size: 1.5rem; }
+  
+  .label-title { color: #e0e0e0; font-size: 1rem; font-weight: 600; }
+  .label-value { color: var(--gold-primary); font-weight: 700; font-size: 1.1rem; }
+  
+  .filter-divider { border-top: 1px solid #333; margin: 20px 0; border-bottom: none; }
+  
+  .range-labels-sub { font-size: 0.8rem; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
+  .mb-2 { margin-bottom: 15px; }
+}
+
+.filter-header {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
+}
+
+.label-row {
+  display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
+}
+
+/* SLIDERS CUSTOMIZADOS DARK */
+.range-slider-container, .dual-range-wrapper {
+  position: relative; margin-bottom: 15px;
+}
+
+.range-input {
+  -webkit-appearance: none;
+  width: 100%; height: 6px;
+  background: #333; /* Trilha escura */
+  border-radius: 3px; outline: none;
+
+  &::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    width: 24px; height: 24px;
+    border-radius: 50%;
+    background: var(--gold-primary); /* Bolinha Dourada */
+    border: 3px solid #121212; /* Borda preta para destacar */
+    cursor: pointer;
+    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+  }
+}
+
+/* SWITCH TOGGLE DARK */
+.toggle-row {
+  display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 20px;
+  p { font-size: 0.85rem; color: #888; margin: 0; line-height: 1.4; }
+}
+.switch {
+  position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0;
+  input { opacity: 0; width: 0; height: 0; }
+  .slider {
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #333; transition: .4s; border-radius: 34px;
+    &:before {
+      position: absolute; content: ""; height: 20px; width: 20px;
+      left: 3px; bottom: 3px; background-color: #888; transition: .4s; border-radius: 50%;
+    }
+  }
+  input:checked + .slider { background-color: var(--gold-primary); }
+  input:checked + .slider:before { transform: translateX(20px); background-color: #fff; }
+}
+
+.btn-apply {
+  width: 100%; padding: 16px; margin-top: 10px;
+  background: var(--gold-primary);
+  color: #000; border: none; border-radius: 30px;
+  font-weight: 800; font-size: 1.1rem; cursor: pointer;
+  box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
+}

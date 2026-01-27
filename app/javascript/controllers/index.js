@@ -12,3 +12,6 @@ application.register("hello", HelloController)
 
 import LeadSwipeController from "./lead_swipe_controller"
 application.register("lead-swipe", LeadSwipeController)
+
+import FiltersController from "./filters_controller"
+application.register("filters", FiltersController)

@@ -109,4 +109,20 @@ end
    def online?
     last_seen_at.present? && last_seen_at > 2.minutes.ago
   end
+
+  # ==========================
+  #  SCOPES DE FILTRO
+  # ==========================
+  
+  # Filtra por intervalo de datas baseado na idade
+  scope :filter_by_age, ->(min, max) {
+    return all if min.blank? || max.blank?
+    
+    start_date = (max.to_i + 1).years.ago.to_date + 1.day
+    end_date   = min.to_i.years.ago.to_date
+    
+    where(birthdate: start_date..end_date)
+  }
+
+
 end
