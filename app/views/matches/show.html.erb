@@ -41,9 +41,16 @@
        data-match-id="<%= @match.id %>"
        data-current-user-id="<%= current_user.id %>">
 
-    <%# Aviso de Match (Topo) %>
+   <%# Aviso de Match (Topo) %>
     <div class="match-date-notice">
-      VOCÊ DEU MATCH COM <%= @other_user.display_name.upcase %> NO DIA <%= @match.created_at.strftime("%d/%m/%Y") %>
+      <%# Verifica se é um Match Mútuo (ambos se curtiram) %>
+      <% is_mutual = current_user.likes.exists?(liked_id: @other_user.id) && @other_user.likes.exists?(liked_id: current_user.id) %>
+
+      <% if is_mutual %>
+        VOCÊ DEU MATCH COM <%= @other_user.display_name.upcase %> NO DIA <%= @match.created_at.strftime("%d/%m/%Y") %>
+      <% else %>
+        VOCÊ INICIOU A CONVERSA COM <%= @other_user.display_name.upcase %> NO DIA <%= @match.created_at.strftime("%d/%m/%Y") %>
+      <% end %>
     </div>
 
     <%# Loop de Mensagens %>
