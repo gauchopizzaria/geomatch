@@ -84,9 +84,10 @@
           <%= image_tag "botao-rejeitar.svg", alt: "Rejeitar" %>
         <% end %>
 
-        <button class="action-btn btn-chat">
-           <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
-        </button>
+      <%# Botão de Chat Funcional %>
+       <%= button_to start_chat_path(user_id: @next_user.id), method: :post, class: "action-btn btn-chat", form_class: "btn-form" do %>
+         <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
+        <% end %>
 
         <%= button_to likes_path(user_id: @next_user.id), method: :post, class: "action-btn btn-like", form_class: "btn-form" do %>
           <div class="heart-icon-wrapper">

@@ -35,6 +35,9 @@ Rails.application.routes.draw do
   post "/lead", to: "users#lead"
   post "/lead/reject", to: "users#reject", as: :reject_user
 
+  # linha para criar a rota de iniciar chat
+  post 'start_chat/:user_id', to: 'matches#start_chat', as: :start_chat
+
   # Endpoint JSON para busca de usuários próximos
   # CORREÇÃO: Movido para esta seção para garantir que seja processado antes de resources :users,
   # evitando que 'nearby' seja interpretado como um ID de usuário.
@@ -44,6 +47,7 @@ Rails.application.routes.draw do
 
   # Likes (curtidas)
   resources :likes, only: [:create, :destroy]
+
 
   # Matches e mensagens dentro do chat
   resources :matches, only: [:index, :show] do
@@ -58,6 +62,7 @@ Rails.application.routes.draw do
   # CONSOLIDADO: O 'show' e 'update' estavam separados, agora estão juntos.
   # O 'show' é o perfil público.
   resources :users, only: [:show, :update]
+  
 
   # Tela de Central de Segurança (Ajuda)
   get "/safety_center", to: "users#safety_center", as: :safety_center
