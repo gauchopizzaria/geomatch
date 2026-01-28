@@ -40,6 +40,7 @@ group :development, :test do
   gem "brakeman", require: false
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
   gem "faker"
+  gem "pry-rails"
   gem "rubocop-rails-omakase", require: false
 end
 
@@ -53,5 +54,7 @@ group :test do
   gem "rspec-rails"
   gem "selenium-webdriver"
   gem "shoulda-matchers", require: false
+  gem "vcr"
+  gem "webmock"
 end
 
