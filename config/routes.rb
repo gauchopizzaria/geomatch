@@ -90,6 +90,9 @@ Rails.application.routes.draw do
   # Rota para exclusão de foto do álbum
   delete 'album_photos/:id', to: 'album_photos#destroy', as: :delete_album_photo
 
+  post "/checkout", to: "checkout#create", as: :checkout
+  resources :plans, only: [:index]
+
   # =================================================================
   # 4. OUTRAS ROTAS
   # =================================================================
@@ -99,5 +102,4 @@ Rails.application.routes.draw do
 
   # Health check
   get "up" => "rails/health#show", as: :rails_health_check
-
 end
