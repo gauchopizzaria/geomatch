@@ -15,11 +15,11 @@ RSpec.describe "Checkout", type: :request do
     context "when authenticated" do
       let(:user) { create(:user) }
       let(:payment) { instance_double(Payment, id: SecureRandom.uuid, mercado_pago_checkout_url: "https://example.com/checkout") }
-      let(:service) { instance_double(CheckoutProService, call: payment) }
+      let(:service) { instance_double(MercadoPago::CheckoutProService, call: payment) }
 
       before do
-        sign_in user
-        allow(CheckoutProService).to receive(:new).with(user: user, plan: plan).and_return(service)
+        sign_in user, scope: :user
+        allow(MercadoPago::CheckoutProService).to receive(:new).with(user, plan).and_return(service)
       end
 
       it "redirects to Mercado Pago checkout url (HTML)" do

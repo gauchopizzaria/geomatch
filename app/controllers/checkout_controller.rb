@@ -3,7 +3,7 @@ class CheckoutController < ApplicationController
   before_action :set_plan, only: [:create]
 
   def create
-    payment = CheckoutProService.new(user: current_user, plan: @plan).call
+    payment = MercadoPago::CheckoutProService.call(user: current_user, plan: @plan)
     respond_to do |format|
       format.html do
         redirect_to payment.mercado_pago_checkout_url, allow_other_host: true
@@ -18,7 +18,7 @@ class CheckoutController < ApplicationController
     end
 
   rescue ActiveRecord::RecordNotFound, ActionController::ParameterMissing,
-    CheckoutProService::ConfigurationError, CheckoutProService::ProviderError => e
+    MercadoPago::CheckoutProService::ConfigurationError, MercadoPago::CheckoutProService::ProviderError => e
     respond_to do |format|
       format.html { redirect_to root_path, alert: "Erro ao iniciar pagamento: #{e.message}" }
       format.json { render json: { error: e.message }, status: :unprocessable_entity }
