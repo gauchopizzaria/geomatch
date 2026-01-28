@@ -8,6 +8,7 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 require "spec_helper"
 require "rspec/rails"
 require "shoulda/matchers"
+require "devise/test/integration_helpers"
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
@@ -27,6 +28,9 @@ RSpec.configure do |config|
 
   # FactoryBot helpers (create/build/etc)
   config.include FactoryBot::Syntax::Methods
+
+  # Devise helpers for request specs (sign_in/sign_out)
+  config.include Devise::Test::IntegrationHelpers, type: :request
 end
 
 # Shoulda Matchers
