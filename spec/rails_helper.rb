@@ -7,6 +7,7 @@ abort("The Rails environment is running in production mode!") if Rails.env.produ
 
 require "spec_helper"
 require "rspec/rails"
+require "shoulda/matchers"
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
@@ -19,8 +20,6 @@ rescue ActiveRecord::PendingMigrationError => e
 end
 
 RSpec.configure do |config|
-  config.fixture_path = Rails.root.join("spec/fixtures")
-
   config.use_transactional_fixtures = true
 
   config.infer_spec_type_from_file_location!

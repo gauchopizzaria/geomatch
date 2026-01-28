@@ -179,6 +179,7 @@ GEM
       net-http (~> 0.5)
     ffi (1.17.2-x64-mingw-ucrt)
     ffi (1.17.2-x86_64-linux-gnu)
+    fiddle (1.1.1)
     fugit (1.12.1)
       et-orbi (~> 1.4)
       raabro (~> 1.4)
@@ -281,6 +282,11 @@ GEM
     money (7.0.2)
       bigdecimal
       i18n (~> 1.9)
+    money-rails (3.0.0)
+      activesupport (>= 7.0)
+      monetize (~> 2.0)
+      money (~> 7.0)
+      railties (>= 7.0)
     msgpack (1.8.0)
     multipart-post (2.4.1)
     net-http (0.8.0)
@@ -530,6 +536,7 @@ DEPENDENCIES
   enumerize
   factory_bot_rails
   faker
+  fiddle
   geocoder
   image_processing (~> 1.2)
   importmap-rails
@@ -539,7 +546,7 @@ DEPENDENCIES
   kaminari
   letter_opener_web
   mercadopago-sdk
-  monetize
+  money-rails
   pg (~> 1.1)
   propshaft
   puma (>= 5.0)
