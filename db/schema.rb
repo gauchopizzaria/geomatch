@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_28_063237) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_28_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -156,6 +156,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_063237) do
     t.text "description"
     t.integer "duration_days", null: false
     t.jsonb "features", default: {}, null: false
+    t.boolean "is_recommended", default: false, null: false
     t.string "name", null: false
     t.integer "price_cents", default: 0, null: false
     t.string "price_currency", default: "BRL", null: false
@@ -163,6 +164,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_28_063237) do
     t.index ["active"], name: "index_plans_on_active"
     t.index ["code"], name: "index_plans_on_code", unique: true
     t.index ["features"], name: "index_plans_on_features", using: :gin
+    t.index ["is_recommended"], name: "index_plans_on_is_recommended"
   end
 
   create_table "profiles", force: :cascade do |t|
