@@ -6,6 +6,8 @@ FactoryBot.define do
     price_cents { 2990 }
     price_currency { "BRL" }
 
+    is_recommended { false }
+
     features do
       {
         "unlimited_likes" => true,
@@ -17,6 +19,10 @@ FactoryBot.define do
     duration_days { 30 }
     active { true }
     description { Faker::Lorem.sentence }
+
+    trait :recommended do
+      is_recommended { true }
+    end
 
     trait :free do
       code { "free" }
