@@ -27,7 +27,7 @@ module MercadoPago
           }
         ],
         payer: {
-          email: User.first.email,
+          email: user.email,
           name: user.username
         },
         external_reference: payment.id,
