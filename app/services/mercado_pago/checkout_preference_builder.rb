@@ -52,9 +52,8 @@ module MercadoPago
     end
 
     def base_url
-      "https://b84ff9939151.ngrok-free.app"
-      #ENV['APP_BASE_URL'].presence ||
-      #  Rails.application.routes.default_url_options[:host].presence
+      ENV['APP_BASE_URL'].presence ||
+        Rails.application.routes.default_url_options[:host].presence
     end
 
     def webhook_url
