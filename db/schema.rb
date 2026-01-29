@@ -10,9 +10,10 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2025_12_16_213421) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_28_090000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "pgcrypto"
 
   create_table "action_cable_internal_channels", force: :cascade do |t|
     t.string "channel_class"
@@ -127,6 +128,43 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_16_213421) do
     t.index ["notifiable_type", "notifiable_id"], name: "index_notifications_on_notifiable"
     t.index ["recipient_id", "read_at"], name: "index_notifications_on_recipient_id_and_read_at"
     t.index ["recipient_id"], name: "index_notifications_on_recipient_id"
+  end
+
+  create_table "payments", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "mercado_pago_checkout_url"
+    t.string "mercado_pago_merchant_order_id"
+    t.jsonb "mercado_pago_payload"
+    t.string "mercado_pago_payment_id"
+    t.string "mercado_pago_preference_id"
+    t.datetime "paid_at"
+    t.bigint "plan_id", null: false
+    t.string "state", default: "created", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["mercado_pago_payment_id"], name: "index_payments_on_mercado_pago_payment_id"
+    t.index ["mercado_pago_preference_id"], name: "index_payments_on_mercado_pago_preference_id"
+    t.index ["plan_id"], name: "index_payments_on_plan_id"
+    t.index ["state"], name: "index_payments_on_state"
+    t.index ["user_id"], name: "index_payments_on_user_id"
+  end
+
+  create_table "plans", force: :cascade do |t|
+    t.boolean "active", default: true, null: false
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.integer "duration_days", null: false
+    t.jsonb "features", default: {}, null: false
+    t.boolean "is_recommended", default: false, null: false
+    t.string "name", null: false
+    t.integer "price_cents", default: 0, null: false
+    t.string "price_currency", default: "BRL", null: false
+    t.datetime "updated_at", null: false
+    t.index ["active"], name: "index_plans_on_active"
+    t.index ["code"], name: "index_plans_on_code", unique: true
+    t.index ["features"], name: "index_plans_on_features", using: :gin
+    t.index ["is_recommended"], name: "index_plans_on_is_recommended"
   end
 
   create_table "profiles", force: :cascade do |t|
@@ -301,6 +339,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_16_213421) do
     t.datetime "last_seen_at"
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6
+    t.bigint "plan_id"
+    t.datetime "premium_until"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
@@ -310,8 +350,27 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_16_213421) do
     t.boolean "verified", default: false
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["latitude", "longitude"], name: "index_users_on_latitude_and_longitude"
+    t.index ["plan_id"], name: "index_users_on_plan_id"
+    t.index ["premium_until"], name: "index_users_on_premium_until"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["username"], name: "index_users_on_username", unique: true
+  end
+
+  create_table "webhook_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
+    t.string "action"
+    t.integer "attempts", default: 0
+    t.datetime "created_at", null: false
+    t.string "external_id"
+    t.jsonb "payload", default: {}, null: false
+    t.datetime "processed_at"
+    t.text "processing_errors"
+    t.string "source", default: "mercadopago"
+    t.string "status", default: "pending"
+    t.string "topic"
+    t.datetime "updated_at", null: false
+    t.index ["external_id"], name: "index_webhook_events_on_external_id"
+    t.index ["status", "topic"], name: "index_webhook_events_on_status_and_topic"
+    t.index ["status"], name: "index_webhook_events_on_status"
   end
 
   add_foreign_key "active_storage_attachments", "active_storage_blobs", column: "blob_id"
@@ -325,6 +384,8 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_16_213421) do
   add_foreign_key "messages", "users", column: "sender_id"
   add_foreign_key "notifications", "users", column: "actor_id"
   add_foreign_key "notifications", "users", column: "recipient_id"
+  add_foreign_key "payments", "plans"
+  add_foreign_key "payments", "users"
   add_foreign_key "profiles", "users"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
@@ -333,4 +394,5 @@ ActiveRecord::Schema[8.1].define(version: 2025_12_16_213421) do
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "stories", "users"
+  add_foreign_key "users", "plans"
 end

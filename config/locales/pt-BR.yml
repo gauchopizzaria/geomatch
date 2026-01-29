@@ -1,0 +1,15 @@
+"pt-BR":
+  activerecord:
+    errors:
+      messages:
+        record_invalid: "A validação falhou: %{errors}"
+        required: "é obrigatório"
+      models:
+        payment:
+          attributes:
+            plan:
+              required: "é obrigatório"
+            user:
+              required: "é obrigatório"
+
+
