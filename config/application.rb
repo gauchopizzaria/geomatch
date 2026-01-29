@@ -18,6 +18,10 @@ module Geomatch
 
 
     config.load_solid_queue_database = true
+
+    # I18n
+    config.i18n.default_locale = :"pt-BR"
+    config.i18n.available_locales = [:"pt-BR", :en]
     # Configuration for the application, engines, and railties goes here.
     #
     # These settings can be overridden in specific environments using the files
@@ -37,5 +41,9 @@ module Geomatch
                       request_specs: true
       g.fixture_replacement :factory_bot, dir: "spec/factories"
     end
+
+    config.dartsass.builds = {
+      "application.scss" => "application.css"
+    }
   end
 end

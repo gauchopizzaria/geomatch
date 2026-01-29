@@ -1,34 +1,51 @@
 class User < ApplicationRecord
-  # Devise modules
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
-  # Avatar (Active Storage)
-  has_one_attached :avatar
+  belongs_to :plan
+  validates :plan, presence: true
+  has_many :payments, dependent: :destroy
+  has_many :likes, foreign_key: :liker_id, dependent: :destroy
+  has_many :matches_as_user, class_name: 'Match', foreign_key: 'user_id', dependent: :destroy
+  has_many :matches_as_matched_user, class_name: 'Match', foreign_key: 'matched_user_id', dependent: :destroy
+  has_many :messages, through: :matches_as_user
+  has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
+  has_many :stories, dependent: :destroy
 
-   # ==========================
-  #  NOVO: ÁLBUM DE FOTOS
-  # ==========================
+  has_one_attached :avatar
   has_many_attached :album_photos 
 
-  # Geocoder (para localização)
   geocoded_by :address
   after_validation :geocode, if: ->(obj) { obj.address.present? && obj.will_save_change_to_address? }
 
-  # ==========================
-  #  AVATAR DEFAULT
-  # ==========================
+  scope :expired_premium, -> { 
+    free_plan = Plan.find_by(name: 'Free')
+    return none unless free_plan
 
-  # 1️⃣ Método geral para views: sempre retorna algo exibível
+    where.not(plan_id: free_plan.id)
+    .where('premium_until < ?', Time.current) 
+  }
+
+  def downgrade_to_free!
+    free_plan = Plan.find_by(name: 'Free')
+    return unless free_plan
+
+    transaction do
+      update!(
+        plan: free_plan,
+        premium_until: nil
+      )
+    end
+  end
+
   def avatar_or_default
     if avatar.attached?
       avatar
     else
-      "/assets/avatarfoto.jpg" # arquivo em app/assets/images
+      "/assets/avatarfoto.jpg"
     end
   end
 
-  # 2️⃣ Método para API JSON / Nearby
   def avatar_url
     if avatar.attached?
       Rails.application.routes.url_helpers.url_for(avatar)
@@ -37,8 +54,8 @@ class User < ApplicationRecord
     end
   end
 
-  # 3️⃣ Aplica AUTOMATICAMENTE um avatar padrão ao criar usuário
   after_create :attach_default_avatar
+  before_validation :set_default_plan, on: :create
 
   def attach_default_avatar
     return if avatar.attached?
@@ -56,28 +73,15 @@ class User < ApplicationRecord
     end
   end
 
-  # ==========================
-  #  RELACIONAMENTOS
-  # ==========================
-
-  has_many :likes, foreign_key: :liker_id, dependent: :destroy
-  has_many :matches_as_user, class_name: 'Match', foreign_key: 'user_id', dependent: :destroy
-  has_many :matches_as_matched_user, class_name: 'Match', foreign_key: 'matched_user_id', dependent: :destroy
-  has_many :messages, through: :matches_as_user
-  has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
-   has_many :stories, dependent: :destroy # Adicionar relacionamento com Stories
-
-  # Matches unificados
   def matches
     Match.where("user_id = ? OR matched_user_id = ?", id, id)
   end
 
-  # Nome para exibição
   def display_name
     username.presence || email&.split('@')&.first || "Usuário"
   end
   
-   def age
+  def age
     return nil unless birthdate
 
     today = Date.current
@@ -87,16 +91,10 @@ class User < ApplicationRecord
   end
 
   def city
-  return nil if address.blank?
+    return nil if address.blank?
 
-  # se address for string
-  address.split(",").last&.strip
-end
-  
-
-  # ==========================
-  #  HOBBIES
-  # ==========================
+    address.split(",").last&.strip
+  end
 
   def hobbies_list
     (hobbies || "").split(",")
@@ -106,7 +104,17 @@ end
     self.hobbies = values.reject(&:blank?).join(",")
   end
 
-   def online?
+  def online?
     last_seen_at.present? && last_seen_at > 2.minutes.ago
+  end
+
+  def premium?
+    premium_until.present? && premium_until > Time.current
+  end
+
+  private
+
+  def set_default_plan
+    self.plan ||= Plan.find_by(code: "free")
   end
 end

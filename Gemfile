@@ -33,6 +33,7 @@ gem "stimulus-rails"
 gem "thruster", require: false
 gem "turbo-rails"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
+gem "sidekiq-cron"
 
 
 group :development, :test do
@@ -40,6 +41,7 @@ group :development, :test do
   gem "brakeman", require: false
   gem "debug", platforms: %i[ mri windows ], require: "debug/prelude"
   gem "faker"
+  gem "pry-rails"
   gem "rubocop-rails-omakase", require: false
 end
 
@@ -53,5 +55,7 @@ group :test do
   gem "rspec-rails"
   gem "selenium-webdriver"
   gem "shoulda-matchers", require: false
+  gem "vcr"
+  gem "webmock"
 end
 
