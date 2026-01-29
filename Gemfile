@@ -33,6 +33,7 @@ gem "stimulus-rails"
 gem "thruster", require: false
 gem "turbo-rails"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
+gem "sidekiq-cron"
 
 
 group :development, :test do
