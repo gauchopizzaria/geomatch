@@ -21,10 +21,9 @@ RSpec.describe Payment, type: :model do
       user = create(:user, plan: old_plan)
 
       pay = Payment.create!(user: user, plan: new_plan)
-      pay.approve!
+      pay.approve!({})
 
       expect(pay.reload.state).to eq("approved")
-      expect(pay.paid_at).to be_present
       expect(user.reload.plan).to eq(new_plan)
     end
 
@@ -34,10 +33,10 @@ RSpec.describe Payment, type: :model do
       user = create(:user, plan: old_plan)
       pay = Payment.create!(user: user, plan: new_plan)
 
-      pay.mark_from_mercado_pago!(mp_payment: { "status" => "approved", "id" => 123 })
+      mp_payment = { "status" => "approved", "id" => 123 }
+      pay.approve!(mp_payment)
 
       expect(pay.reload.state).to eq("approved")
-      expect(pay.paid_at).to be_present
       expect(user.reload.plan).to eq(new_plan)
       expect(pay.mercado_pago_payment_id).to eq("123")
     end

@@ -14,7 +14,7 @@ RSpec.describe "Plans", type: :request do
       let(:user) { create(:user) }
 
       before do
-        sign_in user
+        sign_in user, scope: :user
       end
 
       it "renders plans" do
