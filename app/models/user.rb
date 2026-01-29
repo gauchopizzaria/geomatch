@@ -18,6 +18,26 @@ class User < ApplicationRecord
   geocoded_by :address
   after_validation :geocode, if: ->(obj) { obj.address.present? && obj.will_save_change_to_address? }
 
+  scope :expired_premium, -> { 
+    free_plan = Plan.find_by(name: 'Free')
+    return none unless free_plan
+
+    where.not(plan_id: free_plan.id)
+    .where('premium_until < ?', Time.current) 
+  }
+
+  def downgrade_to_free!
+    free_plan = Plan.find_by(name: 'Free')
+    return unless free_plan
+
+    transaction do
+      update!(
+        plan: free_plan,
+        premium_until: nil
+      )
+    end
+  end
+
   def avatar_or_default
     if avatar.attached?
       avatar
