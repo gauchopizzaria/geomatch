@@ -91,6 +91,7 @@ Rails.application.routes.draw do
   delete 'album_photos/:id', to: 'album_photos#destroy', as: :delete_album_photo
 
   post "/checkout", to: "checkout#create", as: :checkout
+  post "/webhooks/mercado_pago", to: "webhooks/mercado_pago#create", as: :mercado_pago_webhook
   resources :plans, only: [:index]
 
   # =================================================================
