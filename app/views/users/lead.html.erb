@@ -1,11 +1,11 @@
-<div class="geomatch-screen-wrapper" data-controller="lead-swipe">
+<div class="geomatch-screen-wrapper" data-controller="lead-swipe filters">
   
   <div class="geomatch-header">
     <div class="header-left">
-      <%= image_tag "logo-geomatch-dourado.svg", class: "header-logo", alt: "GeoMatch" %>
+      <%= image_tag "logo-geomatch-dourada.png", class: "header-logo", alt: "GeoMatch" %>
     </div>
     <div class="header-right">
-      <button class="header-btn">
+      <button class="header-btn" data-action="click->filters#open">
         <%= image_tag "filtro-dourado.svg", alt: "Filtros" %>
       </button>
       <button class="header-btn">
@@ -76,30 +76,108 @@
               <i class="fas fa-location-arrow"></i> a <%= @distance || 1 %> km de distância
             </p>
           </div>
-        </div> </div> <div class="action-buttons-container">
-        
+        </div> 
+      </div> 
+      
+      <div class="action-buttons-container">
         <%= button_to reject_user_path(user_id: @next_user.id), method: :post, class: "action-btn btn-reject", form_class: "btn-form" do %>
           <%= image_tag "botao-rejeitar.svg", alt: "Rejeitar" %>
         <% end %>
 
-        <button class="action-btn btn-chat">
-           <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
-        </button>
+      <%# Botão de Chat Funcional %>
+       <%= button_to start_chat_path(user_id: @next_user.id), method: :post, class: "action-btn btn-chat", form_class: "btn-form" do %>
+         <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
+        <% end %>
 
         <%= button_to likes_path(user_id: @next_user.id), method: :post, class: "action-btn btn-like", form_class: "btn-form" do %>
           <div class="heart-icon-wrapper">
              <%= image_tag "coracao-vazada.svg", alt: "Curtir" %>
           </div>
         <% end %>
-
       </div>
 
     <% else %>
       <div class="empty-state">
         <div class="empty-icon">🔍</div>
         <h3>Sem mais usuários por perto</h3>
-        <%= link_to "Ajustar Filtros", discover_path, class: "btn-gold-outline" %>
+        <button class="btn-gold-outline" data-action="click->filters#open">
+          Ajustar Filtros
+        </button>
       </div>
     <% end %>
   </div>
+
+  <div class="filter-modal hidden" data-filters-target="modal">
+    <div class="filter-backdrop" data-action="click->filters#close"></div>
+    
+    <div class="filter-content theme-dark">
+      <%= form_tag lead_path, method: :get, data: { filters_target: "form" } do %>
+        
+        <div class="filter-header">
+          <h2>Filtros</h2>
+          <button type="button" class="close-btn" data-action="click->filters#close">✖</button>
+        </div>
+
+        <div class="filter-section">
+          <div class="label-row">
+            <span class="label-title">Distância máxima</span>
+            <span class="label-value">
+              <span data-filters-target="distanceValue"><%= @filter_distance %></span> km
+            </span>
+          </div>
+
+          <div class="range-slider-container">
+            <input type="range" name="distance" min="5" max="500" step="5"
+                   value="<%= @filter_distance %>" 
+                   class="range-input" 
+                   data-filters-target="distanceInput"
+                   data-action="input->filters#updateDistanceVisual">
+          </div>
+          
+          <div class="toggle-row">
+             <p>Ver pessoas um pouco mais distantes se acabar</p>
+             <label class="switch">
+               <input type="checkbox" checked>
+               <span class="slider round"></span>
+             </label>
+          </div>
+        </div>
+
+        <hr class="filter-divider">
+
+        <div class="filter-section">
+          <div class="label-row">
+            <span class="label-title">Faixa Etária</span>
+            <span class="label-value">
+              <span data-filters-target="ageDisplay">
+                <%= @filter_min_age %> - <%= @filter_max_age %>
+              </span> anos
+            </span>
+          </div>
+
+          <div class="dual-range-wrapper">
+             <div class="range-labels-sub">Mínima / Máxima</div>
+             
+             <input type="range" name="min_age" min="18" max="100" 
+                    value="<%= @filter_min_age %>" 
+                    class="range-input age-range mb-2" 
+                    data-filters-target="minAgeInput"
+                    data-action="input->filters#updateAgeVisual">
+             
+             <input type="range" name="max_age" min="18" max="100" 
+                    value="<%= @filter_max_age %>" 
+                    class="range-input age-range" 
+                    data-filters-target="maxAgeInput"
+                    data-action="input->filters#updateAgeVisual">
+          </div>
+        </div>
+
+        <div class="filter-actions">
+          <button type="submit" class="btn-apply">Aplicar Filtros</button>
+        </div>
+
+      <% end %>
+    </div>
+  </div>
+
 </div>

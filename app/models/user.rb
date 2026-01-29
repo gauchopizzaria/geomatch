@@ -25,6 +25,15 @@ class User < ApplicationRecord
     where.not(plan_id: free_plan.id)
     .where('premium_until < ?', Time.current) 
   }
+  
+  scope :filter_by_age, ->(min, max) {
+    return all if min.blank? || max.blank?
+    
+    start_date = (max.to_i + 1).years.ago.to_date + 1.day
+    end_date   = min.to_i.years.ago.to_date
+    
+    where(birthdate: start_date..end_date)
+  }
 
   def downgrade_to_free!
     free_plan = Plan.find_by(name: 'Free')
@@ -111,7 +120,7 @@ class User < ApplicationRecord
   def premium?
     premium_until.present? && premium_until > Time.current
   end
-
+  
   private
 
   def set_default_plan
