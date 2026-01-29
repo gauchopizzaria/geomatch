@@ -1,0 +1,41 @@
+"pt-BR":
+  plans:
+    features:
+      list_liked: "Lista de curtidas"
+      invisible_mode: "Modo invisível"
+      list_liked_me: "Ver quem te curtiu"
+      unlimited_messages: "Mensagens ilimitadas"
+      hide_age: "Ocultar idade"
+    index:
+      title: "Planos e Preços"
+      subtitle: "Compare os recursos e escolha o plano ideal. Upgrade em segundos e finalize o pagamento com segurança."
+      empty_state: "Nenhum plano disponível no momento."
+      recommended_tag: "Recomendado"
+      per_duration_days:
+        one: "/ %{count} dia"
+        other: "/ %{count} dias"
+      columns:
+        features: "Funcionalidades"
+        action: "Ação"
+      status:
+        current: "Seu Plano Atual"
+        free: "Plano gratuito"
+        upgrade_available: "Disponível para upgrade"
+      cta:
+        current: "Seu Plano Atual"
+        subscribe: "Assinar"
+        free: "Plano gratuito"
+      badges:
+        secure_payment: "Pagamento seguro via Mercado Pago"
+        cancel_anytime: "Cancele quando quiser"
+        instant_upgrade: "Upgrade imediato"
+      footnote: "Ao clicar em “Assinar”, você será redirecionado para o checkout do Mercado Pago."
+      aria:
+        comparison: "Comparação de planos"
+        mobile_plans: "Planos (mobile)"
+        included: "Inclui"
+        not_included: "Não inclui"
+        not_informed: "Não informado"
+        value: "Valor"
+
+

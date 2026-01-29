@@ -1,0 +1,92 @@
+<% plans = Array(@plans).compact %>
+<% if plans.blank? %>
+  <div class="pricing-page">
+    <div class="pricing-container">
+      <h1 class="pricing-title"><%= t(".title") %></h1>
+      <p class="pricing-subtitle"><%= t(".empty_state") %></p>
+    </div>
+  </div>
+<% else %>
+  <% free_plan = plans.find { |p| p.respond_to?(:code) && p.code == "free" } %>
+  <% paid_plans = plans.reject { |p| p.respond_to?(:code) && p.code == "free" } %>
+  <% recommended_plan = paid_plans.find { |p| p.respond_to?(:is_recommended) && p.is_recommended } %>
+
+  <% feature_keys =
+      plans
+        .map { |p| p.respond_to?(:features) && p.features.is_a?(Hash) ? p.features.keys : [] }
+        .flatten
+        .uniq
+        .sort_by { |k| t("plans.features.#{k}", default: k.to_s.humanize) } %>
+
+  <div class="pricing-page">
+    <div class="pricing-container">
+      <header class="pricing-hero">
+        <h1 class="pricing-title"><%= t(".title") %></h1>
+        <p class="pricing-subtitle"><%= t(".subtitle") %></p>
+        <div class="pricing-badges">
+          <span class="pricing-badge"><%= t(".badges.secure_payment") %></span>
+          <span class="pricing-badge"><%= t(".badges.cancel_anytime") %></span>
+          <span class="pricing-badge"><%= t(".badges.instant_upgrade") %></span>
+        </div>
+      </header>
+
+      <section class="pricing-compare" aria-label="<%= t('.aria.comparison') %>">
+        <div class="pricing-grid" style="grid-template-columns: minmax(220px, 1.15fr) <%= "repeat(#{plans.size}, minmax(220px, 1fr))" %>;">
+          <div class="pricing-row pricing-row--head pricing-cell"><%= t(".columns.features") %></div>
+
+          <%= render partial: "plan",
+                     collection: plans,
+                     as: :plan,
+                     locals: { recommended_plan: recommended_plan } %>
+
+          <% feature_keys.each do |feature_key| %>
+            <div class="pricing-cell pricing-feature"><%= t("plans.features.#{feature_key}", default: feature_key.to_s.humanize) %></div>
+
+            <% plans.each do |plan| %>
+              <% is_recommended = recommended_plan.present? && plan.id == recommended_plan.id %>
+              <% value = plan.features.is_a?(Hash) ? plan.features[feature_key] : nil %>
+
+              <div class="pricing-cell <%= "pricing-recommended" if is_recommended %>">
+                <% if value == true %>
+                  <span class="pricing-icon pricing-icon--yes" aria-label="<%= t('.aria.included') %>">✓</span>
+                <% elsif value == false %>
+                  <span class="pricing-icon pricing-icon--no" aria-label="<%= t('.aria.not_included') %>">✗</span>
+                <% elsif value.nil? %>
+                  <span class="pricing-icon pricing-icon--neutral" aria-label="<%= t('.aria.not_informed') %>">—</span>
+                <% else %>
+                  <span class="pricing-icon pricing-icon--neutral" aria-label="<%= t('.aria.value') %>"><%= value %></span>
+                <% end %>
+              </div>
+            <% end %>
+          <% end %>
+
+          <div class="pricing-cell pricing-feature"><%= t(".columns.action") %></div>
+          <% plans.each do |plan| %>
+            <% is_recommended = recommended_plan.present? && plan.id == recommended_plan.id %>
+            <% is_current = current_user&.respond_to?(:plan_id) && current_user.plan_id == plan.id %>
+
+            <div class="pricing-cell <%= "pricing-recommended" if is_recommended %>">
+              <% if user_signed_in? && is_current %>
+                <button class="pricing-btn pricing-btn--disabled" type="button" disabled><%= t(".cta.current") %></button>
+              <% elsif plan.code == "free" %>
+                <button class="pricing-btn pricing-btn--disabled" type="button" disabled><%= t(".cta.free") %></button>
+              <% else %>
+                <%= button_to t(".cta.subscribe"),
+                      checkout_path(plan_id: plan.id),
+                      method: :post,
+                      form: { data: { turbo: false } },
+                      class: "pricing-btn" %>
+              <% end %>
+            </div>
+          <% end %>
+        </div>
+      </section>
+
+      <p class="pricing-footnote">
+        <%= t(".footnote") %>
+      </p>
+    </div>
+  </div>
+<% end %>
+
+
