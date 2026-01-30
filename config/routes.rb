@@ -1,12 +1,9 @@
-# config/routes.rb
-
 Rails.application.routes.draw do
   # =================================================================
-  # 1. AUTENTICAÇÃO (DEVISE) - MOVIDO PARA O TOPO PARA EVITAR CONFLITOS
+  # 1. AUTENTICAÇÃO (DEVISE)
   # =================================================================
   devise_for :users
 
-  # Logout rápido (mantido aqui, logo após o Devise)
   devise_scope :user do
     delete "/logout", to: "devise/sessions#destroy", as: :logout
   end
@@ -14,98 +11,91 @@ Rails.application.routes.draw do
   # =================================================================
   # 2. ROTAS PÚBLICAS E GERAIS
   # =================================================================
-  # Rotas para Stories
-  resources :stories, only: [:index, :create]
-  
-  get "notifications/index"
-
-  # Página inicial pública
   root "public#landing"
 
-  # Páginas públicas
+  # Páginas estáticas
   get "/terms",    to: "public#terms",   as: :terms_of_use
   get "/privacy",  to: "public#privacy", as: :privacy_policy
   get "/profiles", to: "public#profiles", as: :public_profiles
+  get "notifications/index"
 
-  # Descoberta (mapa)
-  get "/discover", to: "users#discover", as: :discover
+  # Stories
+  resources :stories, only: [:index, :create]
 
-  # Nova tela de Descoberta (Lead/Swipe)
-  get "/lead", to: "users#lead", as: :lead
-  post "/lead", to: "users#lead"
-  post "/lead/reject", to: "users#reject", as: :reject_user
-
-  # linha para criar a rota de iniciar chat
-  post 'start_chat/:user_id', to: 'matches#start_chat', as: :start_chat
-
-  # Endpoint JSON para busca de usuários próximos
-  # CORREÇÃO: Movido para esta seção para garantir que seja processado antes de resources :users,
-  # evitando que 'nearby' seja interpretado como um ID de usuário.
-  get "/users/nearby", to: "users#nearby"
-
+  # Likes e Notificações
+  resources :likes, only: [:create, :destroy]
   resources :notifications, only: [:index]
 
-  # Likes (curtidas)
-  resources :likes, only: [:create, :destroy]
+  # =================================================================
+  # 3. FUNCIONALIDADES DE DISCOVERY / LEAD
+  # =================================================================
+  get "/discover", to: "users#discover", as: :discover
 
+  # Lead/Swipe
+  get  "/lead",        to: "users#lead",   as: :lead
+  post "/lead",        to: "users#lead"
+  post "/lead/reject", to: "users#reject", as: :reject_user
 
-  # Matches e mensagens dentro do chat
+  # Iniciar chat direto
+  post 'start_chat/:user_id', to: 'matches#start_chat', as: :start_chat
+
+  # =================================================================
+  # 4. MATCHES E MENSAGENS (CONSOLIDADO)
+  # =================================================================
+  # Aqui juntamos a exibição, as mensagens e a ação de limpar conversa
   resources :matches, only: [:index, :show] do
+    # Rotas aninhadas (mensagens dentro do match)
     resources :messages, only: [:index, :create]
-  end
-
-  # =================================================================
-  # 3. ROTAS DE USUÁRIOS (CONSOLIDADAS)
-  # =================================================================
-
-  # Users (exibição e atualização)
-  # CONSOLIDADO: O 'show' e 'update' estavam separados, agora estão juntos.
-  # O 'show' é o perfil público.
-  resources :users, only: [:show, :update]
-  
-
-  # Tela de Central de Segurança (Ajuda)
-  get "/safety_center", to: "users#safety_center", as: :safety_center
-
-  # Tela de Denúncia Rápida
-  get "/report_incident", to: "users#report_incident", as: :report_incident
-
-  # Rota para a NOVA tela de visualização do meu perfil (Dashboard)
-  get "/meu-perfil", to: "users#me_profile", as: :my_profile
-
-  # Meu Perfil (Rota customizada para edição do usuário logado)
-  # O 'resource' cria as rotas /profile/edit e PATCH /profile
-  resource :profile, controller: 'users', only: [:edit, :update] do
-    # NOVA ROTA: Pré-visualizar perfil (Aba Visualizar)
-    get "preview", on: :collection
-  end
-
-  
-
- # Rotas para Usuários (Atualização de Localização e Descoberta)
-  resources :users, only: [] do
-    collection do
-      # Endpoint para o frontend atualizar a localização do usuário logado
-      post :update_location
-      # Endpoint para buscar usuários próximos (já deve existir)
-      # REMOVIDO: A rota get :nearby foi movida para a Seção 2 para evitar conflito com resources :users.
+    
+    # Ações de membro (agem sobre um match específico)
+    member do
+      delete :clear_conversation
     end
   end
 
-  # Rota para exclusão de foto do álbum
+  # =================================================================
+  # 5. USUÁRIOS (CONSOLIDADO)
+  # =================================================================
+  
+  # IMPORTANTE: Rotas específicas de /users/ devem vir ANTES de resources :users
+  # para não confundir "nearby" com um ID de usuário (ex: users/1)
+  get "/users/nearby", to: "users#nearby"
+
+  resources :users, only: [:show, :update] do
+    # Ações de membro (agem sobre um ID específico: /users/:id/block)
+    member do
+      post :block
+    end
+
+    # Ações de coleção (agem sobre a lista ou contexto geral: /users/update_location)
+    collection do
+      post :update_location
+    end
+  end
+
+  # Funcionalidades extras de usuário
+  get "/safety_center",   to: "users#safety_center",   as: :safety_center
+  get "/report_incident", to: "users#report_incident", as: :report_incident
+  get "/meu-perfil",      to: "users#me_profile",      as: :my_profile
+
+  # Edição do próprio perfil
+  resource :profile, controller: 'users', only: [:edit, :update] do
+    get "preview", on: :collection
+  end
+
+  # Fotos do álbum
   delete 'album_photos/:id', to: 'album_photos#destroy', as: :delete_album_photo
 
+  # =================================================================
+  # 6. PAGAMENTOS (CHECKOUT)
+  # =================================================================
+  resources :plans, only: [:index]
   post "/checkout", to: "checkout#create", as: :checkout
   post "/webhooks/mercado_pago", to: "webhooks/mercado_pago#create", as: :mercado_pago_webhook
-  resources :plans, only: [:index]
 
   # =================================================================
-  # 4. OUTRAS ROTAS
+  # 7. SISTEMA
   # =================================================================
-
-  # ActionCable
   mount ActionCable.server => '/cable'
-
-  # Health check
   get "up" => "rails/health#show", as: :rails_health_check
 end

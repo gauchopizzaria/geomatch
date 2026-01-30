@@ -30,11 +30,33 @@
     </div>
 
     <div class="header-actions">
-      <button class="icon-btn-dots">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="#666"><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="12" r="2"/></svg>
-      </button>
-    </div>
-  </div>
+      <div class="dropdown-wrapper">
+        <button class="icon-btn-dots" id="chat-options-btn">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="#666"><circle cx="12" cy="12" r="2"/><circle cx="19" cy="12" r="2"/><circle cx="5" cy="12" r="2"/></svg>
+        </button>
+
+        <div class="chat-dropdown-menu hidden" id="chat-options-menu">
+          
+          <%= button_to clear_conversation_match_path(@match), 
+              method: :delete, 
+              class: "dropdown-item warning", 
+              data: { confirm: "Tem certeza que deseja apagar todas as mensagens?" } do %>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            Limpar conversa
+          <% end %>
+
+          <%= button_to block_user_path(@other_user), 
+              method: :post, 
+              class: "dropdown-item danger", 
+              data: { confirm: "Bloquear este usuário? Vocês não verão mais o perfil um do outro." } do %>
+            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
+            Bloquear usuário
+          <% end %>
+          
+        </div> 
+      </div> 
+    </div> 
+  </div> 
 
   <%# --- 2. ÁREA DE MENSAGENS --- %>
   <div id="chat-window" class="chat-window-dark" 
@@ -43,7 +65,7 @@
 
    <%# Aviso de Match (Topo) %>
     <div class="match-date-notice">
-      <%# Verifica se é um Match Mútuo (ambos se curtiram) %>
+      <%# Verifica se é um Match Mútuo %>
       <% is_mutual = current_user.likes.exists?(liked_id: @other_user.id) && @other_user.likes.exists?(liked_id: current_user.id) %>
 
       <% if is_mutual %>
@@ -66,10 +88,6 @@
         <% last_date = msg_date %>
       <% end %>
 
-      <%# --- CORREÇÃO AQUI --- %>
-      <%# Adicionamos 'data-sending' e 'data-content' que faltavam %>
-      <%# Mantivemos a classe 'message-row' para o visual, mas adicionei 'message' %>
-      <%# caso seu JS procure especificamente por ela. %>
       <div id="msg-<%= message.id %>" 
            data-sending="false"
            data-content="<%= message.content %>"
@@ -91,6 +109,12 @@
         </div>
       </div>
     <% end %>
+
+    <%# --- INDICADOR DE DIGITAÇÃO (INSERIDO AQUI) --- %>
+    <div id="typing-indicator" style="display: none; padding: 10px 20px; font-size: 0.8rem; color: #888;">
+      <%# O JS vai injetar: "Fulano está digitando..." aqui %>
+    </div>
+
   </div>
 
   <%# --- 3. INPUT (Barra inferior) --- %>
@@ -110,7 +134,7 @@
             class: "dark-input" %>
       
       <button type="submit" id="send-button" class="btn-send">
-         ➤
+          ➤
       </button>
     <% end %>
   </div>

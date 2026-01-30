@@ -1,6 +1,6 @@
 import consumer from "./channels/consumer";
 
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('turbo:load', () => {
   const chatWindow = document.getElementById('chat-window');
   const messageInput = document.getElementById('message-input');
   const newMessageForm = document.getElementById('new-message-form');
@@ -47,6 +47,43 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }
   );
+  
+
+// =======================================================
+  //   LÓGICA DO MENU DROPDOWN (CORRIGIDA E BLINDADA)
+  // =======================================================
+  const menuBtn = document.getElementById('chat-options-btn');
+  const menuDropdown = document.getElementById('chat-options-menu');
+
+  if (menuBtn && menuDropdown) {
+    // 1. CLONE NODE: Isso remove qualquer listener antigo que o Turbo tenha deixado
+    //    Evita o bug de "abrir e fechar imediatamente"
+    const newBtn = menuBtn.cloneNode(true);
+    menuBtn.parentNode.replaceChild(newBtn, menuBtn);
+
+    // 2. Adiciona o evento no NOVO botão limpo
+    newBtn.addEventListener('click', (e) => {
+      e.preventDefault();  // Impede submit se estiver dentro de form
+      e.stopPropagation(); // Impede que o clique suba para o document
+      
+      menuDropdown.classList.toggle('hidden');
+      console.log("Botão clicado -> Menu alternado");
+    });
+
+    // 3. Fechar ao clicar fora
+    // Nota: Usamos 'newBtn' aqui porque 'menuBtn' não existe mais no DOM
+    document.addEventListener('click', (e) => {
+      const clickedInsideMenu = menuDropdown.contains(e.target);
+      const clickedOnBtn = newBtn.contains(e.target);
+
+      if (!clickedInsideMenu && !clickedOnBtn) {
+        // Só fecha se estiver aberto
+        if (!menuDropdown.classList.contains('hidden')) {
+           menuDropdown.classList.add('hidden');
+        }
+      }
+    });
+  }
 
   // =======================================================
   //   ATUALIZA TYPING INDICATOR

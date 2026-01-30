@@ -21,16 +21,21 @@
   font-family: 'Poppins', sans-serif;
 }
 
-/* --- 1. HEADER --- */
+/* --- 1. HEADER (Blindado contra cortes) --- */
 .chat-header-dark {
   display: flex;
   align-items: center;
   padding: 15px 20px;
-  /* Aumentar padding no topo para Safe Area do iPhone */
   padding-top: calc(15px + env(safe-area-inset-top)); 
   background-color: #0e0e10;
   border-bottom: 1px solid #222;
-  z-index: 10;
+  
+  /* CORREÇÃO 1: Z-Index alto para ficar acima das mensagens */
+  position: relative; 
+  z-index: 500; 
+  
+  /* CORREÇÃO 2: Permitir que o menu saia da caixa do header */
+  overflow: visible !important;
 }
 
 .back-btn {
@@ -267,4 +272,100 @@
   line-height: 1;
   
   &:active { transform: scale(0.9); }
+}
+
+.dropdown-wrapper {
+  position: relative;     /* Cria o ponto de referência para o menu */
+  display: inline-block;  /* Mantém o tamanho apenas do botão */
+  overflow: visible !important; /* Garante que o menu não seja cortado */
+  z-index: 1001;          /* Garante que fique acima de tudo */
+}
+
+/* O Menu Dropdown */
+.chat-dropdown-menu {
+  position: absolute;
+  top: 100%; /* Cola logo abaixo do botão */
+  right: 0;  /* Alinha à direita */
+  
+  background-color: #797878;
+  border: 1px solid #b3afaf;
+  border-radius: 8px;
+  width: 200px;
+  box-shadow: 0 4px 15px rgba(0,0,0,0.8); /* Sombra mais forte para destacar */
+  
+  /* Z-Index relativo ao Header (que já é 500), então 1000 aqui soma */
+  z-index: 1000; 
+  
+  padding: 8px 0;
+  overflow: hidden;
+  
+  /* Estado Visível Padrão */
+  display: block;
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Estado Oculto (A classe que o JS coloca/tira) */
+.chat-dropdown-menu.hidden {
+  display: none; /* Garante que sai do layout */
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none; /* Garante que não dá pra clicar se estiver invisível */
+}
+
+/* Botões do Menu (Ajuste para button_to do Rails) */
+.dropdown-item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: none;
+  background: none;
+}
+
+.dropdown-item button {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  padding: 12px 16px;
+  background: none;
+  border: none;
+  color: #ffffff !important;
+  text-align: left;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+
+
+/* Hover genérico (fundo cinza escuro) */
+.dropdown-item button:hover {
+  background-color: #7e7d7d;
+}
+
+/* Força a cor do ícone SVG para branco também */
+.dropdown-item button svg {
+  stroke: #ffffff !important;
+  transition: stroke 0.2s;
+}
+
+/* --- CORES ESPECÍFICAS NO HOVER (Opcional, mas recomendado) --- */
+
+/* Item WARNING (Limpar conversa) - Fica Amarelo só ao passar o mouse */
+.dropdown-item.warning button:hover {
+  color: #ffcc00 !important;
+}
+.dropdown-item.warning button:hover svg {
+  stroke: #ffcc00 !important;
+}
+
+/* Item DANGER (Bloquear) - Fica Vermelho só ao passar o mouse */
+.dropdown-item.danger button:hover {
+  color: #ff4d4d !important;
+}
+.dropdown-item.danger button:hover svg {
+  stroke: #ff4d4d !important;
 }
