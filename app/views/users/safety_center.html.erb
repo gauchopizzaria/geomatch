@@ -27,17 +27,18 @@
 
     <div class="cards-grid">
       
-      <%# CARD 1: Polícia (Rosa) %>
-      <div class="safety-card card-pink">
-        <div class="card-icon-circle icon-red">
-           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
-        </div>
-        <div class="card-badge">!</div>
-        <div class="card-text">
-          <strong>Ações Rápidas</strong>
-          <span>Policia Militar</span>
-        </div>
-      </div>
+      <%# CARD 1: Polícia (Rosa) - Link para discar 190 %>
+<%= link_to "tel:190", class: "safety-card card-pink", style: "text-decoration: none;" do %>
+  <div class="card-icon-circle icon-red">
+     <%# Ícone de Telefone %>
+     <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+  </div>
+  <div class="card-badge">!</div>
+  <div class="card-text">
+    <strong>Ações Rápidas</strong>
+    <span>Ligar 190</span>
+  </div>
+<% end %>
 
     <%# CARD 2: Denúncias (LINK ATUALIZADO) %>
       <%= link_to report_incident_path, class: "safety-card card-blue", style: "text-decoration: none;" do %>
@@ -50,28 +51,42 @@
         </div>
       <% end %>
 
-      <%# CARD 3: Compartilhar (Lilás) %>
-      <div class="safety-card card-purple">
-        <div class="card-icon-circle icon-purple-dark">
-           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
-           <%# Ícone de refresh simplificado para simular o da imagem %>
-        </div>
-        <div class="card-text">
-          <strong>Compartilhar Local</strong>
-          <span>Ações Rápidas</span>
-        </div>
-      </div>
+     <%# CARD 3: Compartilhar Localização (JavaScript) %>
+<button type="button" id="share-location-btn" class="safety-card card-purple" style="border: none; width: 100%; text-align: left; cursor: pointer; padding: 15px; display: flex; align-items: center; justify-content: flex-start; gap: 12px;">
+  
+  <div class="card-icon-circle icon-purple-dark" style="flex-shrink: 0;">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/>
+    </svg>
+  </div>
+  
+  <div class="card-text">
+    <strong style="display: block;">Compartilhar Local</strong>
+    <span style="display: block;">Enviar localização atual</span>
+  </div>
 
-      <%# CARD 4: Modo Pânico (Rosa Claro) %>
-      <div class="safety-card card-pink-light">
+</button>
+
+      <%# CARD 4: Modo Pânico (Botão Ativo) %>
+      <button type="button" id="panic-btn" class="safety-card card-pink-light" style="border: none; width: 100%; text-align: left; cursor: pointer; padding: 15px; display: flex; align-items: center; justify-content: flex-start; gap: 12px;">
+        
         <div class="card-icon-circle icon-red-light">
            <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22M12 6l7.53 13H4.47M11 10v4h2v-4m-2 6v2h2v-2"/></svg>
         </div>
+        
         <div class="card-text">
-          <strong>Modo Pânico</strong>
-          <span>Alerta de Emergência</span>
+          <strong id="panic-text-title">Modo Pânico</strong>
+          <span id="panic-text-status">Toque para ativar</span>
         </div>
-      </div>
+
+        <%# Elemento de Áudio (Escondido) %>
+        <%# Recomendo baixar um som de sirene e colocar em public/sounds/sirene.mp3 %>
+        <%# Para teste, estou usando um link externo de exemplo, mas troque pelo seu arquivo local depois %>
+        <audio id="panic-audio" loop>
+          <source src="https://www.soundjay.com/mechanical/sounds/smoke-detector-1.mp3" type="audio/mpeg">
+        </audio>
+
+      </button>
 
     </div>
   </div>
@@ -101,5 +116,150 @@
       </li>
     </ul>
   </div>
+
+
+  <script>
+  // Função para inicializar o botão de compartilhar
+  function initShareButton() {
+    const shareBtn = document.getElementById("share-location-btn");
+
+    // Evita adicionar múltiplos eventos se o script rodar 2x
+    if (shareBtn && !shareBtn.dataset.listenerAdded) {
+      shareBtn.dataset.listenerAdded = "true"; // Marca como iniciado
+
+      shareBtn.addEventListener("click", () => {
+        // 1. Verifica suporte
+        if (!navigator.geolocation) {
+          alert("Seu navegador não suporta geolocalização.");
+          return;
+        }
+
+        // Feedback visual
+        const textSpan = shareBtn.querySelector("span");
+        const originalText = textSpan.innerText;
+        textSpan.innerText = "Obtendo localização...";
+
+        // 2. Obtém posição
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const lat = position.coords.latitude;
+            const lng = position.coords.longitude;
+            
+            // --- CORREÇÃO AQUI: URL CORRETA DO GOOGLE MAPS ---
+            const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+            
+            const shareData = {
+              title: 'Minha Localização',
+              text: 'Estou aqui! Segue minha localização atual:',
+              url: mapUrl
+            };
+
+            // 3. Compartilhamento Nativo (Mobile)
+            if (navigator.share) {
+              navigator.share(shareData)
+                .then(() => console.log('Compartilhado com sucesso'))
+                .catch((error) => console.log('Erro ao compartilhar', error));
+            } else {
+              // Fallback (WhatsApp Web)
+              window.open(`https://wa.me/?text=${encodeURIComponent(shareData.text + " " + mapUrl)}`, '_blank');
+            }
+
+            // Restaura texto
+            textSpan.innerText = originalText;
+          },
+          (error) => {
+            console.error(error);
+            alert("Erro ao obter localização. Verifique o GPS.");
+            textSpan.innerText = originalText;
+          },
+          { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
+        );
+      });
+    }
+  }
+
+  // Inicializa com Turbo (Rails padrão) e carregamento normal
+  document.addEventListener("turbo:load", initShareButton);
+  document.addEventListener("DOMContentLoaded", initShareButton);
+
+
+  // --- FUNÇÃO MODO PÂNICO ---
+  function initPanicButton() {
+    const panicBtn = document.getElementById("panic-btn");
+    const panicAudio = document.getElementById("panic-audio");
+    const titleText = document.getElementById("panic-text-title");
+    const statusText = document.getElementById("panic-text-status");
+    
+    let isActive = false;
+    let vibrateInterval;
+
+    if (panicBtn && panicAudio) {
+      panicBtn.addEventListener("click", () => {
+        if (!isActive) {
+          // --- ATIVAR ---
+          isActive = true;
+          
+          // 1. Toca o Som
+          panicAudio.currentTime = 0;
+          panicAudio.play().catch(e => console.log("Erro ao tocar áudio (interação necessária):", e));
+
+          // 2. Inicia Vibração (Padrão SOS: ... --- ...)
+          // Navigator.vibrate funciona bem em Android. No iOS é limitado.
+          if (navigator.vibrate) {
+            // Vibra 500ms, espera 200ms, vibra 500ms...
+            navigator.vibrate([500, 200, 500, 200, 1000]); 
+            // Loop de vibração (pois o navegador para sozinho)
+            vibrateInterval = setInterval(() => {
+               navigator.vibrate([500, 200, 500, 200, 1000]);
+            }, 2500);
+          }
+
+          // 3. Feedback Visual (Muda cor e texto)
+          panicBtn.style.backgroundColor = "#ff4d4d"; // Vermelho forte
+          panicBtn.style.color = "#fff";
+          titleText.innerText = "ALARME ATIVO!";
+          statusText.innerText = "Toque para PARAR";
+          
+          // Animação de pulso (opcional, via JS style)
+          panicBtn.style.animation = "pulse-red 1s infinite";
+
+        } else {
+          // --- DESATIVAR ---
+          isActive = false;
+
+          // 1. Para o Som
+          panicAudio.pause();
+          panicAudio.currentTime = 0;
+
+          // 2. Para Vibração
+          if (navigator.vibrate) {
+            navigator.vibrate(0); // Para imediatamente
+            clearInterval(vibrateInterval);
+          }
+
+          // 3. Restaura Visual
+          panicBtn.style.backgroundColor = ""; // Volta ao CSS original
+          panicBtn.style.color = "";
+          panicBtn.style.animation = "";
+          titleText.innerText = "Modo Pânico";
+          statusText.innerText = "Alerta de Emergência";
+        }
+      });
+    }
+  }
+
+  // --- ATUALIZE OS LISTENERS NO FINAL DO SCRIPT ---
+  document.addEventListener("turbo:load", () => {
+    initShareButton(); // Sua função anterior
+    initPanicButton(); // Nova função
+  });
+  
+  document.addEventListener("DOMContentLoaded", () => {
+    initShareButton();
+    initPanicButton();
+  });
+</script>
+
+
 
 </div>
