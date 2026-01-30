@@ -70,6 +70,7 @@ Rails.application.routes.draw do
     # Ações de coleção (agem sobre a lista ou contexto geral: /users/update_location)
     collection do
       post :update_location
+      post :toggle_visibility
     end
   end
 

@@ -231,3 +231,14 @@
 // 7. MARKERS (Ajustado para moldura)
 /* O estilo é inline no JS para a moldura, aqui mantemos apenas reset básico */
 .custom-marker { background: transparent; border: none; }
+
+/* Garanta que isso exista no seu CSS */
+.hidden {
+  display: none !important;
+}
+
+/* Opcional: Estilo para quando o botão estiver ativo (Invisível) */
+.fab-visibility.active {
+  background-color: #ff4d4d; /* Vermelho para indicar alerta/invisível */
+  color: white;
+}

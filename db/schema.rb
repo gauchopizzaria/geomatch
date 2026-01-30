@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_29_223759) do
+ActiveRecord::Schema[8.1].define(version: 2026_01_30_203721) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -85,6 +85,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_223759) do
 
   create_table "likes", force: :cascade do |t|
     t.datetime "created_at", null: false
+    t.boolean "is_like", default: true
     t.bigint "liked_id", null: false
     t.bigint "liker_id", null: false
     t.datetime "updated_at", null: false
@@ -346,6 +347,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_29_223759) do
     t.string "gender"
     t.string "hobbies"
     t.string "interested_in"
+    t.boolean "invisible", default: false
     t.datetime "last_seen_at"
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6

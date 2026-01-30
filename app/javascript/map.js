@@ -424,25 +424,79 @@ const STORAGE_KEYS = {
         });
     }
 
+   // ========================================
+    // CORREÇÃO: MODO INVISÍVEL
+    // ========================================
     if (toggleVisibilityBtn) {
-        toggleVisibilityBtn.addEventListener("click", () => {
-            let isInvisible = localStorage.getItem(STORAGE_KEYS.INVISIBLE_MODE) === "true";
-            isInvisible = !isInvisible;
-            localStorage.setItem(STORAGE_KEYS.INVISIBLE_MODE, isInvisible);
-            const eyeOpen = toggleVisibilityBtn.querySelector(".eye-open");
-            const eyeClosed = toggleVisibilityBtn.querySelector(".eye-closed");
+        const eyeOpen = toggleVisibilityBtn.querySelector(".eye-open");
+        const eyeClosed = toggleVisibilityBtn.querySelector(".eye-closed");
+
+        // Função visual para alternar ícones
+        const updateVisibilityUI = (isInvisible) => {
             if (isInvisible) {
-                toggleVisibilityBtn.classList.add("active");
-                if(eyeOpen) eyeOpen.classList.add("hidden");
-                if(eyeClosed) eyeClosed.classList.remove("hidden");
+                toggleVisibilityBtn.classList.add("active"); // Estilo de ativado (vermelho/dourado)
+                toggleVisibilityBtn.classList.add("invisible-mode"); 
+                if (eyeOpen) eyeOpen.classList.add("hidden");
+                if (eyeClosed) eyeClosed.classList.remove("hidden");
             } else {
                 toggleVisibilityBtn.classList.remove("active");
-                if(eyeOpen) eyeOpen.classList.remove("hidden");
-                if(eyeClosed) eyeClosed.classList.add("hidden");
+                toggleVisibilityBtn.classList.remove("invisible-mode");
+                if (eyeOpen) eyeOpen.classList.remove("hidden");
+                if (eyeClosed) eyeClosed.classList.add("hidden");
+            }
+        };
+
+        // 1. ESTADO INICIAL:
+        // Idealmente, o Rails deve passar esse estado no HTML (data-attribute)
+        // Se você tiver <div id="current-user-data" data-invisible="<%= current_user.invisible %>"></div>
+        const userData = document.getElementById('current-user-data'); // Crie esse elemento no layout se não tiver
+        const initialInvisible = userData ? (userData.dataset.invisible === 'true') : false;
+        
+        // Aplica o estado inicial visualmente
+        updateVisibilityUI(initialInvisible);
+
+        // 2. EVENTO DE CLICK
+        toggleVisibilityBtn.addEventListener("click", async () => {
+            try {
+                // Feedback visual imediato (Otimista)
+                const isCurrentlyInvisible = toggleVisibilityBtn.classList.contains("active");
+                updateVisibilityUI(!isCurrentlyInvisible);
+
+                // Chama o servidor
+                const token = document.querySelector('meta[name="csrf-token"]').content;
+                const response = await fetch('/users/toggle_visibility', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-Token': token
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error("Erro ao salvar no servidor");
+                }
+
+                const data = await response.json();
+                
+                // Confirma o estado real vindo do servidor
+                updateVisibilityUI(data.invisible);
+
+                // Opcional: Se ficou invisível, parar de enviar localização ou limpar mapa
+                if (data.invisible) {
+                    console.log("Você está invisível agora.");
+                    // Aqui você pode adicionar lógica para parar o watchPosition se usar
+                }
+
+            } catch (error) {
+                console.error("Erro ao alternar visibilidade:", error);
+                // Reverte visualmente se deu erro
+                alert("Não foi possível alterar a visibilidade. Verifique sua conexão.");
+                const isCurrentlyInvisible = toggleVisibilityBtn.classList.contains("active");
+                updateVisibilityUI(!isCurrentlyInvisible); 
             }
         });
     }
-
+    
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             (position) => initializeMap(position.coords.latitude, position.coords.longitude),
