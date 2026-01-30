@@ -1,7 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["card", "slide", "indicator", "swipeIndicator"]
+  // ADICIONADO: "profileModal" aos targets
+  static targets = ["card", "slide", "indicator", "swipeIndicator", "profileModal"]
   
   static values = {
     currentSlide: { type: Number, default: 0 },
@@ -55,12 +56,54 @@ export default class extends Controller {
   }
 
   // ========================================
+  // LÓGICA DO PERFIL (NOVO)
+  // ========================================
+
+  openProfile(event) {
+    // Impede a propagação para não ativar outros cliques
+    if (event) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+    
+    console.log("🔼 Abrindo perfil completo...")
+
+    if (this.hasProfileModalTarget) {
+      this.profileModalTarget.classList.add("open")
+      // Desabilita o scroll do fundo para focar no modal
+      document.body.style.overflow = "hidden"
+    }
+  }
+
+  closeProfile(event) {
+    if (event) {
+      event.preventDefault()
+      event.stopPropagation()
+    }
+
+    console.log("🔽 Fechando perfil...")
+
+    if (this.hasProfileModalTarget) {
+      this.profileModalTarget.classList.remove("open")
+      // Reabilita o scroll da página principal
+      document.body.style.overflow = ""
+    }
+  }
+
+  // ========================================
   // INÍCIO DO SWIPE
   // ========================================
   handleStart(event) {
-    // Se clicar no botão ou seta, NÃO faz swipe
-    if (event.target.closest('button') || event.target.closest('.gallery-nav') || event.target.closest('.indicator')) {
-      console.log("🖱 Clique detectado em botão/navegação. Ignorando Swipe.")
+    // 1. Se o perfil estiver aberto, NÃO permite swipe no card
+    if (this.hasProfileModalTarget && this.profileModalTarget.classList.contains("open")) {
+      return
+    }
+
+    // 2. Se clicar em botões, navegação ou indicadores, ignora
+    if (event.target.closest('button') || 
+        event.target.closest('.gallery-nav') || 
+        event.target.closest('.indicator') ||
+        event.target.closest('.clickable-info')) { // Adicionado: ignora se clicar na info (pois abre o perfil)
       return
     }
 
@@ -110,7 +153,7 @@ export default class extends Controller {
     console.log("🛑 Swipe Finalizado")
 
     const deltaX = this.currentX - this.startX
-    const threshold = 100 // Pixel distance to trigger action
+    const threshold = 100 // Distância em pixels para considerar ação
 
     if (Math.abs(deltaX) > threshold) {
       if (deltaX > 0) {
@@ -135,7 +178,7 @@ export default class extends Controller {
       const opacity = Math.min(1, Math.abs(deltaX) / 100)
       this.swipeIndicatorTarget.style.opacity = opacity
       
-      // Mostra ícone esquerda/direita
+      // Mostra ícone esquerda/direita se você tiver essa lógica no CSS
       this.swipeIndicatorTarget.classList.toggle('show-left', deltaX < 0)
       this.swipeIndicatorTarget.classList.toggle('show-right', deltaX > 0)
     }
@@ -155,16 +198,20 @@ export default class extends Controller {
   // --- NAVEGAÇÃO DA GALERIA ---
   nextSlide(event) {
     console.log("➡️ Próxima foto")
-    event.preventDefault()
-    event.stopPropagation() // Impede que o clique ative o swipe
+    if (event) {
+        event.preventDefault()
+        event.stopPropagation()
+    }
     if (this.slideCountValue <= 1) return
     this.currentSlideValue = (this.currentSlideValue + 1) % this.slideCountValue
   }
 
   prevSlide(event) {
     console.log("⬅️ Foto anterior")
-    event.preventDefault()
-    event.stopPropagation()
+    if (event) {
+        event.preventDefault()
+        event.stopPropagation()
+    }
     if (this.slideCountValue <= 1) return
     this.currentSlideValue = (this.currentSlideValue - 1 + this.slideCountValue) % this.slideCountValue
   }
@@ -200,13 +247,16 @@ export default class extends Controller {
     this.cardTarget.style.transition = 'transform 0.5s ease-in'
     this.cardTarget.style.transform = `translateX(${endX}px) rotate(${isLike ? 30 : -30}deg)`
 
-    const buttonSelector = isLike ? '.like-button' : '.reject-button'
+    // Mapeia para os botões que estão no HTML (btn-like ou btn-reject)
+    // Note: No seu HTML as classes são 'btn-like' e 'btn-reject'
+    const buttonSelector = isLike ? '.btn-like' : '.btn-reject'
     const button = document.querySelector(buttonSelector)
     
     if (button) {
+      // Pequeno delay para a animação começar antes de submeter
       setTimeout(() => button.click(), 200)
     } else {
-      console.warn("⚠️ Botão de ação não encontrado no DOM")
+      console.warn("⚠️ Botão de ação não encontrado no DOM. Tentando reload...")
       setTimeout(() => location.reload(), 500)
     }
   }

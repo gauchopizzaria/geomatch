@@ -1,5 +1,5 @@
 // --------------------------------------------------
-// GEOMATCH - LEAD PREMIUM STYLE (CORRIGIDO IPHONE)
+// GEOMATCH - LEAD PREMIUM STYLE (FINAL)
 // --------------------------------------------------
 
 :root {
@@ -7,16 +7,18 @@
   --gold-dark: #b4941f;
   --bg-dark: #000000;
   --card-bg: #1a1a1a;
-  --text-white: #ffffff;
   
-  /* Alturas fixas para cálculo */
+  /* Variáveis do Novo Perfil Premium */
+  --sheet-bg: #000000;       /* Fundo do modal (Preto absoluto) */
+  --card-inner-bg: #1c1c1e;  /* Fundo dos cards de info (Cinza Chumbo) */
+  --text-white: #ffffff;
+  --text-gray: #a1a1aa;
+  
   --header-height: 60px;
-  --sidebar-height: 85px; /* Altura visual da sidebar inferior */
 }
 
 .geomatch-screen-wrapper {
   background-color: var(--bg-dark);
-  /* dvh = Dynamic Viewport Height (ajusta se a barra de endereço sumir ou aparecer) */
   height: 100dvh; 
   width: 100%;
   display: flex;
@@ -26,11 +28,12 @@
   font-family: 'Poppins', sans-serif;
 }
 
+// =========================================
 // 1. HEADER (TOPO)
+// =========================================
 .geomatch-header {
-  /* Altura fixa + espaço seguro do iPhone (entalhe) */
   height: calc(var(--header-height) + env(safe-area-inset-top));
-  padding-top: env(safe-area-inset-top); /* O PULO DO GATO: Empurra conteúdo pra baixo do notch */
+  padding-top: env(safe-area-inset-top);
   
   display: flex;
   justify-content: space-between;
@@ -38,50 +41,26 @@
   padding-left: 20px;
   padding-right: 20px;
   z-index: 50;
-  background-color: var(--bg-dark); /* Garante que o fundo atrás do notch seja preto */
+  background-color: var(--bg-dark);
 
-  .header-left {
-    display: flex;
-    align-items: center;
-  }
-
-  .header-logo {
-    height: 28px; 
-    width: auto;
-    object-fit: contain;
-    display: block; /* Remove espaços fantasmas */
-  }
-
-  .header-right {
-    display: flex;
-    gap: 15px;
-
-    .header-btn {
-      background: none;
-      border: none;
-      padding: 0;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      
-      img {
-        width: 24px;
-        height: 24px;
-      }
-    }
+  .header-left { display: flex; align-items: center; }
+  .header-logo { height: 28px; width: auto; object-fit: contain; display: block; }
+  .header-right { 
+    display: flex; gap: 15px; 
+    .header-btn { background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; img { width: 24px; height: 24px; } }
   }
 }
 
-// 2. MAIN AREA (ÁREA DO CARTÃO)
+// =========================================
+// 2. MAIN AREA (SWIPE CARD)
+// =========================================
 .geomatch-main-area {
   flex: 1;
   display: flex;
   flex-direction: column;
   padding: 10px 15px 0 15px; 
-  
-  /* AUMENTADO: Garante que o cartão tenha respiro em baixo */
-  /* Sidebar (~90px) + Espaço para botões flutuarem (~80px) */
- padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  /* Espaço para os botões flutuantes não cobrirem o card */
+  padding-bottom: calc(100px + env(safe-area-inset-bottom));
   
   position: relative;
   max-width: 600px;
@@ -91,11 +70,10 @@
 }
 
 .gold-card-frame {
-  flex: 1; /* O cartão vai esticar para ocupar todo o espaço disponível na main-area */
+  flex: 1; 
   position: relative;
   border: 2px solid var(--gold-primary);
   border-radius: 25px;
-  /* Curvas maiores embaixo conforme design */
   border-bottom-left-radius: 40px; 
   border-bottom-right-radius: 40px;
   overflow: hidden;
@@ -105,338 +83,298 @@
   touch-action: none;
   user-select: none;
   cursor: grab;
-  
-  /* IMPORTANTE: Removemos a margin-bottom fixa gigante e controlamos pelo padding da main-area */
   margin-bottom: 0; 
 
-  &:active {
-    cursor: grabbing;
-  }
+  &:active { cursor: grabbing; }
 }
 
-// 3. GALERIA & INTERNOS DO CARD
-.card-gallery {
-  width: 100%;
-  height: 100%;
-  position: relative;
-}
-
-.slides-container {
-  width: 100%;
-  height: 100%;
-}
+// --- Galeria Interna do Card ---
+.card-gallery { width: 100%; height: 100%; position: relative; }
+.slides-container { width: 100%; height: 100%; }
 
 .slide-item {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  opacity: 0;
-  transition: opacity 0.2s ease;
-
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  opacity: 0; transition: opacity 0.2s ease;
   &.active { opacity: 1; }
-
-  .slide-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .slide-gradient {
-    position: absolute;
-    bottom: 0; left: 0; right: 0;
-    height: 60%; /* Gradiente um pouco maior para garantir leitura */
-    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%);
+  .slide-img { width: 100%; height: 100%; object-fit: cover; }
+  .slide-gradient { 
+    position: absolute; bottom: 0; left: 0; right: 0; 
+    height: 60%; 
+    background: linear-gradient(to top, rgba(0,0,0,0.95) 0%, rgba(0,0,0,0.6) 40%, rgba(0,0,0,0) 100%); 
   }
 }
 
-// Barra de Progresso
 .progress-bar-container {
-  position: absolute;
-  top: 15px; left: 15px; right: 15px;
-  display: flex;
-  gap: 5px;
-  z-index: 10;
-
-  .progress-step {
-    flex: 1;
-    height: 3px;
-    background: rgba(255, 255, 255, 0.3);
-    border-radius: 2px;
-    &.active { background: var(--text-white); }
-  }
+  position: absolute; top: 15px; left: 15px; right: 15px; display: flex; gap: 5px; z-index: 10;
+  .progress-step { flex: 1; height: 3px; background: rgba(255, 255, 255, 0.3); border-radius: 2px; &.active { background: var(--text-white); } }
 }
 
-// Navegação toque
 .tap-nav-overlay {
-  position: absolute; top: 0; left: 0; width: 100%; height: 75%;
-  display: flex; z-index: 9;
+  position: absolute; top: 0; left: 0; width: 100%; height: 75%; display: flex; z-index: 9;
   .tap-left, .tap-right { flex: 1; }
 }
 
-// 4. INFORMAÇÕES DO USUÁRIO
+// --- Informações no Card (Resumo) ---
 .card-user-info {
-  position: absolute;
-  /* Subimos um pouco mais as infos para não ficarem atrás dos botões */
-  bottom: 110px; 
+  position: absolute; bottom: 110px; left: 20px; right: 20px; z-index: 20;
+  color: var(--text-white); text-align: left;
   
-  left: 20px;
-  right: 20px;
-  z-index: 20;
-  color: var(--text-white);
-  text-align: left;
-  pointer-events: none;/* Deixa clicar nos botões se eles sobrepuserem */
+  /* CRUCIAL: Permite clicar para abrir o perfil */
+  pointer-events: auto; 
+  cursor: pointer;
 
   .location-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 5px;
-    background: rgba(30, 144, 120, 0.9);
-    padding: 5px 12px;
-    border-radius: 15px;
-    font-size: 0.75rem;
-    font-weight: 600;
-    margin-bottom: 10px;
-    backdrop-filter: blur(4px);
+    display: inline-flex; align-items: center; gap: 5px;
+    background: rgba(30, 144, 120, 0.9); padding: 5px 12px; border-radius: 15px;
+    font-size: 0.75rem; font-weight: 600; margin-bottom: 10px; backdrop-filter: blur(4px);
   }
 
   .user-title {
-    font-size: 2rem;
-    font-weight: 700;
-    margin: 0;
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-    text-shadow: 0 2px 4px rgba(0,0,0,0.8);
-    line-height: 1.2;
-
-    .age {
-      font-size: 1.5rem;
-      font-weight: 400;
-    }
-    
-    .verified-icon {
-      height: 20px;
-      width: auto;
-    }
+    font-size: 2rem; font-weight: 700; margin: 0;
+    display: flex; align-items: baseline; gap: 8px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.8); line-height: 1.2;
+    .age { font-size: 1.5rem; font-weight: 400; }
+    .verified-icon { height: 20px; width: auto; }
   }
 
   .user-distance {
-    font-size: 0.95rem;
-    margin-top: 5px;
-    opacity: 0.9;
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    font-weight: 500;
+    font-size: 0.95rem; margin-top: 5px; opacity: 0.9;
+    display: flex; align-items: center; gap: 6px; font-weight: 500;
+  }
+  
+  .info-up-indicator {
+      color: #fff; animation: bounceUp 1.5s infinite; font-size: 1.2rem;
+      position: absolute; right: 0; bottom: 30px; /* Posiciona a seta */
   }
 }
 
-// 5. BOTÕES DE AÇÃO (FLUTUANTES)
+@keyframes bounceUp {
+    0%, 100% { transform: translateY(0); opacity: 0.6; }
+    50% { transform: translateY(-5px); opacity: 1; }
+}
+
+// =========================================
+// 3. BOTÕES DE AÇÃO (FLUTUANTES)
+// =========================================
 .action-buttons-container {
   position: absolute;
-  
-  /* --- CORREÇÃO FINAL DE POSIÇÃO --- */
-  /* 85px (Sidebar) + ~55px (Gap Visual) + Safe Area */
-  /* Isso vai deixar os botões "dentro" do cartão, como na foto da Maria */
   bottom: calc(120px + env(safe-area-inset-bottom)); 
-  
-  left: 0;
-  right: 0;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 25px;
-  
-  /* Z-index alto para ficar acima de tudo */
-  z-index: 2001; 
-  
-  height: 0; 
+  left: 0; right: 0;
+  display: flex; justify-content: center; align-items: center; gap: 25px;
+  z-index: 2001; height: 0; 
 }
 
-
-.btn-form {
-  margin: 0; padding: 0;
-  display: flex; /* Remove altura extra de forms */
-}
+.btn-form { margin: 0; padding: 0; display: flex; }
 
 .action-btn {
-  background: #121212;
-  border: 2px solid var(--gold-primary);
-  border-radius: 50%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  cursor: pointer;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.6);
-  transition: transform 0.1s;
-  position: relative;
-
-  img {
-    width: 50%;
-    height: 50%;
-    object-fit: contain;
-  }
-
+  background: #121212; border: 2px solid var(--gold-primary); border-radius: 50%;
+  display: flex; justify-content: center; align-items: center;
+  cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+  transition: transform 0.1s; position: relative;
+  img { width: 50%; height: 50%; object-fit: contain; }
   &:active { transform: scale(0.95); }
 }
 
-// Tamanhos específicos
-.btn-reject {
-  width: 65px;
-  height: 65px;
-  border-color: #ff4b4b; /* Opcional: Borda vermelha se quiser igual tinder, ou dourada */
-  border: 2px solid var(--gold-primary); /* Mantendo dourada conforme pedido */
-  
-  img { width: 26px; }
-}
+.btn-reject { width: 65px; height: 65px; border-color: #ff4b4b; border: 2px solid var(--gold-primary); img { width: 26px; } }
+.btn-chat { width: 50px; height: 50px; border-color: #d4af37; background: rgba(20, 20, 20, 0.95); img { width: 22px; } }
+.btn-like { width: 65px; height: 65px; border: 2px solid var(--gold-primary); .heart-icon-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; img { width: 32px; } } }
 
-.btn-chat {
-  width: 50px;
-  height: 50px;
-  border-color: #d4af37; 
-  background: rgba(20, 20, 20, 0.95);
-  
-  img { width: 22px; }
-}
-
-.btn-like {
-  width: 65px;
-  height: 65px;
-  border: 2px solid var(--gold-primary);
-  
-  .heart-icon-wrapper {
-    width: 100%; height: 100%;
-    display: flex; justify-content: center; align-items: center;
-    img { width: 32px; }
-  }
-}
-
-// ESTADO VAZIO
+// Estado Vazio
 .empty-state {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100%;
-  color: var(--gold-primary);
-  text-align: center;
-  
+  display: flex; flex-direction: column; justify-content: center; align-items: center;
+  height: 100%; color: var(--gold-primary); text-align: center;
   .empty-icon { font-size: 3rem; margin-bottom: 1rem; }
+  .btn-gold-outline { margin-top: 20px; padding: 10px 24px; border: 1px solid var(--gold-primary); color: var(--gold-primary); text-decoration: none; border-radius: 25px; font-weight: 600; }
+}
+
+// =========================================
+// 4. PERFIL COMPLETO (PREMIUM STYLE)
+// =========================================
+
+.full-profile-sheet {
+  position: fixed;
+  top: 100%; left: 0; width: 100%;
   
-  .btn-gold-outline {
-    margin-top: 20px;
-    padding: 10px 24px;
-    border: 1px solid var(--gold-primary);
-    color: var(--gold-primary);
-    text-decoration: none;
-    border-radius: 25px;
-    font-weight: 600;
+  /* Tela cheia para o estilo premium */
+  height: 100%; 
+  
+  background: var(--sheet-bg); 
+  z-index: 10000; /* Acima de tudo */
+  
+  transition: top 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  display: flex; flex-direction: column;
+  overflow: hidden;
+  
+  &.open { top: 0; }
+}
+
+/* Botão Fechar (Círculo Flutuante) */
+.close-profile-btn {
+  position: absolute;
+  top: calc(20px + env(safe-area-inset-top));
+  right: 20px;
+  width: 40px; height: 40px;
+  background: linear-gradient(135deg, #d4af37, #b4941f);
+  border: none; border-radius: 50%;
+  color: #000; font-size: 1.2rem;
+  display: flex; align-items: center; justify-content: center;
+  z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.5);
+  cursor: pointer;
+  &:active { transform: scale(0.9); }
+}
+
+.profile-scroll-content {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--sheet-bg);
+  padding-bottom: 50px; 
+}
+
+/* --- Capa Imersiva --- */
+.profile-cover-section {
+  position: relative; width: 100%; height: 65vh;
+  .profile-cover-img { width: 100%; height: 100%; object-fit: cover; }
+  .profile-cover-overlay {
+    position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(to bottom, rgba(0,0,0,0) 50%, rgba(0,0,0, 1) 98%);
+    display: flex; flex-direction: column; justify-content: flex-end;
+    padding: 20px;
+  }
+  .cover-info {
+    margin-bottom: 10px;
+    .cover-name {
+      font-size: 2.2rem; font-weight: 700; color: #fff; margin: 0;
+      display: flex; align-items: center; gap: 8px;
+      .cover-age { font-weight: 400; font-size: 1.8rem; }
+      .cover-verified { width: 22px; height: 22px; }
+    }
+    .cover-job { color: #fff; font-size: 0.95rem; margin: 5px 0; display: flex; align-items: center; gap: 8px; }
+    .cover-distance { color: #ccc; font-size: 0.9rem; margin: 0; display: flex; align-items: center; gap: 8px; }
   }
 }
 
-/* --- FILTER MODAL DARK MODE --- */
+/* --- Container dos Cards --- */
+.profile-body-container {
+  padding: 0 16px;
+  margin-top: -15px; /* Sobrepõe levemente a capa */
+  position: relative; z-index: 2;
+  display: flex; flex-direction: column; gap: 16px;
+}
 
-.filter-modal {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  z-index: 9999;
-  display: flex;
-  align-items: flex-end;
-  transition: opacity 0.3s ease;
+/* Card Genérico (Cinza Escuro) */
+.profile-info-card {
+  background: var(--card-inner-bg);
+  border-radius: 12px; padding: 16px;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.2);
   
-  &.hidden { 
-    pointer-events: none; opacity: 0;
-    .filter-content { transform: translateY(100%); }
+  .card-header {
+    font-size: 1rem; font-weight: 600; color: var(--text-white);
+    margin: 0 0 12px 0; text-transform: uppercase; letter-spacing: 0.5px;
   }
+}
+
+/* Tipografia e Listas */
+.profile-bio-text { color: #ddd; font-size: 1rem; line-height: 1.5; white-space: pre-wrap; }
+
+.basic-info-list {
+  display: flex; flex-direction: column; gap: 12px;
+  .basic-item {
+    display: flex; align-items: center; gap: 12px;
+    font-size: 0.95rem; color: #eee;
+    .basic-icon { width: 20px; text-align: center; color: #888; }
+  }
+}
+
+.tags-container {
+  display: flex; flex-wrap: wrap; gap: 8px;
+  .tag-pill {
+    background: transparent; border: 1px solid #444; color: #fff;
+    padding: 6px 14px; border-radius: 20px; font-size: 0.85rem;
+  }
+}
+
+/* Galeria Grid */
+.profile-gallery-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 10px;
+  .gallery-item {
+    aspect-ratio: 3/4; border-radius: 8px; overflow: hidden; background: #222;
+    .gallery-img { width: 100%; height: 100%; object-fit: cover; }
+  }
+}
+
+/* Botões de Segurança (Rodapé) */
+.profile-safety-actions {
+  display: flex; flex-direction: column; align-items: center;
+  margin-top: 30px; padding: 20px 0;
+  
+  .safety-divider { width: 100%; height: 1px; background: #333; margin: 15px 0; }
+  .btn-safety-block {
+    background: transparent; border: none; color: #666;
+    font-size: 0.9rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;
+    padding: 15px; width: 100%; cursor: pointer; transition: color 0.2s;
+    &:hover { color: #ff4b4b; background: rgba(255, 75, 75, 0.05); }
+  }
+  .safety-separator { width: 80%; height: 1px; background: #222; margin: 0 auto; }
+}
+
+.bottom-spacer { height: 80px; }
+
+// =========================================
+// 5. FILTROS MODAL
+// =========================================
+.filter-modal {
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;
+  display: flex; align-items: flex-end; transition: opacity 0.3s ease;
+  &.hidden { pointer-events: none; opacity: 0; .filter-content { transform: translateY(100%); } }
 }
 
 .filter-backdrop {
-  position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.8); /* Escurece bem o fundo */
-  backdrop-filter: blur(5px);
+  position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+  background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
 }
 
 .filter-content {
-  position: relative; width: 100%;
+  position: relative; width: 100%; background: #121212; color: #ffffff;
+  border-top-left-radius: 25px; border-top-right-radius: 25px;
+  padding: 25px; padding-bottom: calc(30px + env(safe-area-inset-bottom));
+  box-shadow: 0 -5px 30px rgba(0,0,0,0.9); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
   
-  /* DARK THEME BACKGROUND */
-  background: #121212; 
-  color: #ffffff;
-  
-  border-top-left-radius: 25px;
-  border-top-right-radius: 25px;
-  padding: 25px;
-  padding-bottom: calc(30px + env(safe-area-inset-bottom));
-  box-shadow: 0 -5px 30px rgba(0,0,0,0.9);
-  transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-
-  /* Elementos internos Dark */
   h2 { color: #fff; margin: 0; font-size: 1.4rem; font-weight: 700; }
   .close-btn { color: #888; background: none; border: none; font-size: 1.5rem; }
-  
   .label-title { color: #e0e0e0; font-size: 1rem; font-weight: 600; }
   .label-value { color: var(--gold-primary); font-weight: 700; font-size: 1.1rem; }
-  
   .filter-divider { border-top: 1px solid #333; margin: 20px 0; border-bottom: none; }
-  
   .range-labels-sub { font-size: 0.8rem; color: #666; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
   .mb-2 { margin-bottom: 15px; }
 }
 
-.filter-header {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;
-}
-
-.label-row {
-  display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px;
-}
-
-/* SLIDERS CUSTOMIZADOS DARK */
-.range-slider-container, .dual-range-wrapper {
-  position: relative; margin-bottom: 15px;
-}
+.filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+.label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+.range-slider-container, .dual-range-wrapper { position: relative; margin-bottom: 15px; }
 
 .range-input {
-  -webkit-appearance: none;
-  width: 100%; height: 6px;
-  background: #333; /* Trilha escura */
-  border-radius: 3px; outline: none;
-
+  -webkit-appearance: none; width: 100%; height: 6px; background: #333; border-radius: 3px; outline: none;
   &::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    width: 24px; height: 24px;
-    border-radius: 50%;
-    background: var(--gold-primary); /* Bolinha Dourada */
-    border: 3px solid #121212; /* Borda preta para destacar */
-    cursor: pointer;
+    -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%;
+    background: var(--gold-primary); border: 3px solid #121212; cursor: pointer;
     box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
   }
 }
 
-/* SWITCH TOGGLE DARK */
-.toggle-row {
-  display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 20px;
-  p { font-size: 0.85rem; color: #888; margin: 0; line-height: 1.4; }
-}
+.toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 20px; p { font-size: 0.85rem; color: #888; margin: 0; line-height: 1.4; } }
 .switch {
   position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0;
   input { opacity: 0; width: 0; height: 0; }
   .slider {
     position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
     background-color: #333; transition: .4s; border-radius: 34px;
-    &:before {
-      position: absolute; content: ""; height: 20px; width: 20px;
-      left: 3px; bottom: 3px; background-color: #888; transition: .4s; border-radius: 50%;
-    }
+    &:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: #888; transition: .4s; border-radius: 50%; }
   }
   input:checked + .slider { background-color: var(--gold-primary); }
   input:checked + .slider:before { transform: translateX(20px); background-color: #fff; }
 }
 
 .btn-apply {
-  width: 100%; padding: 16px; margin-top: 10px;
-  background: var(--gold-primary);
-  color: #000; border: none; border-radius: 30px;
-  font-weight: 800; font-size: 1.1rem; cursor: pointer;
-  box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
+  width: 100%; padding: 16px; margin-top: 10px; background: var(--gold-primary); color: #000; border: none; border-radius: 30px; font-weight: 800; font-size: 1.1rem; cursor: pointer; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
 }
