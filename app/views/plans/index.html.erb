@@ -15,10 +15,12 @@
   <% recommended_plan = paid_plans.find { |p| p.respond_to?(:is_recommended) && p.is_recommended } %>
 
   <%# Coleta todas as chaves de funcionalidades de todos os planos %>
+  <%# AQUI ESTÁ A ATUALIZAÇÃO: O .reject remove as linhas que não queremos mostrar %>
   <% feature_keys = plans
        .map { |p| p.respond_to?(:features) && p.features.is_a?(Hash) ? p.features.keys : [] }
        .flatten
        .uniq
+       .reject { |k| ["likes_right_limit", "likes_right_reset_hours", "direct_messages", "likes_left_unlimited", "likes_right_unlimited"].include?(k.to_s) }
        .sort_by { |k| t("plans.features.#{k}", default: k.to_s.humanize) } %>
 
   <div class="pricing-page">
