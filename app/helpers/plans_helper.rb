@@ -3,9 +3,16 @@ module PlansHelper
     features = plan.features || {}
     value = features[feature_key]
 
+    # Decide qual renderizador usar baseado na chave (feature)
     case feature_key.to_s
     when "direct_messages"
       render_direct_messages(value)
+    when "likes_right_limit"
+      # Exibe valor ou infinito se não tiver limite
+      value.present? ? content_tag(:span, value.to_s, class: "text-value") : render_infinity
+    when "likes_right_unlimited", "likes_left_unlimited"
+      # Se for true, mostra infinito. Se false, mostra traço.
+      value === true ? render_infinity : render_dash
     else
       render_generic_feature(value)
     end
@@ -13,63 +20,52 @@ module PlansHelper
 
   private
 
+  # Renderiza o símbolo de infinito com estilo
+  def render_infinity
+    content_tag(:span, "∞", class: "text-value text-infinity", style: "font-size: 1.5rem; line-height: 1;")
+  end
+
+  # Renderiza o traço (quando não tem o recurso)
+  def render_dash
+    content_tag(:span, "—", class: "icon-neutral")
+  end
+
   def render_direct_messages(dm)
-    return content_tag(:span, "—", class: "icon-neutral") if dm.nil?
+    return render_dash if dm.nil?
 
+    # Caso 1: Mensagens bloqueadas/não incluídas
     unless dm["enabled"]
-      return content_tag(
-        :span,
-        "Bloqueadas (upgrade ou R$ 1,99 por mensagem)",
-        class: "text-value"
-      )
+      return content_tag(:span, "Não incluído", class: "text-muted")
     end
 
+    # Caso 2: Ilimitado (Gold)
     if dm["daily_limit"].nil?
-      content_tag(:span, "Mensagens diretas ilimitadas", class: "text-value")
-    else
-      content_tag(
-        :span,
-        "#{dm['daily_limit']} mensagens diretas por dia",
-        class: "text-value"
-      )
+      return render_infinity
     end
+
+    # Caso 3: Com limite (Plus)
+    content_tag(
+      :span,
+      "#{dm['daily_limit']} por dia",
+      class: "text-value"
+    )
   end
 
   def render_generic_feature(value)
     if value == true
+      # Ícone de Check (Sim)
       content_tag(:span, class: "icon-yes") do
-        tag.svg(
-          width: 20,
-          height: 20,
-          viewBox: "0 0 24 24",
-          fill: "none",
-          stroke: "currentColor",
-          "stroke-width": 3,
-          "stroke-linecap": "round",
-          "stroke-linejoin": "round"
-        ) do
+        tag.svg(width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", stroke: "currentColor", stroke_width: 3) do
           tag.polyline(points: "20 6 9 17 4 12")
         end
       end
     elsif value == false
-      content_tag(:span, class: "icon-no") do
-        tag.svg(
-          width: 16,
-          height: 16,
-          viewBox: "0 0 24 24",
-          fill: "none",
-          stroke: "currentColor",
-          "stroke-width": 3,
-          "stroke-linecap": "round",
-          "stroke-linejoin": "round"
-        ) do
-          tag.line(x1: 18, y1: 6, x2: 6, y2: 18) +
-          tag.line(x1: 6, y1: 6, x2: 18, y2: 18)
-        end
-      end
+      # Ícone de X (Não) - Opcional, ou use render_dash
+      render_dash
     elsif value.nil?
-      content_tag(:span, "—", class: "icon-neutral")
+      render_dash
     else
+      # Texto genérico (números, strings)
       content_tag(:span, value.to_s, class: "text-value")
     end
   end
