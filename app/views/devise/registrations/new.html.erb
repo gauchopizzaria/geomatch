@@ -5,22 +5,59 @@
     <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
 
+      <%# --- 1. Nome Completo --- %>
       <div class="field">
-        <%= f.label :email %>
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "seu.email@exemplo.com" %>
+        <%= f.label :username, "Nome Completo" %>
+        <%= f.text_field :username, autofocus: true, placeholder: "Ex: João Silva", required: true, class: "form-input" %>
       </div>
 
+      <%# --- 2. Gênero (NOVO) --- %>
+      <div class="field">
+        <%= f.label :gender, "Gênero" %>
+        <%= f.select :gender, 
+              options_for_select([['Homem', 'Homem'], ['Mulher', 'Mulher'], ['Não Binário', 'Não Binário']]), 
+              { prompt: "Selecione seu gênero" }, 
+              { class: "form-input", required: true } 
+        %>
+      </div>
+
+      <%# --- 3. Data de Nascimento --- %>
+      <div class="field">
+        <%= f.label :birthdate, "Data de Nascimento" %>
+        <%= f.date_field :birthdate, required: true, class: "form-input" %>
+      </div>
+
+      <%# --- 4. Cidade --- %>
+      <div class="field">
+        <%= f.label :address, "Cidade" %>
+        <%= f.text_field :address, placeholder: "Ex: São Paulo, SP", required: true, class: "form-input" %>
+      </div>
+
+      <%# --- 5. Telefone --- %>
+      <div class="field">
+        <%= f.label :phone, "Telefone / WhatsApp" %>
+        <%= f.telephone_field :phone, placeholder: "(XX) 99999-9999", required: true, class: "form-input" %>
+      </div>
+
+      <%# --- 6. Email --- %>
+      <div class="field">
+        <%= f.label :email %>
+        <%= f.email_field :email, autocomplete: "email", placeholder: "seu.email@exemplo.com", required: true, class: "form-input" %>
+      </div>
+
+      <%# --- 7. Senha --- %>
       <div class="field">
         <%= f.label :password %>
         <% if @minimum_password_length %>
         <em class="password-hint">(<%= @minimum_password_length %> caracteres no mínimo)</em>
         <% end %>
-        <%= f.password_field :password, autocomplete: "new-password", placeholder: "••••••••" %>
+        <%= f.password_field :password, autocomplete: "new-password", placeholder: "••••••••", required: true, class: "form-input" %>
       </div>
 
+      <%# --- 8. Confirmação --- %>
       <div class="field">
         <%= f.label :password_confirmation, "Confirmação de Senha" %>
-        <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "••••••••" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "••••••••", required: true, class: "form-input" %>
       </div>
 
       <div class="actions">

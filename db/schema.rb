@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_01_30_203721) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_01_051358) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -351,6 +351,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_30_203721) do
     t.datetime "last_seen_at"
     t.decimal "latitude", precision: 10, scale: 6
     t.decimal "longitude", precision: 10, scale: 6
+    t.string "phone"
     t.bigint "plan_id"
     t.datetime "premium_until"
     t.datetime "remember_created_at"
@@ -365,7 +366,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_01_30_203721) do
     t.index ["plan_id"], name: "index_users_on_plan_id"
     t.index ["premium_until"], name: "index_users_on_premium_until"
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
-    t.index ["username"], name: "index_users_on_username", unique: true
+    t.index ["username"], name: "index_users_on_username"
   end
 
   create_table "webhook_events", id: :uuid, default: -> { "gen_random_uuid()" }, force: :cascade do |t|
