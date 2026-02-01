@@ -22,8 +22,8 @@
 // 2. VARIÁVEIS CSS (CUSTOM PROPERTIES) - TEMAS
 // ==================================================
 :root {
-  --color-primary: #d4af37; // dourado
-  --color-accent: #96600f; // detalhe vibrante
+  --color-primary: #dbcc98; // dourado
+  --color-accent: #ceaa75; // detalhe vibrante
   --color-background: #f8f2e7; // bege claro
   --color-dark: #121212; // preto escuro
   --color-text: #222121;
@@ -51,9 +51,9 @@
 
   /* Variáveis para gradientes e variações de cor */
   --color-background-lighten-3: #ffffff; 
-  --color-primary-darken-8: #c9a227; 
+  --color-primary-darken-8: #ddcb91; 
   --shadow-hover: 0 10px 22px rgba(0, 0, 0, 0.14);
-  --color-accent-darken-8: #ad8518; 
+  --color-accent-darken-8: #d1bf8c; 
   --border-radius: 20px;
   --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.1);
   --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.15);
@@ -90,7 +90,7 @@
 
   /* Variáveis para gradientes e variações */
   --color-background-lighten-3: #1a1a1a; 
-  --color-primary-darken-8: #b38e24; 
+  --color-primary-darken-8: #d6c289; 
   --shadow-hover: 0 10px 22px rgba(255, 255, 255, 0.14);
   --color-accent-darken-8: #8d762a; 
   --shadow-sm: 0 2px 8px rgba(255, 255, 255, 0.1);
@@ -847,7 +847,7 @@ html, body {
       height: 130px;
       border-radius: 50%;
       overflow: hidden;
-      border: 4px solid rgba(212, 175, 55, 0.7); // Mantido RGB para alpha, ou usar variação opaca se necessário
+      border: 4px solid rgba(255, 239, 188, 0.7); // Mantido RGB para alpha, ou usar variação opaca se necessário
       background: var(--color-hover-bg);
       box-shadow: var(--shadow-sm);
       position: relative;

@@ -88,7 +88,7 @@
 
   &.active {
     color: #fff;
-    border-bottom: 2px solid #d4af37; /* Dourado sutil */
+    border-bottom: 2px solid #aa9b67; /* Dourado sutil */
   }
   
   &.inactive:hover {
@@ -113,7 +113,7 @@
   display: block;
   font-size: 0.9rem;
   font-weight: 700;
-  color: #d4af37; /* Dourado no label */
+  color: #bbac7b; /* Dourado no label */
   margin-bottom: 10px;
   border-bottom: 1px solid #333;
   padding-bottom: 5px;
@@ -222,7 +222,7 @@
   box-sizing: border-box;
   
   &:focus {
-    border-color: #d4af37;
+    border-color: #aa9d73;
   }
   
   &::placeholder {
@@ -266,7 +266,7 @@
   border-radius: 25px;
   position: relative;
   overflow: hidden;
-  border: 2px solid #d4af37; /* Garante a borda dourada */
+  border: 2px solid #c5b47d; /* Garante a borda dourada */
   background-color: #1a1a1a; /* Fundo de segurança */
 }
 

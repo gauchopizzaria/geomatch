@@ -3,8 +3,8 @@
 // --------------------------------------------------
 
 :root {
-  --gold-primary: #d4af37;
-  --gold-dark: #b4941f;
+  --gold-primary: #b4a77a;
+  --gold-dark: #c7b268;
   --bg-dark: #000000;
   --card-bg: #1a1a1a;
   
@@ -176,7 +176,7 @@
 }
 
 .btn-reject { width: 65px; height: 65px; border-color: #ff4b4b; border: 2px solid var(--gold-primary); img { width: 26px; } }
-.btn-chat { width: 50px; height: 50px; border-color: #d4af37; background: rgba(20, 20, 20, 0.95); img { width: 22px; } }
+.btn-chat { width: 50px; height: 50px; border-color: #998c61; background: rgba(20, 20, 20, 0.95); img { width: 22px; } }
 .btn-like { width: 65px; height: 65px; border: 2px solid var(--gold-primary); .heart-icon-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; img { width: 32px; } } }
 
 // Estado Vazio
@@ -214,7 +214,7 @@
   top: calc(20px + env(safe-area-inset-top));
   right: 20px;
   width: 40px; height: 40px;
-  background: linear-gradient(135deg, #d4af37, #b4941f);
+  background: linear-gradient(135deg, #b9ae88, #aa9f76);
   border: none; border-radius: 50%;
   color: #000; font-size: 1.2rem;
   display: flex; align-items: center; justify-content: center;
