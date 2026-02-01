@@ -76,11 +76,45 @@
     </div>
   </div>
 
-  <%# --- 5. BLOCO UPGRADE --- %>
-<div class="upgrade-block-container">
-  <%= link_to plans_path do %>
-    <%= image_tag "bloco-upgrade.png", class: "upgrade-img-full" %>
-  <% end %>
-</div>
+<%# --- 5. BLOCO UPGRADE (CARROSSEL) --- %>
+  <div class="upgrade-carousel-container">
+    <div class="upgrade-track">
+      <%# Plano Grátis %>
+      <%= link_to plans_path, class: "upgrade-card" do %>
+        <%= image_tag "bloco-upgrade.png", class: "upgrade-img-responsive" %>
+      <% end %>
+
+      <%# Plano Plus %>
+      <%= link_to plans_path, class: "upgrade-card" do %>
+        <%= image_tag "bloco-upgrade-plus.png", class: "upgrade-img-responsive" %>
+      <% end %>
+
+      <%# Plano Gold %>
+      <%= link_to plans_path, class: "upgrade-card" do %>
+        <%= image_tag "bloco-upgrade-gold.png", class: "upgrade-img-responsive" %>
+      <% end %>
+    </div>
+  </div>
+
+</div> <%# fecha o upgrade-carousel-container %>
+
+  <%# --- 6. AÇÕES DA CONTA (SAIR / EXCLUIR) --- %>
+  <div class="profile-account-actions">
+    
+    <%# Botão Sair %>
+    <%# Nota: Em Rails 7 com Turbo, usamos data: { turbo_method: :delete } %>
+    <%= link_to logout_path, data: { turbo_method: :delete }, class: "btn-logout" do %>
+      <i class="fas fa-sign-out-alt"></i> Sair
+    <% end %>
+
+    <%# Botão Encerrar Conta %>
+    <%= button_to user_registration_path, method: :delete, data: { turbo_confirm: "Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita." }, class: "btn-delete-account" do %>
+      Encerrar minha conta
+    <% end %>
+
+  </div>
+
+</div> <%# fecha o profile-dashboard-wrapper (que já existia no final do seu arquivo) %>
+
 
 </div>
