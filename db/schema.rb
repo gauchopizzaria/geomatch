@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_01_051358) do
+ActiveRecord::Schema[8.1].define(version: 2026_02_01_060209) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -348,9 +348,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_02_01_051358) do
     t.string "hobbies"
     t.string "interested_in"
     t.boolean "invisible", default: false
+    t.datetime "last_like_reset_at"
+    t.datetime "last_message_reset_at"
     t.datetime "last_seen_at"
     t.decimal "latitude", precision: 10, scale: 6
+    t.integer "likes_count", default: 0
     t.decimal "longitude", precision: 10, scale: 6
+    t.integer "messages_count", default: 0
     t.string "phone"
     t.bigint "plan_id"
     t.datetime "premium_until"

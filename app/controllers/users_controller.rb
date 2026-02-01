@@ -93,14 +93,20 @@ class UsersController < ApplicationController
   #  ACTION LEAD (SWIPE / TINDER)
   # ==========================================
   def lead
-    # 1. POPUP DE MATCH (Se acabou de dar match)
-    if params[:match] == "true" && params[:match_id].present?
-      @match = Match.find(params[:match_id])
-      if @match.user_id == current_user.id || @match.matched_user_id == current_user.id
-         @next_user = @match.other_user(current_user)
-         return 
-      end
+  # 0. GARANTE LOCALIZAÇÃO (fallback DEV)
+  if current_user.latitude.nil? || current_user.longitude.nil?
+    current_user.update(latitude: -14.7876, longitude: -39.2781)
+  end
+
+  # 1. POPUP DE MATCH (Se acabou de dar match)
+  if params[:match] == "true" && params[:match_id].present?
+    @match = Match.find(params[:match_id])
+
+    if @match.user_id == current_user.id || @match.matched_user_id == current_user.id
+      @next_user = @match.other_user(current_user)
+      return
     end
+  end
 
     # 2. FILTROS
     filters = {

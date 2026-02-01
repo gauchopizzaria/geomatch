@@ -48,16 +48,26 @@ class MatchesController < ApplicationController
     @message = Message.new
   end
 
-  def start_chat
-    target_user = User.find(params[:user_id])
+ def start_chat
+    # ... (código anterior) ...
 
-    # 1. Verifica se está bloqueado antes de iniciar
-    if current_user.blocked_users.include?(target_user) || current_user.blocked_by_users.include?(target_user)
-      redirect_to lead_path, alert: "Você não pode iniciar conversa com este usuário."
+    # VERIFICAÇÃO DE LIMITE DE MENSAGENS
+    unless current_user.can_send_message?
+      respond_to do |format|
+        # --- MUDANÇA AQUI ---
+        format.turbo_stream { 
+          render turbo_stream: turbo_stream.update("upgrade-modal-container", partial: "shared/upgrade_modal", locals: { type: 'messages' }) 
+        }
+        format.html { redirect_to lead_path, alert: "Upgrade necessário para enviar mensagens!" }
+      end
       return
     end
+    # =======================================================
 
-    # 2. Busca ou cria o match
+    # 3. INCREMENTA O CONTADOR (Se passou da verificação)
+    current_user.increment_messages!
+
+    # 4. Busca ou cria o match (MANTIDO)
     @match = Match.where(user: current_user, matched_user: target_user)
                   .or(Match.where(user: target_user, matched_user: current_user))
                   .first

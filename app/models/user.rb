@@ -18,17 +18,12 @@ class User < ApplicationRecord
   has_many :stories, dependent: :destroy
 
   # =========================================================
-  # BLOQUEIOS (AQUI ESTÁ A LÓGICA CORRIGIDA)
+  # BLOQUEIOS
   # =========================================================
   
-  # 1. Quem EU bloqueiei (Active Record vai buscar na tabela 'blocks' onde blocker_id sou eu)
   has_many :blocks_sent, class_name: 'Block', foreign_key: 'blocker_id', dependent: :destroy
-  
-  # A relação :blocked_users usa 'source: :blocked'. 
-  # Isso só funciona porque no Passo 1 definimos 'belongs_to :blocked' no model Block.
   has_many :blocked_users, through: :blocks_sent, source: :blocked
   
-  # 2. Quem ME bloqueou (Active Record vai buscar na tabela 'blocks' onde blocked_id sou eu)
   has_many :blocks_received, class_name: 'Block', foreign_key: 'blocked_id', dependent: :destroy
   has_many :blocked_by_users, through: :blocks_received, source: :blocker
 
@@ -60,6 +55,102 @@ class User < ApplicationRecord
 
   # --- Métodos Públicos ---
 
+  # =========================================================
+  # LÓGICA DE LIMITES (CORRIGIDA E BLINDADA)
+  # =========================================================
+
+  # 1. Verifica se pode dar LIKE
+  def can_like?
+    # O truque está aqui: .with_indifferent_access
+    # Isso permite ler features['key'] ou features[:key] sem erro
+    features = (plan.features || {}).with_indifferent_access
+
+    # 1. Se for ilimitado (Plus ou Gold)
+    return true if features[:likes_right_unlimited] == true
+
+    # 2. Se tiver limite numérico (Free: 47)
+    limit = features[:likes_right_limit]
+    
+    if limit.present?
+      # Regra de Reset: 5 horas
+      if last_like_reset_at.nil? || Time.current > (last_like_reset_at + 5.hours)
+        reset_likes_counter!
+      end
+      
+      # Verifica saldo atual
+      # .to_i garante que compare números com números
+      return likes_count < limit.to_i
+    end
+
+    # FAILSAFE: Se o usuário é FREE e não achou limite, BLOQUEIA por padrão 47
+    # Isso impede o erro de "infinitos likes" se o JSON estiver vazio
+    if plan.name == 'Free'
+      return likes_count < 47
+    end
+
+    true
+  end
+
+  # 2. Incrementa o contador de LIKE
+  def increment_likes!
+    features = (plan.features || {}).with_indifferent_access
+    
+    unless features[:likes_right_unlimited] == true
+      update(last_like_reset_at: Time.current) if likes_count == 0
+      increment!(:likes_count)
+    end
+  end
+
+  # 3. Verifica se pode enviar MENSAGEM
+  def can_send_message?
+    features = (plan.features || {}).with_indifferent_access
+    dm_config = (features[:direct_messages] || {}).with_indifferent_access
+
+    # Se bloqueado no plano (Free)
+    return false if dm_config[:enabled] == false
+
+    # Se for ilimitado (Gold)
+    return true if features[:unlimited_messages] == true || dm_config[:daily_limit].nil?
+
+    # Se tiver limite diário (Plus: 3)
+    limit = dm_config[:daily_limit]
+    
+    if limit.present?
+      if last_message_reset_at.nil? || Time.current > (last_message_reset_at + 24.hours)
+        reset_messages_counter!
+      end
+
+      return messages_count < limit.to_i
+    end
+
+    true
+  end
+
+  # 4. Incrementa o contador de MENSAGEM
+  def increment_messages!
+    features = (plan.features || {}).with_indifferent_access
+    dm_config = (features[:direct_messages] || {}).with_indifferent_access
+    
+    if dm_config[:daily_limit].present?
+      update(last_message_reset_at: Time.current) if messages_count == 0
+      increment!(:messages_count)
+    end
+  end
+
+  # 4. Incrementa o contador de MENSAGEM
+  def increment_messages!
+    features = plan.features || {}
+    dm_config = features["direct_messages"] || {}
+    
+    # Só incrementa se tiver limite (Plus)
+    if dm_config["daily_limit"].present?
+      update(last_message_reset_at: Time.current) if messages_count == 0
+      increment!(:messages_count)
+    end
+  end
+
+  # =========================================================
+
   def downgrade_to_free!
     free_plan = Plan.find_by(name: 'Free')
     return unless free_plan
@@ -84,9 +175,7 @@ class User < ApplicationRecord
     Match.where("user_id = ? OR matched_user_id = ?", id, id)
   end
 
-  # ESTE MÉTODO AGORA FUNCIONARÁ SEM ERROS
   def excluded_user_ids
-    # Pega os IDs de quem eu bloqueiei + IDs de quem me bloqueou
     blocked_users.pluck(:id) + blocked_by_users.pluck(:id)
   end
 
@@ -125,6 +214,14 @@ class User < ApplicationRecord
   end
   
   private
+
+  def reset_likes_counter!
+    update(likes_count: 0, last_like_reset_at: Time.current)
+  end
+
+  def reset_messages_counter!
+    update(messages_count: 0, last_message_reset_at: Time.current)
+  end
 
   def attach_default_avatar
     return if avatar.attached?

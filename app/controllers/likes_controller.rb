@@ -1,8 +1,21 @@
 class LikesController < ApplicationController
   before_action :authenticate_user!
 
-  def create
+def create
     liked_user = User.find(params[:user_id])
+
+    # 1. VERIFICAÇÃO DE LIMITE
+    unless current_user.can_like?
+      respond_to do |format|
+        # --- MUDANÇA AQUI: Usa 'update' no container específico ---
+        format.turbo_stream { 
+          render turbo_stream: turbo_stream.update("upgrade-modal-container", partial: "shared/upgrade_modal", locals: { type: 'likes' }) 
+        }
+        format.html { redirect_to lead_path, alert: "Você atingiu seu limite de curtidas diárias." }
+      end
+      return
+    end
+    # =======================================================
 
     # Evitar duplicações
     if Like.exists?(liker_id: current_user.id, liked_id: liked_user.id)
@@ -12,6 +25,12 @@ class LikesController < ApplicationController
     @like = Like.new(liker_id: current_user.id, liked_id: liked_user.id)
 
     if @like.save
+      
+      # =====================================================
+      # 2. INCREMENTA O CONTADOR (NOVO)
+      # =====================================================
+      current_user.increment_likes!
+      # =====================================================
 
       # Se o outro usuário já curtiu você → MATCH
       if Like.exists?(liker_id: liked_user.id, liked_id: current_user.id)
