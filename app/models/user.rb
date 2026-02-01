@@ -62,7 +62,6 @@ class User < ApplicationRecord
   # 1. Verifica se pode dar LIKE
   def can_like?
     # O truque está aqui: .with_indifferent_access
-    # Isso permite ler features['key'] ou features[:key] sem erro
     features = (plan.features || {}).with_indifferent_access
 
     # 1. Se for ilimitado (Plus ou Gold)
@@ -78,12 +77,10 @@ class User < ApplicationRecord
       end
       
       # Verifica saldo atual
-      # .to_i garante que compare números com números
       return likes_count < limit.to_i
     end
 
     # FAILSAFE: Se o usuário é FREE e não achou limite, BLOQUEIA por padrão 47
-    # Isso impede o erro de "infinitos likes" se o JSON estiver vazio
     if plan.name == 'Free'
       return likes_count < 47
     end
@@ -132,18 +129,6 @@ class User < ApplicationRecord
     dm_config = (features[:direct_messages] || {}).with_indifferent_access
     
     if dm_config[:daily_limit].present?
-      update(last_message_reset_at: Time.current) if messages_count == 0
-      increment!(:messages_count)
-    end
-  end
-
-  # 4. Incrementa o contador de MENSAGEM
-  def increment_messages!
-    features = plan.features || {}
-    dm_config = features["direct_messages"] || {}
-    
-    # Só incrementa se tiver limite (Plus)
-    if dm_config["daily_limit"].present?
       update(last_message_reset_at: Time.current) if messages_count == 0
       increment!(:messages_count)
     end
@@ -212,6 +197,24 @@ class User < ApplicationRecord
   def premium?
     premium_until.present? && premium_until > Time.current
   end
+
+  # =========================================================
+  # PERMISSÕES DE VISUALIZAÇÃO (NOTIFICAÇÕES)
+  # =========================================================
+
+  # 1. Pode ver quem curtiu ELE? (Aba "Quem te curtiu")
+  # Free: Não | Plus: Sim | Gold: Sim
+  def can_see_who_liked_me?
+    features = (plan.features || {}).with_indifferent_access
+    features[:see_who_liked_me] == true
+  end
+
+  # 2. Pode ver quem ELE curtiu? (Aba "Você curtiu")
+  # Free: Não | Plus: Sim | Gold: Sim
+  def can_see_who_i_liked?
+    features = (plan.features || {}).with_indifferent_access
+    features[:see_who_i_liked] == true
+  end
   
   private
 
@@ -237,4 +240,6 @@ class User < ApplicationRecord
   def set_default_plan
     self.plan ||= Plan.find_by(name: "Free") 
   end
+
+  
 end

@@ -212,4 +212,5 @@ class UsersController < ApplicationController
       album_photos: []
     )
   end
+  
 end
