@@ -101,11 +101,11 @@
   <%# --- 6. AÇÕES DA CONTA (SAIR / EXCLUIR) --- %>
   <div class="profile-account-actions">
     
-    <%# Botão Sair %>
-    <%# Nota: Em Rails 7 com Turbo, usamos data: { turbo_method: :delete } %>
-    <%= link_to logout_path, data: { turbo_method: :delete }, class: "btn-logout" do %>
+    <%# --- MUDANÇA AQUI: O botão agora só abre o modal --- %>
+    <button type="button" class="btn-logout" onclick="document.getElementById('logout-modal').classList.add('show')" style="border: none; background: transparent; width: 100%;">
       <i class="fas fa-sign-out-alt"></i> Sair
-    <% end %>
+    </button>
+
 
     <%# Botão Encerrar Conta %>
     <%= button_to user_registration_path, method: :delete, data: { turbo_confirm: "Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita." }, class: "btn-delete-account" do %>
@@ -116,5 +116,34 @@
 
 </div> <%# fecha o profile-dashboard-wrapper (que já existia no final do seu arquivo) %>
 
+<%# --- MODAL DE CONFIRMAÇÃO DE LOGOUT --- %>
+<div id="logout-modal" class="logout-modal-overlay">
+  <div class="logout-modal-content">
+    
+    <div class="logout-icon">
+      <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+        <polyline points="16 17 21 12 16 7"></polyline>
+        <line x1="21" y1="12" x2="9" y2="12"></line>
+      </svg>
+    </div>
+
+    <h3>Sair do GeoMatch?</h3>
+    <p>Tem certeza que deseja sair do app GeoMatch?</p>
+
+    <div class="logout-actions">
+      <%# BOTÃO NÃO: Apenas fecha o modal %>
+      <button type="button" class="btn-cancel" onclick="document.getElementById('logout-modal').classList.remove('show')">
+        Não
+      </button>
+
+      <%# BOTÃO SIM: Realiza o Logout de verdade %>
+      <%= link_to logout_path, data: { turbo_method: :delete }, class: "btn-confirm" do %>
+        Sim
+      <% end %>
+    </div>
+
+  </div>
+</div>
 
 </div>
