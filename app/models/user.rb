@@ -56,6 +56,19 @@ class User < ApplicationRecord
   # --- Métodos Públicos ---
 
   # =========================================================
+  # REGRAS DOS PLANOS (ATUALIZADO)
+  # =========================================================
+
+  # 1. Pode usar o MODO INVISÍVEL?
+  # Regra: Só Gold pode (ou se o JSON permitir explicitamente)
+  def can_use_invisible_mode?
+    features = (plan.features || {}).with_indifferent_access
+    return true if features[:allow_invisible] == true
+    
+    plan.name == 'Gold'
+  end
+
+  # =========================================================
   # LÓGICA DE LIMITES (CORRIGIDA E BLINDADA)
   # =========================================================
 
@@ -103,20 +116,31 @@ class User < ApplicationRecord
     features = (plan.features || {}).with_indifferent_access
     dm_config = (features[:direct_messages] || {}).with_indifferent_access
 
-    # Se bloqueado no plano (Free)
-    return false if dm_config[:enabled] == false
+    # --- REGRA 1: Plus e Gold são ILIMITADOS ---
+    return true if ['Plus', 'Gold'].include?(plan.name)
 
-    # Se for ilimitado (Gold)
-    return true if features[:unlimited_messages] == true || dm_config[:daily_limit].nil?
-
-    # Se tiver limite diário (Plus: 3)
-    limit = dm_config[:daily_limit]
-    
-    if limit.present?
+    # --- REGRA 2: Free tem limite de 7 ---
+    if plan.name == 'Free'
+      limit = 7
+      
+      # Verifica reset (24h)
       if last_message_reset_at.nil? || Time.current > (last_message_reset_at + 24.hours)
         reset_messages_counter!
       end
 
+      return messages_count < limit
+    end
+
+    # Fallback: Se não for nenhum dos nomes acima, usa o JSON do banco
+    return false if dm_config[:enabled] == false
+    return true if features[:unlimited_messages] == true || dm_config[:daily_limit].nil?
+
+    # Limite genérico do JSON
+    limit = dm_config[:daily_limit]
+    if limit.present?
+      if last_message_reset_at.nil? || Time.current > (last_message_reset_at + 24.hours)
+        reset_messages_counter!
+      end
       return messages_count < limit.to_i
     end
 
@@ -128,7 +152,10 @@ class User < ApplicationRecord
     features = (plan.features || {}).with_indifferent_access
     dm_config = (features[:direct_messages] || {}).with_indifferent_access
     
-    if dm_config[:daily_limit].present?
+    # Só incrementa se não for ilimitado (Ou seja, se for Free ou tiver limite no JSON)
+    is_unlimited = ['Plus', 'Gold'].include?(plan.name) || features[:unlimited_messages] == true
+
+    if !is_unlimited
       update(last_message_reset_at: Time.current) if messages_count == 0
       increment!(:messages_count)
     end
@@ -241,5 +268,4 @@ class User < ApplicationRecord
     self.plan ||= Plan.find_by(name: "Free") 
   end
 
-  
 end

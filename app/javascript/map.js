@@ -32,11 +32,9 @@ const STORAGE_KEYS = {
       maxZoom: 19,
     }).addTo(map);
 
-    // --- VARIÁVEIS DE ESTADO ---
     let currentRangeMeters = INITIAL_RANGE_METERS;
     let currentGenderFilter = "all";
     
-    // ONDE O USUÁRIO ESTÁ (A LUZ FICA AQUI)
     let fixedUserLat = null;
     let fixedUserLng = null;
 
@@ -52,9 +50,7 @@ const STORAGE_KEYS = {
     const userMarkersGroup = L.featureGroup();
     map.addLayer(userMarkersGroup);
 
-    // ========================================
-    // 2. ELEMENTOS DO DOM
-    // ========================================
+    // ELEMENTOS DOM
     const rangeSlider = document.getElementById("radar-range");
     const rangeValueText = document.getElementById("range-value-text");
     const radarControl = document.querySelector('.radar-control-floating');
@@ -67,15 +63,6 @@ const STORAGE_KEYS = {
     const fabCenterMap = document.getElementById("fab-center-map");
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
     const genderToggleBtn = document.getElementById("gender-filter-toggle");
-
-    // Stories Elements (Mantido igual)
-    const storiesSection = document.getElementById("stories-section");
-    const storiesToggleBtn = document.getElementById("stories-toggle-btn");
-    const addStoryBtn = document.getElementById("add-story-btn");
-    const addStoryModal = document.getElementById("add-story-modal");
-    const modalOverlay = document.getElementById("modal-overlay");
-    const closeModalBtn = document.getElementById("close-modal-btn");
-    const cancelStoryBtn = document.getElementById("cancel-story-btn");
 
     // ========================================
     // 3. SLIDER DE RAIO
@@ -104,7 +91,6 @@ const STORAGE_KEYS = {
       
       rangeSlider.addEventListener("change", () => {
         localStorage.setItem(STORAGE_KEYS.RANGE, currentRangeMeters);
-        // Recarrega usuários na posição do USUÁRIO (não do centro da tela)
         if (fixedUserLat && fixedUserLng) {
           loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
         }
@@ -212,24 +198,6 @@ const STORAGE_KEYS = {
     }
 
     // ========================================
-    // 7. STORIES
-    // ========================================
-    if (storiesToggleBtn && storiesSection) {
-        storiesToggleBtn.addEventListener("click", (e) => { e.stopPropagation(); storiesSection.classList.toggle("expanded"); });
-        document.addEventListener("click", (e) => { if (!storiesSection.contains(e.target)) storiesSection.classList.remove("expanded"); });
-    }
-    if (addStoryBtn) {
-        addStoryBtn.addEventListener("click", (e) => {
-            e.stopPropagation();
-            if(addStoryModal) { addStoryModal.classList.remove("hidden"); if(modalOverlay) modalOverlay.classList.remove("hidden"); }
-        });
-    }
-    const hideAddStoryModal = () => { if(addStoryModal) addStoryModal.classList.add("hidden"); if(modalOverlay) modalOverlay.classList.add("hidden"); };
-    if (closeModalBtn) closeModalBtn.addEventListener("click", hideAddStoryModal);
-    if (cancelStoryBtn) cancelStoryBtn.addEventListener("click", hideAddStoryModal);
-    if (modalOverlay) modalOverlay.addEventListener("click", hideAddStoryModal);
-
-    // ========================================
     // 8. HELPERS
     // ========================================
     function showLoadingAnimation() {
@@ -244,17 +212,16 @@ const STORAGE_KEYS = {
     function hideLoadingAnimation() { }
 
     // ========================================
-    // LÓGICA CORE: POSIÇÃO DA LUZ E RADAR
+    // LÓGICA CORE
     // ========================================
 
-    // Atualiza o Círculo (Leaflet) -> FIXO NA POSIÇÃO GEOGRÁFICA DO USUÁRIO
     function updateRadarCircle() {
       if (!fixedUserLat || !fixedUserLng) return;
       const radius = currentRangeMeters; 
 
       if (radarCircle) {
         radarCircle.setRadius(radius);
-        radarCircle.setLatLng([fixedUserLat, fixedUserLng]); // Sempre no GPS
+        radarCircle.setLatLng([fixedUserLat, fixedUserLng]);
       } else {
         radarCircle = L.circle([fixedUserLat, fixedUserLng], {
           radius: radius,
@@ -267,19 +234,13 @@ const STORAGE_KEYS = {
       }
     }
 
-    // Atualiza o Spotlight (CSS) -> CALCULA ONDE O USUÁRIO ESTÁ NA TELA
     function updateSpotlightPosition() {
       if (!containerElement || !fixedUserLat || !fixedUserLng) return;
-
-      // MÁGICA: Converte Lat/Lng do Usuário para Pixels na tela (X, Y)
-      // Se você arrastar o mapa, esse ponto X/Y vai mudar, movendo a luz
       const point = map.latLngToContainerPoint([fixedUserLat, fixedUserLng]);
-      
       containerElement.style.setProperty('--radar-x', `${point.x}px`);
       containerElement.style.setProperty('--radar-y', `${point.y}px`);
     }
 
-    // Marcador do Usuário -> FIXO
     function addUserMarker(lat, lng) {
       if (userMarker) map.removeLayer(userMarker);
       const userIcon = L.divIcon({
@@ -290,7 +251,6 @@ const STORAGE_KEYS = {
       userMarker = L.marker([lat, lng], { icon: userIcon, zIndexOffset: 1000 }).addTo(map);
     }
 
-    // Inicialização
     function initializeMap(lat, lng) {
       fixedUserLat = lat;
       fixedUserLng = lng;
@@ -298,35 +258,22 @@ const STORAGE_KEYS = {
       map.setView([lat, lng], defaultZoom);
       
       addUserMarker(lat, lng);
-      updateRadarCircle(); // Cria o círculo no usuário
+      updateRadarCircle();
       updateSliderVisuals(currentRangeMeters);
-      updateSpotlightPosition(); // Alinha a luz com o usuário
+      updateSpotlightPosition();
       
       showLoadingAnimation();
       loadNearbyUsers(lat, lng, currentRangeMeters, currentGenderFilter);
     }
 
-    // --- EVENTO CRÍTICO: MOVER O MAPA ---
-    map.on('move', () => {
-        // Quando arrasta o mapa:
-        // 1. O Mapa move (nativo do Leaflet)
-        // 2. O Marcador e o Círculo Amarelo movem junto com o mapa (comportamento padrão de camadas)
-        
-        // 3. Precisamos apenas atualizar a MÁSCARA (Spotlight) para seguir o pino visualmente
-        updateSpotlightPosition();
-        
-        // Nota: Se arrastar muito longe, o 'point.x' vai ser negativo ou muito grande
-        // e a luz vai sair da tela, deixando tudo escuro. É o esperado.
-    });
-
+    map.on('move', updateSpotlightPosition);
     map.on('resize', updateSpotlightPosition);
 
     // ========================================
-    // API
+    // API & FILTRAGEM (CORRIGIDO)
     // ========================================
     async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
       try {
-        // Busca baseada na posição do USUÁRIO, não do centro da tela
         let url = `/users/nearby?latitude=${latitude}&longitude=${longitude}&range=${rangeMeters}`;
         if (genderFilter !== "all") url += `&gender=${genderFilter}`;
 
@@ -334,17 +281,25 @@ const STORAGE_KEYS = {
         if (!response.ok) throw new Error("Falha na rede");
         const users = await response.json();
 
+        // --- CORREÇÃO DE FILTRO ---
         let filteredUsers = users.filter((user) => {
+          // 1. Filtro de Gênero
           const g = (user.gender || "").toLowerCase();
           const matchesGender = (genderFilter === "all") ||
             (genderFilter === "male" && (g === "male" || g === "m" || g === "homem")) ||
             (genderFilter === "female" && (g === "female" || g === "f" || g === "mulher"));
           
+          // 2. Filtro de Distância (Tolerante)
+          // Verifica 'distance' OU 'distance_km'
+          let distKm = user.distance_km || user.distance; 
           let matchesDistance = true;
-          if (user.distance_km !== undefined && user.distance_km !== null) {
-             const distMeters = parseFloat(user.distance_km) * 1000;
-             matchesDistance = distMeters <= (rangeMeters + 10);
+          
+          if (distKm !== undefined && distKm !== null) {
+             const distMeters = parseFloat(distKm) * 1000;
+             // Adiciona 50m de tolerância para não esconder usuários na borda
+             matchesDistance = distMeters <= (rangeMeters + 50);
           }
+          
           return matchesGender && matchesDistance;
         });
 
@@ -360,6 +315,7 @@ const STORAGE_KEYS = {
     function updateUIWithUsers(users) {
         if (usersCountElement) usersCountElement.textContent = users.length;
         userMarkersGroup.clearLayers();
+        
         if (usersList) {
             usersList.innerHTML = "";
             if (users.length === 0) {
@@ -367,74 +323,112 @@ const STORAGE_KEYS = {
                 return;
             }
             users.forEach(user => {
+                // CORREÇÃO: Pega a distância certa
+                const distDisplay = (user.distance_km || user.distance || 0);
+
                 const avatarHtml = `
                   <div class="avatar-frame-wrapper">
                     <img src="${user.avatar_url || '/default-avatar.png'}" class="avatar-user-img">
                     <img src="${frameUrl}" class="avatar-frame-overlay">
                   </div>
                 `;
-                if (user.latitude && user.longitude) {
+                
+                // CORREÇÃO: Garante que Lat/Lng sejam números válidos
+                const uLat = parseFloat(user.latitude);
+                const uLng = parseFloat(user.longitude);
+
+                if (!isNaN(uLat) && !isNaN(uLng)) {
                     const icon = L.divIcon({ html: avatarHtml, className: "custom-marker", iconSize: [56, 56], popupAnchor: [0, -20] });
-                    const marker = L.marker([user.latitude, user.longitude], { icon });
+                    const marker = L.marker([uLat, uLng], { icon });
                     marker.on("click", () => showUserPopup(user));
                     userMarkersGroup.addLayer(marker);
                 }
+
                 const li = document.createElement("li");
                 li.className = "user-list-item";
                 li.innerHTML = `
                     ${avatarHtml}
                     <div class="user-list-info">
-                        <span class="user-list-name">${user.username || 'Usuário'}</span>
-                        <span class="user-list-distance">${user.distance_km ? user.distance_km + ' km' : 'Perto'}</span>
+                        <span class="user-list-name">${user.username || user.display_name || 'Usuário'}</span>
+                        <span class="user-list-distance">${distDisplay} km</span>
                     </div>
                 `;
                 li.addEventListener("click", () => {
-                    map.flyTo([user.latitude, user.longitude], 16);
-                    showUserPopup(user);
+                    if (!isNaN(uLat) && !isNaN(uLng)) {
+                        map.flyTo([uLat, uLng], 16);
+                        showUserPopup(user);
+                    }
                 });
                 usersList.appendChild(li);
             });
         }
     }
 
-    function showUserPopup(user) {
+  function showUserPopup(user) {
       if (!userPopup) return;
+      
       userPopup.dataset.userId = user.id;
+
+      // 1. Atualiza Visual
       const img = userPopup.querySelector("#popup-avatar");
       if(img) img.src = user.avatar_url || "/default-avatar.png";
+      
       const name = userPopup.querySelector("#popup-username");
-      if(name) name.textContent = user.username || "Usuário";
+      if(name) name.textContent = user.username || user.display_name || "Usuário";
+      
       const loc = userPopup.querySelector("#popup-location");
       if(loc) loc.textContent = user.city || "";
+      
       const distBadge = userPopup.querySelector("#popup-distance");
-      if(distBadge) distBadge.textContent = user.distance_km ? `${user.distance_km} km` : "";
+      const distVal = user.distance_km || user.distance;
+      if(distBadge) distBadge.textContent = distVal ? `${distVal} km` : "";
+
+      // 2. ATUALIZA OS FORMULÁRIOS (Action URL)
+      const forms = [
+          document.getElementById("popup-reject-form"),
+          document.getElementById("popup-chat-form"),
+          document.getElementById("popup-like-form")
+      ];
+
+      forms.forEach(form => {
+          if (form) {
+              // Pega a URL original salva no data-base-action (ex: /start_chat/0)
+              let baseUrl = form.getAttribute("data-base-action");
+              
+              // Se por acaso não tiver salvo, tenta pegar do action atual
+              if (!baseUrl) {
+                 baseUrl = form.action;
+                 form.setAttribute("data-base-action", baseUrl);
+              }
+
+              // Substitui o ID '0' final pelo ID real do usuário
+              // Regex: procura por /0 no final da string, opcionalmente seguido de slash
+              const newUrl = baseUrl.replace(/\/0\/?(\?.*)?$/, '/' + user.id + '$1');
+              
+              // Se for o formulário de Like e usar query params (?user_id=0), usa outra lógica:
+              if (newUrl.includes("user_id=")) {
+                  form.action = newUrl.replace("user_id=0", `user_id=${user.id}`);
+              } else {
+                  form.action = newUrl;
+              }
+          }
+      });
+
+      // 3. Mostra o Popup
       userPopup.classList.remove("hidden");
       userPopup.classList.add("show");
     }
 
-    if (closePopupBtn) closePopupBtn.addEventListener("click", () => { userPopup.classList.add("hidden"); userPopup.classList.remove("show"); });
-    if (popupOverlay) popupOverlay.addEventListener("click", () => { userPopup.classList.add("hidden"); userPopup.classList.remove("show"); });
-
-    // Botão Centralizar (Volta para o usuário)
-    if (fabCenterMap) {
-        fabCenterMap.addEventListener("click", () => {
-            if (fixedUserLat && fixedUserLng) { 
-                map.flyTo([fixedUserLat, fixedUserLng], 15); 
-            }
-        });
-    }
-
    // ========================================
-    // CORREÇÃO: MODO INVISÍVEL
-    // ========================================
+   // CORREÇÃO: MODO INVISÍVEL
+   // ========================================
     if (toggleVisibilityBtn) {
         const eyeOpen = toggleVisibilityBtn.querySelector(".eye-open");
         const eyeClosed = toggleVisibilityBtn.querySelector(".eye-closed");
 
-        // Função visual para alternar ícones
         const updateVisibilityUI = (isInvisible) => {
             if (isInvisible) {
-                toggleVisibilityBtn.classList.add("active"); // Estilo de ativado (vermelho/dourado)
+                toggleVisibilityBtn.classList.add("active");
                 toggleVisibilityBtn.classList.add("invisible-mode"); 
                 if (eyeOpen) eyeOpen.classList.add("hidden");
                 if (eyeClosed) eyeClosed.classList.remove("hidden");
@@ -446,57 +440,57 @@ const STORAGE_KEYS = {
             }
         };
 
-        // 1. ESTADO INICIAL:
-        // Idealmente, o Rails deve passar esse estado no HTML (data-attribute)
-        // Se você tiver <div id="current-user-data" data-invisible="<%= current_user.invisible %>"></div>
-        const userData = document.getElementById('current-user-data'); // Crie esse elemento no layout se não tiver
+        // CORREÇÃO: Agora o elemento existe no HTML, não vai dar erro
+        const userData = document.getElementById('current-user-data'); 
         const initialInvisible = userData ? (userData.dataset.invisible === 'true') : false;
         
-        // Aplica o estado inicial visualmente
         updateVisibilityUI(initialInvisible);
 
-        // 2. EVENTO DE CLICK
         toggleVisibilityBtn.addEventListener("click", async () => {
             try {
                 // Feedback visual imediato (Otimista)
                 const isCurrentlyInvisible = toggleVisibilityBtn.classList.contains("active");
-                updateVisibilityUI(!isCurrentlyInvisible);
+                // updateVisibilityUI(!isCurrentlyInvisible); // <-- REMOVIDO PARA NÃO ENGANAR O USUÁRIO FREE
 
-                // Chama o servidor
                 const token = document.querySelector('meta[name="csrf-token"]').content;
                 const response = await fetch('/users/toggle_visibility', {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRF-Token': token
-                    }
+                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }
                 });
 
-                if (!response.ok) {
-                    throw new Error("Erro ao salvar no servidor");
+                // SE O SERVIDOR DISSER QUE PRECISA DE UPGRADE (Status 403)
+                if (response.status === 403) {
+                    const data = await response.json();
+                    if (data.upgrade_required) {
+                        console.log("Upgrade necessário para modo invisível");
+                        
+                        // Busca o HTML do modal via fetch na rota que criamos antes
+                        // Passamos type='invisible' para personalizar o texto
+                        const modalResponse = await fetch('/plans/modal?type=invisible');
+                        const modalHtml = await modalResponse.text();
+                        
+                        // Injeta o modal na tela
+                        document.getElementById("upgrade-modal-container").innerHTML = modalHtml;
+                    }
+                    return; // Para por aqui
                 }
 
-                const data = await response.json();
+                if (!response.ok) throw new Error("Erro ao salvar no servidor");
                 
-                // Confirma o estado real vindo do servidor
+                const data = await response.json();
                 updateVisibilityUI(data.invisible);
-
-                // Opcional: Se ficou invisível, parar de enviar localização ou limpar mapa
+                
                 if (data.invisible) {
-                    console.log("Você está invisível agora.");
-                    // Aqui você pode adicionar lógica para parar o watchPosition se usar
+                   // Lógica extra se ficou invisível (ex: parar GPS)
                 }
 
             } catch (error) {
                 console.error("Erro ao alternar visibilidade:", error);
-                // Reverte visualmente se deu erro
-                alert("Não foi possível alterar a visibilidade. Verifique sua conexão.");
-                const isCurrentlyInvisible = toggleVisibilityBtn.classList.contains("active");
-                updateVisibilityUI(!isCurrentlyInvisible); 
             }
         });
     }
     
+    // INICIALIZAÇÃO GEOLOCALIZAÇÃO
     if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
             (position) => initializeMap(position.coords.latitude, position.coords.longitude),
@@ -520,4 +514,93 @@ const STORAGE_KEYS = {
     `;
     document.head.appendChild(style);
   });
+
+  // ========================================
+    // 9. FECHAR POPUP APÓS AÇÃO (Like/Reject)
+    // ========================================
+    document.addEventListener("turbo:submit-end", (e) => {
+        // Verifica se o envio veio de um dos formulários do popup
+        const formId = e.target.id;
+        
+        if (formId === "popup-like-form" || formId === "popup-reject-form") {
+            if (e.detail.success) {
+                console.log("Ação realizada com sucesso! Fechando popup...");
+                
+                // Fecha o popup
+                const popup = document.getElementById("user-popup");
+                if (popup) {
+                    popup.classList.add("hidden");
+                    popup.classList.remove("show");
+                }
+                
+                // Opcional: Remover o marcador do mapa para dar feedback visual
+                // Isso exigiria buscar o marcador pelo ID, mas só fechar o popup já resolve.
+            }
+        }
+
+        // ========================================
+    // FUNÇÃO GLOBAL DE FECHAR (NOVA)
+    // ========================================
+    function closeUserPopup() {
+        const popup = document.getElementById("user-popup");
+        if (popup) {
+            popup.classList.add("hidden");
+            popup.classList.remove("show");
+            
+            // Opcional: Limpar os IDs dos formulários para evitar conflitos futuros
+            const rejectInput = document.getElementById("popup-reject-input");
+            const likeInput = document.getElementById("popup-like-input");
+            if(rejectInput) rejectInput.value = "";
+            if(likeInput) likeInput.value = "";
+        }
+    }
+
+    // 1. Evento no Botão X
+    if (closePopupBtn) {
+        // Remove listeners antigos para evitar duplicação (boa prática)
+        const newBtn = closePopupBtn.cloneNode(true);
+        closePopupBtn.parentNode.replaceChild(newBtn, closePopupBtn);
+        
+        newBtn.addEventListener("click", (e) => {
+            e.preventDefault();
+            console.log("Botão fechar clicado");
+            closeUserPopup();
+        });
+    }
+
+    // 2. Evento no Fundo Escuro (Overlay)
+    if (popupOverlay) {
+        popupOverlay.addEventListener("click", (e) => {
+            console.log("Fundo clicado");
+            closeUserPopup();
+        });
+    }
+
+    // 3. Fechar Automaticamente após Like ou Reject (Turbo)
+    document.addEventListener("turbo:submit-end", (e) => {
+        const formId = e.target.id;
+        
+        // Se o envio veio do popup (Like ou Reject) e deu certo (código 200)
+        if ((formId === "popup-like-form" || formId === "popup-reject-form") && e.detail.success) {
+            console.log("Ação concluída com sucesso via Turbo. Fechando...");
+            closeUserPopup();
+        }
+    });
+
+
+    // Fechar ao clicar no fundo escuro (Overlay)
+    const popupOverlay = document.querySelector(".popup-overlay");
+    if (popupOverlay) {
+        popupOverlay.addEventListener("click", (e) => {
+            // Previne que o clique passe para o mapa
+            e.stopPropagation(); 
+            const popup = document.getElementById("user-popup");
+            popup.classList.add("hidden");
+            popup.classList.remove("show");
+        });
+    }
+
+
+    });
+
 });

@@ -1,96 +1,70 @@
-<%# DEBUG: Script para confirmar que o Turbo carregou o HTML %>
-<script>console.log("🚀 MODAL CARREGADO! Se não estiver vendo, é CSS.");</script>
+<%# app/views/shared/_upgrade_modal.html.erb %>
 
 <div class="match-popup upgrade-modal-overlay" 
-     style="
-       display: flex !important; 
-       position: fixed !important; 
-       top: 0 !important; 
-       left: 0 !important; 
-       width: 100vw !important; 
-       height: 100vh !important; 
-       background-color: rgba(0, 0, 0, 0.9) !important; 
-       z-index: 2147483647 !important; /* Z-Index máximo possível */
-       align-items: center !important; 
-       justify-content: center !important;
-       opacity: 1 !important;
-       visibility: visible !important;
-       transform: none !important;
-     ">
+     style="display: flex !important; position: fixed !important; top: 0 !important; left: 0 !important; width: 100vw !important; height: 100vh !important; background-color: rgba(0, 0, 0, 0.9) !important; z-index: 2147483647 !important; align-items: center !important; justify-content: center !important; opacity: 1 !important; visibility: visible !important; pointer-events: auto !important;">
   
   <div class="match-popup-content upgrade-content" 
-       style="
-         position: relative; 
-         z-index: 2147483647; 
-         background: #1a1a1a; 
-         padding: 30px; 
-         border-radius: 20px; 
-         border: 1px solid #333; 
-         max-width: 90%; 
-         width: 400px;
-         text-align: center;
-         box-shadow: 0 10px 40px rgba(0,0,0,0.5);
-       ">
+       style="position: relative; z-index: 2147483647; background: #1a1a1a; padding: 30px; border-radius: 20px; border: 1px solid #333; max-width: 90%; width: 400px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.5);">
     
-    <%# Botão Fechar %>
-    <button type="button" 
-            onclick="document.getElementById('upgrade-modal-container').innerHTML = ''"
-            style="
-              position: absolute; 
-              top: 15px; 
-              right: 15px; 
-              background: none; 
-              border: none; 
-              font-size: 1.5rem; 
-              color: #fff; 
-              cursor: pointer;
-              padding: 5px;
-            ">
-      ✖
-    </button>
+    <button type="button" onclick="document.getElementById('upgrade-modal-container').innerHTML = ''"
+            style="position: absolute; top: 15px; right: 15px; background: none; border: none; font-size: 1.5rem; color: #fff; cursor: pointer; padding: 10px; z-index: 2147483648;">✖</button>
 
-    <div class="match-animation" style="font-size: 3rem; margin-bottom: 15px;"><span class="match-icon">💎</span></div>
+    <div class="match-animation" style="font-size: 3rem; margin-bottom: 15px;">
+      <span class="match-icon">
+        <%= type == 'invisible' ? '👁️' : '💎' %>
+      </span>
+    </div>
     
+    <%# --- TÍTULO DINÂMICO --- %>
     <h2 class="match-title" style="color: white; margin-bottom: 15px; font-size: 1.5rem;">
       <% if type == 'likes' %>
         Acabaram suas curtidas!
-      <% else %>
-        <% if current_user.plan.name == 'Free' %>
-           Mensagens Bloqueadas
-        <% else %>
-           Limite Diário Atingido
-        <% end %>
+      <% elsif type == 'invisible' %>
+        Modo Invisível Bloqueado
+      <% elsif type == 'messages' %>
+         Limite de Conversas
       <% end %>
     </h2>
     
+    <%# --- SUBTÍTULO DINÂMICO --- %>
     <p class="match-subtitle" style="color: #ccc; margin-bottom: 25px; line-height: 1.5;">
       <% if type == 'likes' %>
-        Você usou suas <strong>47 curtidas</strong>. Elas voltam em 5 horas ou faça o upgrade para o plano <strong>Plus</strong> ou <strong>Gold</strong>.
+        Você usou suas 47 curtidas. Faça upgrade para continuar.
+      
+      <% elsif type == 'invisible' %>
+        O Modo Invisível é exclusivo para membros <strong>Gold</strong>. Navegue sem ser visto!
+      
       <% elsif type == 'messages' %>
         <% if current_user.plan.name == 'Free' %>
-          Usuários Free não podem enviar mensagens diretas.
+          Você atingiu suas <strong>7 conversas diárias</strong>. Faça upgrade para ilimitado ou pague avulso.
         <% else %>
-          Você usou suas <strong>3 mensagens diárias</strong>. Faça upgrade para <strong>Gold</strong> para ter mensagens ilimitadas.
+          Limite de segurança atingido.
         <% end %>
       <% end %>
     </p>
 
+    <%# --- BOTÕES DE AÇÃO --- %>
     <div class="match-actions" style="display: flex; flex-direction: column; gap: 10px; width: 100%;">
+      
+      <%# Botão Principal: UPGRADE %>
       <%= link_to plans_path, class: "btn btn-match btn-primary", data: { turbo: false }, 
-          style: "background: linear-gradient(45deg, #d4af37, #f2d06b); color: #000; padding: 12px; border-radius: 50px; text-decoration: none; font-weight: bold; border: none;" do %>
-        🚀 Ver Planos
+          style: "background: linear-gradient(45deg, #d4af37, #f2d06b); color: #000; padding: 12px; border-radius: 50px; text-decoration: none; font-weight: bold; border: none; display: block;" do %>
+        🚀 <%= type == 'invisible' ? 'Virar Gold' : 'Ver Planos' %>
       <% end %>
 
-      <% if type == 'messages' %>
-         <button class="btn btn-match btn-secondary" style="background: transparent; border: 1px solid #555; color: #fff; padding: 12px; border-radius: 50px;">
-           💬 Pagar R$ 1,99 por mensagem
+      <%# Botão Secundário: Pagar Avulso (Só para Mensagens) %>
+      <% if type == 'messages' && current_user.plan.name == 'Free' %>
+         <button class="btn btn-match btn-secondary" onclick="alert('Integração de pagamento R$ 1,99 aqui!')" 
+                 style="background: transparent; border: 1px solid #28a745; color: #28a745; padding: 12px; border-radius: 50px; width: 100%; cursor: pointer; font-weight: bold;">
+           💬 Enviar por R$ 1,99
          </button>
       <% else %>
          <button type="button" onclick="document.getElementById('upgrade-modal-container').innerHTML = ''" 
-                 style="background: transparent; border: 1px solid #555; color: #aaa; padding: 12px; border-radius: 50px; cursor: pointer;">
-           🕒 Esperar recarregar
+                 style="background: transparent; border: 1px solid #555; color: #aaa; padding: 12px; border-radius: 50px; cursor: pointer; width: 100%;">
+           Cancelar
          </button>
       <% end %>
+      
     </div>
   </div>
 </div>

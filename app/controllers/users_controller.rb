@@ -14,8 +14,8 @@ class UsersController < ApplicationController
     
     # 2. Destrói qualquer Match e Chat existente
     Match.where(user: current_user, matched_user: @user_to_block)
-         .or(Match.where(user: @user_to_block, matched_user: current_user))
-         .destroy_all
+          .or(Match.where(user: @user_to_block, matched_user: current_user))
+          .destroy_all
 
     # 3. Limpa Likes
     Like.where(liker: current_user, liked: @user_to_block).destroy_all
@@ -27,10 +27,15 @@ class UsersController < ApplicationController
     redirect_to lead_path, alert: "Erro ao bloquear usuário."
   end
 
-  # Ação para o botão de "Modo Invisível" no Mapa
+ # Ação para o botão de "Modo Invisível" no Mapa
   def toggle_visibility
-    # Inverte o status atual (true -> false / false -> true)
-    # Requer coluna 'invisible' na tabela users (migration já feita?)
+    # 1. VERIFICAÇÃO: Só Gold pode usar
+    unless current_user.can_use_invisible_mode?
+      # Retorna um erro 403 (Proibido) com uma flag para o JS abrir o modal
+      return render json: { upgrade_required: true, plan: 'Gold' }, status: :forbidden
+    end
+
+    # 2. Executa a troca se for Gold
     new_status = !current_user.invisible
     
     if current_user.update(invisible: new_status)
@@ -93,20 +98,21 @@ class UsersController < ApplicationController
   #  ACTION LEAD (SWIPE / TINDER)
   # ==========================================
   def lead
-  # 0. GARANTE LOCALIZAÇÃO (fallback DEV)
-  if current_user.latitude.nil? || current_user.longitude.nil?
-    current_user.update(latitude: -14.7876, longitude: -39.2781)
-  end
-
-  # 1. POPUP DE MATCH (Se acabou de dar match)
-  if params[:match] == "true" && params[:match_id].present?
-    @match = Match.find(params[:match_id])
-
-    if @match.user_id == current_user.id || @match.matched_user_id == current_user.id
-      @next_user = @match.other_user(current_user)
-      return
+    # 0. GARANTE LOCALIZAÇÃO (fallback DEV)
+    if current_user.latitude.nil? || current_user.longitude.nil?
+      current_user.update(latitude: -14.7876, longitude: -39.2781)
     end
-  end
+
+    # 1. POPUP DE MATCH (Se acabou de dar match)
+    if params[:match] == "true" && params[:match_id].present?
+      @match = Match.find(params[:match_id])
+
+      if @match.user_id == current_user.id || @match.matched_user_id == current_user.id
+        @next_user = @match.other_user(current_user)
+        # return (Removido return para não quebrar o resto da página se houver match)
+        # Idealmente, o modal aparece SOBRE a tela normal. 
+      end
+    end
 
     # 2. FILTROS
     filters = {
@@ -129,7 +135,7 @@ class UsersController < ApplicationController
   end
 
   # ==========================================
-  #  API DO MAPA (NEARBY)
+  #  API DO MAPA (NEARBY) -- CORRIGIDA --
   # ==========================================
   def nearby
     latitude = params[:latitude].to_f
@@ -142,27 +148,51 @@ class UsersController < ApplicationController
       current_user.update(latitude: latitude, longitude: longitude)
     end
 
+    # Se veio 0.0, 0.0, é bug de GPS, retorna vazio
     if latitude.zero? && longitude.zero?
       render json: [], status: :ok
       return
     end
 
     # Busca usuários próximos usando o Service
-    users = DiscoveryService.new(current_user).find_nearby_users(range_km, gender_filter)
+    # ATENÇÃO: Se o Service já devolve JSON (Hash), não podemos chamar .id nele
+    users_data = DiscoveryService.new(current_user).find_nearby_users(range_km, gender_filter)
 
-    # FILTRAGEM FINAL:
-    # 1. Remove bloqueados (excluded_user_ids)
-    # 2. Remove quem está INVISÍVEL (invisible: true)
+    # FILTRAGEM FINAL SEGURA:
     blocked_ids = current_user.excluded_user_ids
     
-    visible_users = users.select do |u| 
-      !blocked_ids.include?(u.id) && (u.respond_to?(:invisible) ? !u.invisible : true)
+    visible_users = users_data.select do |u| 
+      # Verifica se 'u' é Objeto (User) ou Hash (JSON)
+      uid = u.respond_to?(:id) ? u.id : u[:id] || u['id']
+      
+      # Verifica invisibilidade (Se for Hash, assume visível ou checa chave)
+      is_invisible = if u.respond_to?(:invisible)
+                       u.invisible
+                     elsif u.is_a?(Hash)
+                       u[:invisible] || u['invisible'] || false
+                     else
+                       false
+                     end
+
+      # Regra: Não pode estar bloqueado E não pode estar invisível
+      !blocked_ids.include?(uid) && !is_invisible
     end
 
-    render json: visible_users.as_json(only: [:id, :username, :latitude, :longitude, :avatar_url, :distance_km, :city])
+    # Se for Hash, já está pronto. Se for User, converte.
+    final_json = visible_users.map do |u|
+      if u.is_a?(Hash)
+        u # Já é JSON
+      else
+        u.as_json(only: [:id, :username, :latitude, :longitude, :distance_km, :city]).merge({
+          avatar_url: u.avatar_url # Garante que avatar venha certo
+        })
+      end
+    end
+
+    render json: final_json
   rescue => e
     Rails.logger.error "Erro em /users/nearby: #{e.message}"
-    render json: { error: "Erro interno" }, status: :internal_server_error
+    render json: { error: "Erro interno", details: e.message }, status: :internal_server_error
   end
 
   # ==========================================
@@ -190,13 +220,22 @@ class UsersController < ApplicationController
 
   # AÇÃO CORRIGIDA
   def reject
-    # Cria o registro de 'pass' para não mostrar o usuário novamente
-    # IMPORTANTE: Usando 'is_like: false' em vez de 'liked: false'
+    # Cria o registro de 'pass'
     current_user.likes.create(liked_id: params[:user_id], is_like: false) 
     
-    redirect_to lead_path
+    # --- CORREÇÃO AQUI ---
+    if params[:source] == "map"
+      head :ok # Fica na tela do mapa
+    else
+      redirect_to lead_path
+    end
+
   rescue ActiveRecord::RecordNotFound
-    redirect_to lead_path
+    if params[:source] == "map"
+      head :not_found
+    else
+      redirect_to lead_path
+    end
   end
 
   # ==========================================

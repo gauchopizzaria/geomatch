@@ -2,6 +2,8 @@
      data-frame-url="<%= image_path('aurea-dourada-mensagens.svg') %>"
      style="display: none;"></div>
 
+<div id="current-user-data" data-invisible="<%= current_user.invisible %>"></div>
+
 <div class="discover-fullscreen-container">
 
   <div id="map" class="map-fullscreen"></div>
@@ -71,21 +73,76 @@
     </div>
   </div>
 
-  <div id="user-popup" class="user-popup-fullscreen hidden">
+ <div id="user-popup" class="user-popup-fullscreen hidden">
     <div class="popup-overlay"></div>
     <div class="popup-content-fullscreen">
-      <button id="close-popup-btn" class="close-popup-btn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-      <div class="popup-image-carousel"><img id="popup-avatar" src="" class="popup-image"></div>
+      
+     <%# Botão Fechar com onclick direto para garantir %>
+      <button id="close-popup-btn" class="close-popup-btn" onclick="document.getElementById('user-popup').classList.add('hidden'); document.getElementById('user-popup').classList.remove('show');">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="18" y1="6" x2="6" y2="18"></line>
+          <line x1="6" y1="6" x2="18" y2="18"></line>
+        </svg>
+      </button>
+
+      <%# Foto e Dados %>
+      <div class="popup-image-carousel">
+        <img id="popup-avatar" src="" class="popup-image">
+      </div>
+      
       <div class="popup-user-info">
         <div class="user-header">
-          <div><h3 id="popup-username"></h3><p id="popup-location" class="location-text"></p></div>
+          <div>
+            <h3 id="popup-username"></h3>
+            <p id="popup-location" class="location-text"></p>
+          </div>
           <div class="distance-badge" id="popup-distance"></div>
         </div>
-        <div class="popup-actions-fullscreen"><button id="message-btn" class="action-btn-gold">Mensagem</button></div>
+<%# --- ÁREA DOS BOTÕES DE AÇÃO --- %>
+ <div class="popup-user-info" style="position: relative;">
+        
+        <%# --- BOTÕES DE AÇÃO (IGUAIS AO LEAD) --- %>
+        <%# Coloquei margin-top negativo para eles subirem e ficarem "flutuando" entre a foto e o texto, se desejar %>
+        <div class="action-buttons-container" style="display: flex; justify-content: center; gap: 20px; margin-top: -30px; margin-bottom: 15px; position: relative; z-index: 10;">
+          
+         <%# 1. BOTÃO REJEITAR (X) %>
+          <%= button_to reject_user_path(user_id: 0), method: :post, class: "action-btn btn-reject", form: { id: "popup-reject-form", "data-base-action" => reject_user_path(user_id: 0) } do %>
+            <%# --- CAMPO NOVO --- %>
+            <%= hidden_field_tag :source, "map" %> 
+            <%= image_tag "botao-rejeitar.svg", alt: "Rejeitar" %>
+          <% end %>
+
+          <%# 2. CHAT %>
+          <%= button_to start_chat_path(user_id: 0), method: :post, class: "action-btn btn-chat", form: { id: "popup-chat-form", "data-base-action" => start_chat_path(user_id: 0) } do %>
+             <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
+          <% end %>
+
+         <%# 3. BOTÃO LIKE (Coração) %>
+          <%= button_to likes_path(user_id: 0), method: :post, class: "action-btn btn-like", form: { id: "popup-like-form", "data-base-action" => likes_path(user_id: 0) } do %>
+            <%# --- CAMPO NOVO --- %>
+            <%= hidden_field_tag :source, "map" %>
+            <div class="heart-icon-wrapper">
+               <%= image_tag "coracao-vazada.svg", alt: "Curtir" %>
+            </div>
+          <% end %>
+        </div>
+
+        <%# --- INFORMAÇÕES DE TEXTO --- %>
+        <div class="user-header" style="text-align: center; padding-top: 10px;">
+          <div>
+            <h3 id="popup-username" style="font-size: 1.5rem; margin-bottom: 5px;"></h3>
+            <p id="popup-location" class="location-text" style="color: #888;"></p>
+          </div>
+          <div class="distance-badge" id="popup-distance" style="margin: 10px auto; display: inline-block;"></div>
+        </div>
+        
+      </div>
+        <%# --- FIM DOS BOTÕES --- %>
+
       </div>
     </div>
   </div>
-
+<div id="upgrade-modal-container" style="position: relative; z-index: 99999;"></div>
 </div>
 
 <%= javascript_include_tag "map", type: "module" %>
