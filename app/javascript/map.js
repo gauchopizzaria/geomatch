@@ -550,21 +550,61 @@ const STORAGE_KEYS = {
         });
     }
     
-    // INICIALIZAÇÃO GEOLOCALIZAÇÃO
-    if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-            (position) => initializeMap(position.coords.latitude, position.coords.longitude),
-            () => initializeMap(defaultLat, defaultLng),
-            { enableHighAccuracy: true }
-        );
-    } else {
-        initializeMap(defaultLat, defaultLng);
-    }
+    // ========================================
+    // INICIALIZAÇÃO GEOLOCALIZAÇÃO (TEMPO REAL & RETOMADA)
+    // ========================================
+    
+    // Função reutilizável para forçar o GPS
+    const forceLocationUpdate = () => {
+        if ("geolocation" in navigator) {
+            console.log("📍 Solicitando posição atualizada (Sem Cache)...");
+            
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    console.log("✅ Nova localização obtida:", position.coords.latitude, position.coords.longitude);
+                    // Atualiza tudo (Mapa, Marcador, Usuários Próximos)
+                    initializeMap(position.coords.latitude, position.coords.longitude);
+                },
+                (error) => {
+                    console.warn("⚠️ Erro ao obter localização:", error.message);
+                    
+                    // Se falhar e a gente ainda não tiver nenhuma localização, usa o padrão
+                    if (!fixedUserLat || !fixedUserLng) {
+                        initializeMap(defaultLat, defaultLng);
+                    }
+                    
+                    // Alerta apenas se for erro de permissão (para não spammar o usuário se for só sinal fraco)
+                    if (error.code === 1) {
+                        alert("O GeoMatch precisa da sua localização para funcionar. Por favor, verifique as permissões do seu navegador/celular.");
+                    }
+                },
+                {
+                    enableHighAccuracy: true, // Força uso do GPS
+                    maximumAge: 0,            // OBRIGATÓRIO: Não aceita posição cacheada, quer a nova
+                    timeout: 10000            // Espera 10s antes de dar erro
+                }
+            );
+        } else {
+            initializeMap(defaultLat, defaultLng);
+        }
+    };
+
+    // 1. Chama imediatamente ao abrir
+    forceLocationUpdate();
+
+    // 2. Chama toda vez que o usuário voltar para a aba/app (Sair e Entrar)
+    document.addEventListener("visibilitychange", () => {
+        if (document.visibilityState === "visible") {
+            console.log("👁️ Usuário voltou para o app. Atualizando GPS...");
+            forceLocationUpdate();
+        }
+    });
 
     const style = document.createElement("style");
+    // ... (o resto do seu estilo permanece igual)
     style.textContent = `
     .user-location-marker { position: relative; width: 40px; height: 40px; }
-    .user-location-dot { width: 12px; height: 12px; background: #d4af37; border-radius: 50%; border: 2px solid #fff; position: relative; z-index: 10; top: 14px; left: 14px; }
+    .user-location-dot { width: 12px; height: 12px; background: #ccc099; border-radius: 50%; border: 2px solid #fff; position: relative; z-index: 10; top: 14px; left: 14px; }
     .user-location-pulse { position: absolute; width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(212, 175, 55, 0.5); animation: pulse 2s infinite; }
     @keyframes pulse { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
     .loading-skeleton { display: flex; gap: 10px; padding: 10px; background: #252527; border-radius: 8px; margin-bottom: 5px; }
