@@ -28,7 +28,6 @@ const STORAGE_KEYS = {
       attributionControl: false
     }).setView([defaultLat, defaultLng], defaultZoom);
 
-    // --- ADICIONE ISTO ---
     // Recalcula o tamanho do círculo visual quando o zoom muda
     map.on('zoom', () => {
         updateCSSRadarRadius();
@@ -70,7 +69,7 @@ const STORAGE_KEYS = {
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
     const genderToggleBtn = document.getElementById("gender-filter-toggle");
 
-   // ========================================
+    // ========================================
     // 3. SLIDER DE RAIO & SINCRONIZAÇÃO VISUAL
     // ========================================
     
@@ -79,7 +78,6 @@ const STORAGE_KEYS = {
         if (!map || !fixedUserLat || !containerElement) return;
 
         // 1. Obtém a escala atual do mapa (metros por pixel)
-        // Fórmula padrão do Web Mercator: (Circunferência da Terra * cos(lat)) / 2^zoom
         const zoom = map.getZoom();
         const metersPerPixel = 156543.03392 * Math.abs(Math.cos(fixedUserLat * Math.PI / 180)) / Math.pow(2, zoom);
 
@@ -101,14 +99,12 @@ const STORAGE_KEYS = {
         const percent = (val / max) * 100;
         rangeSlider.style.backgroundImage = `linear-gradient(to right, #f4e4bc 0%, #f4e4bc ${percent}%, transparent ${percent}%, transparent 100%)`;
         
-        // --- REMOVIDO DAQUI: containerElement.style.setProperty... ---
         // A atualização do raio visual agora acontece via updateCSSRadarRadius()
         updateCSSRadarRadius();
       };
 
       // Inicializa visual do slider
       rangeSlider.value = currentRangeMeters;
-      // Não chamamos updateSliderVisuals aqui ainda pois fixedUserLat pode ser null
       
       rangeSlider.addEventListener("input", (e) => {
         const val = parseInt(e.target.value, 10);
@@ -287,7 +283,8 @@ const STORAGE_KEYS = {
       
       addUserMarker(lat, lng);
       updateRadarCircle();
-      updateSliderVisuals(currentRangeMeters);
+      
+      updateSliderVisuals(currentRangeMeters); 
       updateSpotlightPosition();
       
       showLoadingAnimation();
@@ -298,7 +295,7 @@ const STORAGE_KEYS = {
     map.on('resize', updateSpotlightPosition);
 
     // ========================================
-    // API & FILTRAGEM (CORRIGIDO)
+    // API & FILTRAGEM
     // ========================================
     async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
       try {
@@ -309,23 +306,18 @@ const STORAGE_KEYS = {
         if (!response.ok) throw new Error("Falha na rede");
         const users = await response.json();
 
-        // --- CORREÇÃO DE FILTRO ---
         let filteredUsers = users.filter((user) => {
-          // 1. Filtro de Gênero
           const g = (user.gender || "").toLowerCase();
           const matchesGender = (genderFilter === "all") ||
             (genderFilter === "male" && (g === "male" || g === "m" || g === "homem")) ||
             (genderFilter === "female" && (g === "female" || g === "f" || g === "mulher"));
           
-          // 2. Filtro de Distância (Tolerante)
-          // Verifica 'distance' OU 'distance_km'
           let distKm = user.distance_km || user.distance; 
           let matchesDistance = true;
           
           if (distKm !== undefined && distKm !== null) {
-             const distMeters = parseFloat(distKm) * 1000;
-             // Adiciona 50m de tolerância para não esconder usuários na borda
-             matchesDistance = distMeters <= (rangeMeters + 50);
+              const distMeters = parseFloat(distKm) * 1000;
+              matchesDistance = distMeters <= (rangeMeters + 50);
           }
           
           return matchesGender && matchesDistance;
@@ -351,7 +343,6 @@ const STORAGE_KEYS = {
                 return;
             }
             users.forEach(user => {
-                // CORREÇÃO: Pega a distância certa
                 const distDisplay = (user.distance_km || user.distance || 0);
 
                 const avatarHtml = `
@@ -361,7 +352,6 @@ const STORAGE_KEYS = {
                   </div>
                 `;
                 
-                // CORREÇÃO: Garante que Lat/Lng sejam números válidos
                 const uLat = parseFloat(user.latitude);
                 const uLng = parseFloat(user.longitude);
 
@@ -392,12 +382,12 @@ const STORAGE_KEYS = {
         }
     }
 
-  function showUserPopup(user) {
+    function showUserPopup(user) {
       if (!userPopup) return;
       
       userPopup.dataset.userId = user.id;
 
-      // 1. Atualiza Visual
+      // 1. Atualiza Visual Básico
       const img = userPopup.querySelector("#popup-avatar");
       if(img) img.src = user.avatar_url || "/default-avatar.png";
       
@@ -405,13 +395,51 @@ const STORAGE_KEYS = {
       if(name) name.textContent = user.username || user.display_name || "Usuário";
       
       const loc = userPopup.querySelector("#popup-location");
-      if(loc) loc.textContent = user.city || "";
+      if(loc) loc.textContent = user.city || "Localização desconhecida";
       
       const distBadge = userPopup.querySelector("#popup-distance");
       const distVal = user.distance_km || user.distance;
       if(distBadge) distBadge.textContent = distVal ? `${distVal} km` : "";
 
-      // 2. ATUALIZA OS FORMULÁRIOS (Action URL)
+      // --- 2. NOVOS DADOS (DETALHES) ---
+      
+      // Bio
+      const bio = userPopup.querySelector("#popup-bio");
+      if(bio) bio.textContent = user.bio || "Este usuário não escreveu uma biografia.";
+
+      // Gênero
+      const gender = userPopup.querySelector("#popup-gender");
+      if(gender) gender.textContent = user.gender ? (user.gender === 'male' ? 'Masculino' : 'Feminino') : "Não informado";
+      
+      // Interesse
+      const interest = userPopup.querySelector("#popup-interest");
+      if(interest) interest.textContent = user.interested_in ? `Busca: ${user.interested_in}` : "Busca: Todos";
+
+      // Tags (Interesses)
+      const tagsContainer = userPopup.querySelector("#popup-tags-container");
+      const tagsList = userPopup.querySelector("#popup-tags-list");
+      
+      if(tagsList) {
+          tagsList.innerHTML = ""; 
+          if (user.hobbies_list && Array.isArray(user.hobbies_list) && user.hobbies_list.length > 0) {
+              tagsContainer.style.display = "block";
+              user.hobbies_list.forEach(tag => {
+                  const span = document.createElement("span");
+                  span.className = "tag-pill";
+                  span.textContent = tag;
+                  tagsList.appendChild(span);
+              });
+          } else {
+              tagsContainer.style.display = "none";
+          }
+      }
+
+      // --- RESETAR ESTADO DO POPUP (SEMPRE ABRIR PEQUENO) ---
+      const content = userPopup.querySelector(".popup-content-fullscreen");
+      if(content) content.classList.remove("expanded");
+
+
+      // ... (LÓGICA DOS FORMULÁRIOS) ...
       const forms = [
           document.getElementById("popup-reject-form"),
           document.getElementById("popup-chat-form"),
@@ -419,27 +447,16 @@ const STORAGE_KEYS = {
       ];
 
       forms.forEach(form => {
-          if (form) {
-              // Pega a URL original salva no data-base-action (ex: /start_chat/0)
+            if (form) {
               let baseUrl = form.getAttribute("data-base-action");
-              
-              // Se por acaso não tiver salvo, tenta pegar do action atual
-              if (!baseUrl) {
-                 baseUrl = form.action;
-                 form.setAttribute("data-base-action", baseUrl);
-              }
-
-              // Substitui o ID '0' final pelo ID real do usuário
-              // Regex: procura por /0 no final da string, opcionalmente seguido de slash
+              if (!baseUrl) { baseUrl = form.action; form.setAttribute("data-base-action", baseUrl); }
               const newUrl = baseUrl.replace(/\/0\/?(\?.*)?$/, '/' + user.id + '$1');
-              
-              // Se for o formulário de Like e usar query params (?user_id=0), usa outra lógica:
               if (newUrl.includes("user_id=")) {
                   form.action = newUrl.replace("user_id=0", `user_id=${user.id}`);
               } else {
                   form.action = newUrl;
               }
-          }
+            }
       });
 
       // 3. Mostra o Popup
@@ -447,9 +464,9 @@ const STORAGE_KEYS = {
       userPopup.classList.add("show");
     }
 
-   // ========================================
-   // CORREÇÃO: MODO INVISÍVEL
-   // ========================================
+    // ========================================
+    // CORREÇÃO: MODO INVISÍVEL
+    // ========================================
     if (toggleVisibilityBtn) {
         const eyeOpen = toggleVisibilityBtn.querySelector(".eye-open");
         const eyeClosed = toggleVisibilityBtn.querySelector(".eye-closed");
@@ -468,7 +485,6 @@ const STORAGE_KEYS = {
             }
         };
 
-        // CORREÇÃO: Agora o elemento existe no HTML, não vai dar erro
         const userData = document.getElementById('current-user-data'); 
         const initialInvisible = userData ? (userData.dataset.invisible === 'true') : false;
         
@@ -476,31 +492,20 @@ const STORAGE_KEYS = {
 
         toggleVisibilityBtn.addEventListener("click", async () => {
             try {
-                // Feedback visual imediato (Otimista)
-                const isCurrentlyInvisible = toggleVisibilityBtn.classList.contains("active");
-                // updateVisibilityUI(!isCurrentlyInvisible); // <-- REMOVIDO PARA NÃO ENGANAR O USUÁRIO FREE
-
                 const token = document.querySelector('meta[name="csrf-token"]').content;
                 const response = await fetch('/users/toggle_visibility', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }
                 });
 
-                // SE O SERVIDOR DISSER QUE PRECISA DE UPGRADE (Status 403)
                 if (response.status === 403) {
                     const data = await response.json();
                     if (data.upgrade_required) {
-                        console.log("Upgrade necessário para modo invisível");
-                        
-                        // Busca o HTML do modal via fetch na rota que criamos antes
-                        // Passamos type='invisible' para personalizar o texto
                         const modalResponse = await fetch('/plans/modal?type=invisible');
                         const modalHtml = await modalResponse.text();
-                        
-                        // Injeta o modal na tela
                         document.getElementById("upgrade-modal-container").innerHTML = modalHtml;
                     }
-                    return; // Para por aqui
+                    return; 
                 }
 
                 if (!response.ok) throw new Error("Erro ao salvar no servidor");
@@ -508,10 +513,6 @@ const STORAGE_KEYS = {
                 const data = await response.json();
                 updateVisibilityUI(data.invisible);
                 
-                if (data.invisible) {
-                   // Lógica extra se ficou invisível (ex: parar GPS)
-                }
-
             } catch (error) {
                 console.error("Erro ao alternar visibilidade:", error);
             }
@@ -541,33 +542,21 @@ const STORAGE_KEYS = {
     .skeleton-line { height: 10px; background: #444; border-radius: 4px; width: 80%; }
     `;
     document.head.appendChild(style);
-  });
 
-  // ========================================
+    // ========================================
     // 9. FECHAR POPUP APÓS AÇÃO (Like/Reject)
     // ========================================
     document.addEventListener("turbo:submit-end", (e) => {
-        // Verifica se o envio veio de um dos formulários do popup
         const formId = e.target.id;
-        
         if (formId === "popup-like-form" || formId === "popup-reject-form") {
             if (e.detail.success) {
-                console.log("Ação realizada com sucesso! Fechando popup...");
-                
-                // Fecha o popup
-                const popup = document.getElementById("user-popup");
-                if (popup) {
-                    popup.classList.add("hidden");
-                    popup.classList.remove("show");
-                }
-                
-                // Opcional: Remover o marcador do mapa para dar feedback visual
-                // Isso exigiria buscar o marcador pelo ID, mas só fechar o popup já resolve.
+                closeUserPopup();
             }
         }
+    });
 
-        // ========================================
-    // FUNÇÃO GLOBAL DE FECHAR (NOVA)
+    // ========================================
+    // FUNÇÃO GLOBAL DE FECHAR
     // ========================================
     function closeUserPopup() {
         const popup = document.getElementById("user-popup");
@@ -575,7 +564,10 @@ const STORAGE_KEYS = {
             popup.classList.add("hidden");
             popup.classList.remove("show");
             
-            // Opcional: Limpar os IDs dos formulários para evitar conflitos futuros
+            // Opcional: Remove classe expandida para próxima vez abrir pequeno
+            const content = popup.querySelector(".popup-content-fullscreen");
+            if(content) content.classList.remove("expanded");
+
             const rejectInput = document.getElementById("popup-reject-input");
             const likeInput = document.getElementById("popup-like-input");
             if(rejectInput) rejectInput.value = "";
@@ -585,7 +577,6 @@ const STORAGE_KEYS = {
 
     // 1. Evento no Botão X
     if (closePopupBtn) {
-        // Remove listeners antigos para evitar duplicação (boa prática)
         const newBtn = closePopupBtn.cloneNode(true);
         closePopupBtn.parentNode.replaceChild(newBtn, closePopupBtn);
         
@@ -604,31 +595,80 @@ const STORAGE_KEYS = {
         });
     }
 
-    // 3. Fechar Automaticamente após Like ou Reject (Turbo)
-    document.addEventListener("turbo:submit-end", (e) => {
-        const formId = e.target.id;
-        
-        // Se o envio veio do popup (Like ou Reject) e deu certo (código 200)
-        if ((formId === "popup-like-form" || formId === "popup-reject-form") && e.detail.success) {
-            console.log("Ação concluída com sucesso via Turbo. Fechando...");
-            closeUserPopup();
-        }
-    });
+    // ========================================
+    // 10. DRAG / SWIPE NO POPUP
+    // ========================================
+    const popupContent = document.querySelector(".popup-content-fullscreen");
+    const popupHandle = document.querySelector(".popup-drag-handle-area");
+    
+    if (popupContent) {
+        let startY = 0;
+        let currentY = 0;
+        let isDragging = false;
+        let startHeight = 0;
+        const THRESHOLD = 100;
 
+        const isExpanded = () => popupContent.classList.contains("expanded");
 
-    // Fechar ao clicar no fundo escuro (Overlay)
-    const popupOverlay = document.querySelector(".popup-overlay");
-    if (popupOverlay) {
-        popupOverlay.addEventListener("click", (e) => {
-            // Previne que o clique passe para o mapa
-            e.stopPropagation(); 
-            const popup = document.getElementById("user-popup");
-            popup.classList.add("hidden");
-            popup.classList.remove("show");
-        });
+        const onTouchStart = (e) => {
+            const detailsContainer = document.getElementById("popup-full-details");
+            const scrollTop = detailsContainer ? detailsContainer.scrollTop : 0;
+
+            // Se expandido e tem scroll, não arrasta se clicar no texto
+            if (isExpanded() && scrollTop > 0 && !popupHandle.contains(e.target)) {
+                return; 
+            }
+
+            isDragging = true;
+            startY = e.touches[0].clientY;
+            startHeight = popupContent.offsetHeight;
+            popupContent.style.transition = "none";
+        };
+
+        const onTouchMove = (e) => {
+            if (!isDragging) return;
+            
+            currentY = e.touches[0].clientY;
+            const deltaY = startY - currentY; 
+
+            // Arrastando para cima (Expandir)
+            if (!isExpanded() && deltaY > 0) {
+                 e.preventDefault();
+                 popupContent.style.height = `${startHeight + deltaY}px`;
+            } 
+            // Arrastando para baixo (Fechar)
+            else if (isExpanded() && deltaY < 0) {
+                 const detailsContainer = document.getElementById("popup-full-details");
+                 if (!detailsContainer || detailsContainer.scrollTop <= 0) {
+                     e.preventDefault();
+                     popupContent.style.height = `${startHeight + deltaY}px`;
+                 }
+            }
+        };
+
+        const onTouchEnd = (e) => {
+            if (!isDragging) return;
+            isDragging = false;
+            popupContent.style.transition = "height 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
+            popupContent.style.height = ""; 
+
+            const deltaY = startY - currentY;
+
+            if (!isExpanded()) {
+                if (deltaY > THRESHOLD) {
+                    popupContent.classList.add("expanded");
+                }
+            } else {
+                if (deltaY < -THRESHOLD) {
+                    popupContent.classList.remove("expanded");
+                }
+            }
+        };
+
+        popupContent.addEventListener("touchstart", onTouchStart, { passive: false });
+        popupContent.addEventListener("touchmove", onTouchMove, { passive: false });
+        popupContent.addEventListener("touchend", onTouchEnd);
     }
 
-
-    });
-
-});
+  }); // Fim do AddEventListener DOMContentLoaded
+}); // Fim do ForEach
