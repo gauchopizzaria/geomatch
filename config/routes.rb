@@ -90,7 +90,15 @@ Rails.application.routes.draw do
   # =================================================================
   # 6. PAGAMENTOS (CHECKOUT)
   # =================================================================
-  resources :plans, only: [:index]
+  
+  # --- ALTERAÇÃO AQUI: Adicionada a rota para o Modal ---
+  resources :plans, only: [:index] do
+    collection do
+      get :modal
+    end
+  end
+  # ------------------------------------------------------
+
   post "/checkout", to: "checkout#create", as: :checkout
   post "/webhooks/mercado_pago", to: "webhooks/mercado_pago#create", as: :mercado_pago_webhook
 

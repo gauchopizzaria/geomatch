@@ -465,7 +465,25 @@ const STORAGE_KEYS = {
     }
 
     // ========================================
-    // CORREÇÃO: MODO INVISÍVEL
+    // CORREÇÃO 1: BOTÃO CENTRALIZAR MAPA (ESTAVA FALTANDO)
+    // ========================================
+    if (fabCenterMap) {
+        fabCenterMap.addEventListener("click", () => {
+            console.log("Centralizar mapa clicado");
+            if (fixedUserLat && fixedUserLng) {
+                map.flyTo([fixedUserLat, fixedUserLng], defaultZoom, {
+                    animate: true,
+                    duration: 1.5
+                });
+            } else {
+                // Fallback se ainda não pegou o GPS
+                map.flyTo([defaultLat, defaultLng], defaultZoom);
+            }
+        });
+    }
+
+    // ========================================
+    // CORREÇÃO 2: MODO INVISÍVEL
     // ========================================
     if (toggleVisibilityBtn) {
         const eyeOpen = toggleVisibilityBtn.querySelector(".eye-open");
@@ -491,6 +509,7 @@ const STORAGE_KEYS = {
         updateVisibilityUI(initialInvisible);
 
         toggleVisibilityBtn.addEventListener("click", async () => {
+            console.log("Botão Invisibilidade clicado");
             try {
                 const token = document.querySelector('meta[name="csrf-token"]').content;
                 const response = await fetch('/users/toggle_visibility', {
@@ -498,12 +517,23 @@ const STORAGE_KEYS = {
                     headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }
                 });
 
+                // SE O SERVIDOR DISSER QUE PRECISA DE UPGRADE (Status 403)
                 if (response.status === 403) {
+                    console.log("Status 403: Upgrade necessário");
                     const data = await response.json();
                     if (data.upgrade_required) {
                         const modalResponse = await fetch('/plans/modal?type=invisible');
                         const modalHtml = await modalResponse.text();
-                        document.getElementById("upgrade-modal-container").innerHTML = modalHtml;
+                        const container = document.getElementById("upgrade-modal-container");
+                        container.innerHTML = modalHtml;
+                        
+                        // Lógica extra para fechar o modal carregado via AJAX, se necessário
+                        const newModalCloseBtn = container.querySelector(".close-modal-btn"); 
+                        if(newModalCloseBtn) {
+                            newModalCloseBtn.addEventListener("click", () => {
+                                container.innerHTML = "";
+                            });
+                        }
                     }
                     return; 
                 }
@@ -511,6 +541,7 @@ const STORAGE_KEYS = {
                 if (!response.ok) throw new Error("Erro ao salvar no servidor");
                 
                 const data = await response.json();
+                console.log("Sucesso! Novo estado:", data.invisible);
                 updateVisibilityUI(data.invisible);
                 
             } catch (error) {
