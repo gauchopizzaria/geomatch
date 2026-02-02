@@ -362,3 +362,132 @@
     }
   }
 }
+
+/* =========================================================
+   TEMAS DOS PLANOS (GRADIENTES)
+   ========================================================= */
+
+/* Mixin para facilitar a criação dos cards com degradê */
+@mixin plan-gradient($color-start, $color-mid, $text-color: #ffffff) {
+  /* 1. O Fundo Degradê */
+  background: linear-gradient(180deg, 
+    $color-start 0%, 
+    $color-mid 40%, 
+    var(--p-surface) 100%
+  );
+  border: 1px solid rgba($color-start, 0.3);
+
+  /* 2. FORÇAR TUDO BRANCO */
+  /* Aplica branco em todos os textos diretos e internos */
+  &, h1, h2, h3, h4, p, span, div, strong, small, li {
+    color: #ffffff !important;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.2); /* Leve sombra para leitura */
+  }
+
+  /* 3. ÍCONES BRANCOS */
+  /* Sobrescreve cores de SVGs (checks, locks) */
+  svg {
+    stroke: #ffffff !important;
+    fill: none; /* Ou white se seus ícones forem preenchidos */
+  }
+  
+  path, circle, line, rect {
+    stroke: #ffffff !important;
+  }
+
+  /* Se você usa classes de ícones como .icon-yes ou FontAwesome */
+  .icon-yes, .icon-no, .fa, .fas, .far {
+    color: #ffffff !important;
+  }
+
+  /* 4. DETALHES ESPECÍFICOS */
+  /* Preço com fundo translúcido escuro para destacar */
+  .desktop-plan-price, .mobile-plan-price {
+    background: rgba(0, 0, 0, 0.25);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 5px 15px;
+    border-radius: 50px;
+    margin-top: 10px;
+    margin-bottom: 10px;
+    width: fit-content;
+    display: inline-block;
+  }
+
+  /* Texto "/mês" levemente transparente para hierarquia, mas ainda branco */
+  .period, .pricing-plan-status {
+    opacity: 0.9;
+    font-weight: 400;
+  }
+
+  /* Botão Transparente Branco */
+  .pricing-btn {
+    background: rgba(255, 255, 255, 0.15);
+    border-color: rgba(255, 255, 255, 0.6);
+    color: #ffffff !important;
+    
+    &:hover {
+      background: #ffffff;
+      color: $color-mid !important; /* Texto ganha a cor do plano no hover */
+      border-color: #ffffff;
+    }
+    
+    &[disabled] {
+        opacity: 0.6;
+        background: transparent;
+        border-color: rgba(255,255,255, 0.3);
+    }
+  }
+}
+
+/* APLICAÇÃO DOS TEMAS */
+
+.pricing-page {
+
+  /* --- 1. PLANO FREE (PRATA) --- */
+  .plan-theme-free { 
+    @include plan-gradient(
+      #9ca3af, /* Prata Claro */
+      #4b5563  /* Prata Escuro */
+    );
+  }
+
+  /* --- 2. PLANO PLUS (VIOLETA) --- */
+  .plan-theme-plus {
+    @include plan-gradient(
+      #c084fc, /* Roxo Claro/Lilás */
+      #7e22ce  /* Roxo Intenso */
+    );
+    box-shadow: 0 -10px 40px -10px rgba(168, 85, 247, 0.3) inset;
+  }
+
+  /* --- 3. PLANO GOLD (DOURADO) --- */
+  .plan-theme-gold {
+    @include plan-gradient(
+      #332500, /* Ouro Amarelo */
+      #684c00  /* Bronze */
+    );
+    border: 1px solid rgba(251, 191, 36, 0.6);
+    box-shadow: 0 0 25px rgba(251, 191, 36, 0.2);
+  }
+
+
+  /* =========================================================
+     AJUSTES FINAIS DE LAYOUT
+     ========================================================= */
+  
+  /* Arredondar topo das colunas da tabela no desktop para parecer cards */
+  .pricing-header-cell {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+    border-bottom: none; /* Remove borda inferior para fundir com a tabela */
+    padding-bottom: 40px; /* Espaço extra para o degradê morrer suavemente */
+    margin-bottom: -1px; /* Hack para colar na célula de baixo */
+  }
+
+  /* Ajuste para o Mobile Card ficar igual à imagem */
+  .mobile-plan-card {
+    border-radius: 24px;
+    padding-top: 40px;
+    overflow: hidden; /* Garante que o gradiente respeite as bordas */
+  }
+}

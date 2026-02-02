@@ -221,7 +221,7 @@
 
 /* O Desfoque na Imagem */
 .like-card.locked .like-card-img {
-  filter: blur(15px); /* Desfoque forte */
+  filter: blur(50px); /* Desfoque forte */
   transform: scale(1.2); /* Zoom leve para evitar bordas brancas no blur */
 }
 
