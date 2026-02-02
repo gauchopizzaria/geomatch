@@ -28,6 +28,12 @@ const STORAGE_KEYS = {
       attributionControl: false
     }).setView([defaultLat, defaultLng], defaultZoom);
 
+    // --- ADICIONE ISTO ---
+    // Recalcula o tamanho do círculo visual quando o zoom muda
+    map.on('zoom', () => {
+        updateCSSRadarRadius();
+    });
+
     L.tileLayer("https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png", {
       maxZoom: 19,
     }).addTo(map);
@@ -64,24 +70,46 @@ const STORAGE_KEYS = {
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
     const genderToggleBtn = document.getElementById("gender-filter-toggle");
 
+   // ========================================
+    // 3. SLIDER DE RAIO & SINCRONIZAÇÃO VISUAL
     // ========================================
-    // 3. SLIDER DE RAIO
-    // ========================================
+    
+    // Função para converter Metros em Pixels baseado no Zoom
+    function updateCSSRadarRadius() {
+        if (!map || !fixedUserLat || !containerElement) return;
+
+        // 1. Obtém a escala atual do mapa (metros por pixel)
+        // Fórmula padrão do Web Mercator: (Circunferência da Terra * cos(lat)) / 2^zoom
+        const zoom = map.getZoom();
+        const metersPerPixel = 156543.03392 * Math.abs(Math.cos(fixedUserLat * Math.PI / 180)) / Math.pow(2, zoom);
+
+        // 2. Converte o raio selecionado (metros) para pixels
+        const radiusInPixels = currentRangeMeters / metersPerPixel;
+
+        // 3. Atualiza a variável CSS com o valor calculado
+        containerElement.style.setProperty('--radar-radius', `${radiusInPixels}px`);
+    }
+
     let updateSliderVisuals = () => {}; 
     if (rangeSlider && rangeValueText) {
       updateSliderVisuals = (val) => {
+        // Atualiza Texto
         rangeValueText.textContent = `${val}m`;
+        
+        // Atualiza Cor do Slider
         const max = rangeSlider.max || 300;
         const percent = (val / max) * 100;
         rangeSlider.style.backgroundImage = `linear-gradient(to right, #f4e4bc 0%, #f4e4bc ${percent}%, transparent ${percent}%, transparent 100%)`;
         
-        if (containerElement) {
-           containerElement.style.setProperty('--radar-radius', `${val}px`);
-        }
+        // --- REMOVIDO DAQUI: containerElement.style.setProperty... ---
+        // A atualização do raio visual agora acontece via updateCSSRadarRadius()
+        updateCSSRadarRadius();
       };
-      rangeSlider.value = currentRangeMeters;
-      updateSliderVisuals(currentRangeMeters);
 
+      // Inicializa visual do slider
+      rangeSlider.value = currentRangeMeters;
+      // Não chamamos updateSliderVisuals aqui ainda pois fixedUserLat pode ser null
+      
       rangeSlider.addEventListener("input", (e) => {
         const val = parseInt(e.target.value, 10);
         currentRangeMeters = val;

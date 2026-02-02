@@ -32,8 +32,7 @@
     top: var(--radar-y);
     transform: translate(-50%, -50%); 
     
-    width: calc((var(--radar-radius) * 2) + 20px);
-    height: calc((var(--radar-radius) * 2) + 20px);
+    transition: width 0.05s linear, height 0.05s linear;
     
     border-radius: 50%; border: 3px solid rgba(212, 175, 55, 0.3);
     box-shadow: 0 0 20px rgba(212, 175, 55, 0.15);
