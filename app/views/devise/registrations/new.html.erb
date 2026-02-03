@@ -54,10 +54,27 @@
         <%= f.password_field :password, autocomplete: "new-password", placeholder: "••••••••", required: true, class: "form-input" %>
       </div>
 
-      <%# --- 8. Confirmação --- %>
+   <%# --- 8. Confirmação --- %>
       <div class="field">
         <%= f.label :password_confirmation, "Confirmação de Senha" %>
         <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "••••••••", required: true, class: "form-input" %>
+      </div>
+
+      <%# --- 9. Termos e Políticas (NOVO) --- %>
+      <div class="terms-container">
+        <div class="checkbox-field">
+          <%= f.check_box :terms_of_use, id: "terms-check" %>
+          <label for="terms-check">
+            Li e aceito os <%= link_to "Termos de Uso", terms_path, target: "_blank" %>
+          </label>
+        </div>
+
+        <div class="checkbox-field">
+          <%= f.check_box :data_policy, id: "policy-check" %>
+          <label for="policy-check">
+             Aceito a <%= link_to "Política de Uso de Dados", privacy_path, target: "_blank" %>
+          </label>
+        </div>
       </div>
 
       <div class="actions">

@@ -13,7 +13,13 @@ Rails.application.routes.draw do
   # =================================================================
   root "public#landing"
 
-  # Páginas estáticas
+  # --- NOVAS ROTAS (Termos e Privacidade para o Cadastro) ---
+  # Estas rotas apontam para o PagesController criado para o formulário
+  get 'termos-de-uso', to: 'pages#terms', as: 'terms'
+  get 'politica-de-privacidade', to: 'pages#privacy', as: 'privacy'
+  # -----------------------------------------------------------
+
+  # Páginas estáticas existentes (Mantidas)
   get "/terms",    to: "public#terms",   as: :terms_of_use
   get "/privacy",  to: "public#privacy", as: :privacy_policy
   get "/profiles", to: "public#profiles", as: :public_profiles

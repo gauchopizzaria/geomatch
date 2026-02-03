@@ -3,6 +3,12 @@ class User < ApplicationRecord
   devise :database_authenticatable, :registerable,
          :recoverable, :rememberable, :validatable
 
+
+ 
+  # Garante que os checkboxes foram marcados no cadastro
+  validates :terms_of_use, acceptance: { message: 'devem ser aceitos para prosseguir.' }
+  validates :data_policy, acceptance: { message: 'deve ser aceita para prosseguir.' }       
+
   # --- Associações ---
   belongs_to :plan
   validates :plan, presence: true
