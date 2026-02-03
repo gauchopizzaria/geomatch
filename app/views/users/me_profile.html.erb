@@ -25,7 +25,11 @@
     <div class="hero-info">
       <h2 class="hero-name">
         <%= @user.display_name.split.first %>, <%= @user.age %>
-        <%= image_tag "icone-verificar.png", class: "verified-icon-name" %>
+        
+        <%# --- LÓGICA: Exibe ícone APENAS se verificado --- %>
+        <% if @user.verified? %>
+          <%= image_tag "icone-verificar.png", class: "verified-icon-name", title: "Perfil Verificado" %>
+        <% end %>
       </h2>
       
       <%= link_to edit_profile_path, class: "btn-edit-pill" do %>
@@ -43,24 +47,26 @@
 
   </div>
 
-  <%# --- 3. BANNER VERIFICAÇÃO --- %>
-  <div class="verification-banner">
-    <div class="icon-box">
-      <%= image_tag "icone-verificar.png", class: "verify-icon-lg" %>
-    </div>
-    <div class="banner-text">
-      <strong>Verifique seu Perfil</strong>
-      <p class="banner-description">
-        Ajuda a proteger os usuários contra perfis que tentam se passar por outros para enganar as pessoas.
-      </p>
-      <div class="progress-bar-lines">
-        <span class="line full"></span>
-        <span class="line full"></span>
-        <span class="line"></span>
+  <%# --- 3. BANNER VERIFICAÇÃO (Lógica condicional) --- %>
+  <% unless @user.verified? %>
+    <%= link_to verification_path, class: "verification-banner" do %>
+      <div class="icon-box">
+        <%= image_tag "icone-verificar.png", class: "verify-icon-lg" %>
       </div>
-    </div>
-    <div class="banner-arrow">›</div>
-  </div>
+      <div class="banner-text">
+        <strong>Verifique seu Perfil</strong>
+        <p class="banner-description">
+          Ajuda a proteger os usuários contra perfis que tentam se passar por outros para enganar as pessoas.
+        </p>
+        <div class="progress-bar-lines">
+          <span class="line full"></span>
+          <span class="line full"></span>
+          <span class="line"></span>
+        </div>
+      </div>
+      <div class="banner-arrow">›</div>
+    <% end %>
+  <% end %>
 
   <%# --- 4. SEÇÃO DESTAQUE --- %>
   <div class="highlight-section">

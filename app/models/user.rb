@@ -35,6 +35,7 @@ class User < ApplicationRecord
 
   # Active Storage
   has_one_attached :avatar
+  has_one_attached :verification_photo
   has_many_attached :album_photos 
 
   # Geocoder

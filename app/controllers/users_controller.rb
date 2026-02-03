@@ -251,5 +251,28 @@ class UsersController < ApplicationController
       album_photos: []
     )
   end
+
+
+ # Exibe a tela de solicitação
+  def verification
+    # Se o usuário já enviou uma foto antes, podemos mostrar um aviso ou status
+  end
+
+  # Processa o envio da foto
+  def send_verification
+    if params[:verification_photo].present?
+      # 1. Anexa a foto ao usuário
+      current_user.verification_photo.attach(params[:verification_photo])
+      
+      # 2. (Opcional) Você pode criar um campo 'verification_status' no banco futuramente.
+      # Por enquanto, apenas ter a foto anexa já serve como "Pendente".
+      
+      flash[:notice] = "Solicitação enviada com sucesso! Nossa equipe analisará seu perfil."
+      redirect_to my_profile_path
+    else
+      flash[:alert] = "Por favor, selecione uma foto para enviar."
+      render :verification
+    end
+  end
   
 end

@@ -426,3 +426,17 @@ input[type="submit"] {
 .btn-confirm:hover {
   background: #a89d77;
 }
+
+
+/* Adicione isso para garantir que o link do banner mantenha o estilo */
+a.verification-banner {
+  text-decoration: none;
+  color: inherit;
+  display: flex; /* Mantém o layout flexbox original */
+  cursor: pointer;
+  transition: transform 0.2s ease;
+
+  &:hover {
+    transform: scale(1.02); /* Pequeno efeito ao passar o mouse */
+  }
+}

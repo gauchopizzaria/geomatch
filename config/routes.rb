@@ -84,6 +84,8 @@ Rails.application.routes.draw do
   get "/safety_center",   to: "users#safety_center",   as: :safety_center
   get "/report_incident", to: "users#report_incident", as: :report_incident
   get "/meu-perfil",      to: "users#me_profile",      as: :my_profile
+  get '/verificacao', to: 'users#verification', as: :verification
+  patch '/verificacao', to: 'users#send_verification', as: :send_verification
 
   # Edição do próprio perfil
   resource :profile, controller: 'users', only: [:edit, :update] do

@@ -1,0 +1,194 @@
+<div class="verification-container">
+  <div class="verification-card">
+    
+    <div class="verification-icon">
+      <%= image_tag "icone-verificar.png", class: "verify-badge-lg" %>
+    </div>
+
+    <h2>Verifique seu Perfil</h2>
+    <p class="verification-desc">
+      Para garantir a segurança da comunidade, envie uma foto <strong>segurando um papel com seu nome escrito à mão</strong> ou seu documento de identidade.
+    </p>
+
+    <%= form_with url: send_verification_path, method: :patch, local: true, multipart: true, class: "verification-form" do |f| %>
+      
+      <div class="upload-box">
+        <label for="verification_photo" class="upload-label">
+          <i class="fas fa-camera"></i>
+          <span>Toque para tirar ou escolher foto</span>
+        </label>
+        <%= f.file_field :verification_photo, id: "verification_photo", accept: "image/*", class: "file-input", onchange: "previewImage(this)" %>
+        
+        <div id="image-preview-container" class="hidden">
+          <img id="image-preview" src="#" alt="Preview" />
+        </div>
+      </div>
+
+      <div class="actions">
+        <%= f.submit "Enviar para Análise", class: "btn-submit-gold" %>
+        <%= link_to "Cancelar", my_profile_path, class: "btn-cancel-link" %>
+      </div>
+
+    <% end %>
+
+  </div>
+</div>
+
+<script>
+  function previewImage(input) {
+    const previewContainer = document.getElementById('image-preview-container');
+    const previewImage = document.getElementById('image-preview');
+    const uploadLabel = document.querySelector('.upload-label');
+
+    if (input.files && input.files[0]) {
+      var reader = new FileReader();
+
+      reader.onload = function(e) {
+        previewImage.src = e.target.result;
+        previewContainer.classList.remove('hidden');
+        uploadLabel.style.display = 'none'; // Esconde o texto "Toque para..."
+      }
+
+      reader.readAsDataURL(input.files[0]);
+    }
+  }
+</script>
+
+<style>
+  .verification-container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    background-color: var(--color-background);
+  }
+
+  .verification-card {
+    background: var(--color-section-light);
+    width: 100%;
+    max-width: 400px;
+    padding: 2rem;
+    border-radius: 20px;
+    text-align: center;
+    box-shadow: var(--shadow-lg);
+    border: 1px solid var(--color-border);
+  }
+
+  .verification-icon {
+    margin-bottom: 1.5rem;
+  }
+  
+  .verify-badge-lg {
+    width: 80px;
+    height: 80px;
+  }
+
+  h2 {
+    color: var(--color-text);
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+  }
+
+  .verification-desc {
+    color: var(--color-text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+    margin-bottom: 2rem;
+  }
+
+  /* Upload Box */
+  .upload-box {
+    border: 2px dashed var(--color-border);
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 20px;
+    position: relative;
+    background: rgba(255,255,255,0.02);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .upload-box:hover {
+    border-color: var(--color-primary);
+    background: rgba(212, 175, 55, 0.05);
+  }
+
+  .file-input {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .upload-label {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-primary);
+    gap: 10px;
+    pointer-events: none; /* Deixa o clique passar para o input */
+  }
+
+  .upload-label i {
+    font-size: 2rem;
+  }
+
+  /* Preview */
+  #image-preview-container {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  #image-preview-container.hidden {
+    display: none;
+  }
+
+  #image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    border-radius: 8px;
+    object-fit: contain;
+  }
+
+  /* Botões */
+  .btn-submit-gold {
+    width: 100%;
+    padding: 14px;
+    background: var(--color-primary);
+    color: #000;
+    font-weight: bold;
+    border: none;
+    border-radius: 50px;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+    margin-bottom: 15px;
+  }
+
+  .btn-submit-gold:hover {
+    transform: scale(1.02);
+    filter: brightness(1.1);
+  }
+
+  .btn-cancel-link {
+    color: var(--color-text-secondary);
+    text-decoration: none;
+    font-size: 0.9rem;
+  }
+  
+  .btn-cancel-link:hover {
+    color: var(--color-text);
+    text-decoration: underline;
+  }
+</style>
