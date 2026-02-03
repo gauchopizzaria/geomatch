@@ -47,7 +47,39 @@ document.addEventListener('turbo:load', () => {
       }
     }
   );
+
+  // --- LÓGICA DE LIMPAR CONVERSA (AJUSTADA) ---
+const clearBtn = document.getElementById('clear-chat-btn');
+if (clearBtn) {
+  // O button_to cria um formulário, então pegamos o form mais próximo
+  const clearForm = clearBtn.closest('form'); 
   
+  clearForm.addEventListener('submit', (e) => {
+    e.preventDefault(); 
+
+    fetch(clearForm.action, {
+      method: "DELETE",
+      headers: {
+        "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content,
+        "Accept": "application/json"
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        // 1. Remove as mensagens e os divisores de data visualmente
+        const itemsToRemove = chatWindow.querySelectorAll('.message-row, .date-separator');
+        itemsToRemove.forEach(m => m.remove());
+        
+        // 2. Fecha o menu dropdown
+        const menu = document.getElementById('chat-options-menu');
+        if (menu) menu.classList.add('hidden');
+        
+        console.log("Conversa limpa com sucesso!");
+      }
+    })
+    .catch(err => console.error("Erro ao limpar:", err));
+  });
+}
 
 // =======================================================
   //   LÓGICA DO MENU DROPDOWN (CORRIGIDA E BLINDADA)

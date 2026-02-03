@@ -72,13 +72,21 @@ class MatchesController < ApplicationController
     redirect_to lead_path, alert: "Usuário não encontrado."
   end
 
-  def clear_conversation
-    if @match.messages.destroy_all
-      redirect_to matches_path, notice: "Conversa limpa com sucesso."
-    else
-      redirect_to match_path(@match), alert: "Erro ao limpar conversa."
+ def clear_conversation
+  if @match.messages.destroy_all
+    respond_to do |format|
+      # Se for um acesso normal (fallback)
+      format.html { redirect_to match_path(@match), notice: "Conversa limpa." }
+      # Se for via AJAX (o que o seu JS vai usar)
+      format.json { head :no_content } 
+    end
+  else
+    respond_to do |format|
+      format.html { redirect_to match_path(@match), alert: "Erro ao limpar." }
+      format.json { render json: { error: "Erro" }, status: :unprocessable_entity }
     end
   end
+end
 
   private
 
