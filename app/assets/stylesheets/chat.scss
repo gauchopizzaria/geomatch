@@ -1,40 +1,36 @@
 // =========================================================
-// CHAT DARK PREMIUM (SEM SIDEBAR)
+// CHAT DARK PREMIUM (SEM SIDEBAR) - VERSÃO FINAL CORRIGIDA
 // =========================================================
 
-/* Container Geral - AGORA COBRE A TELA TODA */
+/* Container Geral - COBRE A TELA TODA E FIXA O RODAPÉ */
 .chat-screen-wrapper {
-  background-color: #0e0e10; /* Fundo Preto */
-  
-  /* --- O SEGREDO PARA COBRIR A SIDEBAR --- */
-  position: fixed; /* Fixa na tela */
+  background-color: #0e0e10;
+  position: fixed;
   top: 0;
   left: 0;
   width: 100%;
-  height: 100%; /* Ocupa 100% da altura da tela */
-  z-index: 2000; /* Fica acima da Sidebar (que é 1000) */
-  /* --------------------------------------- */
-
+  height: 100vh; 
+  height: 100dvh; /* Altura dinâmica para evitar que o teclado ou barras mobile sumam com o input */
+  z-index: 2000;
   display: flex;
   flex-direction: column;
   color: #ffffff;
   font-family: 'Poppins', sans-serif;
+  overflow: hidden; /* Impede que o wrapper inteiro role, focando o scroll apenas nas mensagens */
 }
 
-/* --- 1. HEADER (Blindado contra cortes) --- */
+/* --- 1. HEADER (Blindado contra cortes e alinhado à direita) --- */
 .chat-header-dark {
+  flex-shrink: 0; /* Impede o header de ser esmagado */
   display: flex;
   align-items: center;
+  justify-content: space-between; 
   padding: 15px 20px;
   padding-top: calc(15px + env(safe-area-inset-top)); 
   background-color: #0e0e10;
   border-bottom: 1px solid #222;
-  
-  /* CORREÇÃO 1: Z-Index alto para ficar acima das mensagens */
   position: relative; 
   z-index: 500; 
-  
-  /* CORREÇÃO 2: Permitir que o menu saia da caixa do header */
   overflow: visible !important;
 }
 
@@ -42,13 +38,12 @@
   margin-right: 15px;
   display: flex;
   align-items: center;
-  /* Aumentar área de toque */
   padding: 5px;
   cursor: pointer;
 }
 
 .header-user-info {
-  flex: 1;
+  flex: 1; 
   display: flex;
   align-items: center;
   gap: 12px;
@@ -103,7 +98,9 @@
 .dot-offline { color: #666; font-size: 0.6rem; }
 
 .header-actions {
-  margin-left: 10px;
+  display: flex;
+  align-items: center;
+  margin-left: auto; 
 }
 
 .icon-btn-dots {
@@ -116,20 +113,18 @@
   justify-content: center;
 }
 
-/* --- 2. JANELA DE CHAT --- */
+/* --- 2. JANELA DE CHAT (Área de Scroll) --- */
 .chat-window-dark {
-  flex: 1; /* Ocupa todo o espaço restante */
-  overflow-y: auto; /* Permite scroll nas mensagens */
+  flex: 1; 
+  overflow-y: auto;
   padding: 20px;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  
-  /* Garante que o scroll role suave no iOS */
+  min-height: 0; /* Crucial para o Flexbox permitir scroll interno sem empurrar o input */
   -webkit-overflow-scrolling: touch; 
 }
 
-/* Aviso de Match */
 .match-date-notice {
   text-align: center;
   font-size: 0.65rem;
@@ -140,7 +135,6 @@
   font-weight: 500;
 }
 
-/* Separador de Data */
 .date-separator {
   text-align: center;
   font-size: 0.75rem;
@@ -149,7 +143,6 @@
   font-weight: 500;
 }
 
-/* Linha da Mensagem */
 .message-row {
   display: flex;
   align-items: flex-end;
@@ -157,27 +150,24 @@
   margin-bottom: 4px;
 }
 
-/* --- BALÃO ENVIADO (DIREITA) --- */
 .message-row.sent {
   align-self: flex-end;
   justify-content: flex-end;
   
   .message-bubble {
-    /* Gradiente Dourado Premium */
     background: linear-gradient(135deg, #cfae82 0%, #a88b60 100%); 
-    color: #1a1a1a; /* Texto escuro */
+    color: #1a1a1a; 
     border-radius: 18px 18px 4px 18px;
     font-weight: 500;
   }
 }
 
-/* --- BALÃO RECEBIDO (ESQUERDA) --- */
 .message-row.received {
   align-self: flex-start;
   gap: 8px;
 
   .message-bubble {
-    background-color: #2c2c2e; /* Cinza iOS Dark */
+    background-color: #2c2c2e; 
     color: #ffffff;
     border-radius: 18px 18px 18px 4px;
   }
@@ -193,7 +183,7 @@
 }
 
 .msg-avatar-container {
-  padding-bottom: 2px; /* Alinha com a base do balão */
+  padding-bottom: 2px; 
 }
 
 .msg-avatar {
@@ -215,17 +205,16 @@
   justify-content: center;
 }
 
-/* --- 3. INPUT BAR (Fundo) --- */
+/* --- 3. BARRA DE INPUT (Fixo no Rodapé) --- */
 .chat-input-dark {
+  flex-shrink: 0; /* Garante que a barra de input nunca suma ou diminua */
   padding: 10px 15px;
   background-color: #0e0e10;
   border-top: 1px solid #222;
   display: flex;
   align-items: center;
   gap: 10px;
-  
-  /* Importante: Espaço para a barra de gestos do iPhone */
-  padding-bottom: calc(10px + env(safe-area-inset-bottom));
+  padding-bottom: calc(15px + env(safe-area-inset-bottom));
 }
 
 .btn-gif {
@@ -266,7 +255,7 @@
   background: none;
   border: none;
   color: #c2b589;
-  font-size: 1.4rem; /* Seta um pouco maior */
+  font-size: 1.4rem; 
   cursor: pointer;
   padding: 0 5px;
   line-height: 1;
@@ -274,107 +263,59 @@
   &:active { transform: scale(0.9); }
 }
 
+/* --- 4. DROPDOWN MENU --- */
 .dropdown-wrapper {
-  position: relative;     /* Cria o ponto de referência para o menu */
-  display: inline-block;  /* Mantém o tamanho apenas do botão */
-  overflow: visible !important; /* Garante que o menu não seja cortado */
-  z-index: 1001;          /* Garante que fique acima de tudo */
+  position: relative;
+  display: inline-block;
+  overflow: visible !important;
+  z-index: 1001;
 }
 
-/* O Menu Dropdown */
 .chat-dropdown-menu {
   position: absolute;
-  top: 100%; /* Cola logo abaixo do botão */
-  right: 0;  /* Alinha à direita */
+  top: calc(100% + 5px);
+  right: 0;
+  background-color: #1c1c1e; 
+  border: 1px solid #333;
+  border-radius: 12px;
+  width: 210px;
+  padding: 8px;
+  box-shadow: 0 12px 40px rgba(0,0,0,0.8);
+  z-index: 1000;
   
-  background-color: #797878;
-  border: 1px solid #b3afaf;
-  border-radius: 8px;
-  width: 200px;
-  box-shadow: 0 4px 15px rgba(0,0,0,0.8); /* Sombra mais forte para destacar */
-  
-  /* Z-Index relativo ao Header (que já é 500), então 1000 aqui soma */
-  z-index: 1000; 
-  
-  padding: 8px 0;
-  overflow: hidden;
-  
-  /* Estado Visível Padrão */
-  display: block;
-  opacity: 1;
-  transform: translateY(0);
-  transition: opacity 0.2s ease, transform 0.2s ease;
+  &.hidden { display: none; }
 }
 
-/* Estado Oculto (A classe que o JS coloca/tira) */
-.chat-dropdown-menu.hidden {
-  display: none; /* Garante que sai do layout */
-  opacity: 0;
-  transform: translateY(-10px);
-  pointer-events: none; /* Garante que não dá pra clicar se estiver invisível */
-}
-
-/* Botões do Menu (Ajuste para button_to do Rails) */
 .dropdown-item {
-  display: block;
   width: 100%;
-  margin: 0;
-  padding: 0;
-  border: none;
-  background: none;
-}
+  margin-bottom: 2px;
 
-.dropdown-item button {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  width: 100%;
-  padding: 12px 16px;
-  background: none;
-  border: none;
-  color: #ffffff !important;
-  text-align: left;
-  cursor: pointer;
-  font-size: 0.9rem;
-  font-family: inherit;
-  font-weight: 500;
-  transition: background 0.2s, color 0.2s;
+  button {
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px;
+    width: 100%;
+    padding: 10px 14px;
+    background: none !important;
+    color: #000000 !important;
+    font-family: inherit;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    text-align: left;
+    transition: background 0.2s;
 
-  /* --- AQUI ESTÁ O AFASTAMENTO --- */
-  margin-bottom: 8px; /* Adiciona espaço abaixo de cada botão */
-}
+    svg {
+      flex-shrink: 0;
+      stroke: #888;
+    }
 
-/* Remove a margem do último botão para não sobrar espaço no final */
-.dropdown-item:last-child button {
-  margin-bottom: 0;
-}
+    &:hover {
+      background-color: #2c2c2e !important;
+      svg { stroke: #fff; }
+    }
+  }
 
-
-/* Hover genérico (fundo cinza escuro) */
-.dropdown-item button:hover {
-  background-color: #7e7d7d;
-}
-
-/* Força a cor do ícone SVG para branco também */
-.dropdown-item button svg {
-  stroke: #ffffff !important;
-  transition: stroke 0.2s;
-}
-
-/* --- CORES ESPECÍFICAS NO HOVER (Opcional, mas recomendado) --- */
-
-/* Item WARNING (Limpar conversa) - Fica Amarelo só ao passar o mouse */
-.dropdown-item.warning button:hover {
-  color: #ffcc00 !important;
-}
-.dropdown-item.warning button:hover svg {
-  stroke: #ffcc00 !important;
-}
-
-/* Item DANGER (Bloquear) - Fica Vermelho só ao passar o mouse */
-.dropdown-item.danger button:hover {
-  color: #ff4d4d !important;
-}
-.dropdown-item.danger button:hover svg {
-  stroke: #ff4d4d !important;
+  &.warning:hover button { color: #ffd60a !important; svg { stroke: #ffd60a !important; } }
+  &.danger:hover button { color: #ff453a !important; svg { stroke: #ff453a !important; } }
 }
