@@ -190,7 +190,7 @@ if (clearBtn) {
     .catch((error) => console.error(error));
   });
 
-  // =======================================================
+ // =======================================================
   //   APPEND NO DOM (DESIGN NOVO CORRIGIDO)
   // =======================================================
   function appendMessageToDOM(message) {
@@ -199,7 +199,7 @@ if (clearBtn) {
     const isSender = message.sender_id === currentUserId;
     const el = document.createElement("div");
 
-    // 1. Usa as classes novas: 'message-row' e 'sent'/'received'
+    // 1. Mantém a estrutura de classes idêntica ao HTML.erb
     el.className = `message-row ${isSender ? "sent" : "received"}`;
     el.id = `msg-${message.id}`;
 
@@ -210,32 +210,29 @@ if (clearBtn) {
         const displayName = message.user_name || "?";
         
         avatarHtml = `<div class="msg-avatar-container">`;
-        
         if (avatarSrc) {
             avatarHtml += `<img class="msg-avatar" src="${avatarSrc}">`;
         } else {
-            // Placeholder circular
             avatarHtml += `<div class="msg-avatar-placeholder">${displayName.charAt(0).toUpperCase()}</div>`;
         }
-        
         avatarHtml += `</div>`;
     }
 
     // 3. Monta o HTML do Balão (message-bubble)
-    // Nota: Removido o .meta (hora/nome) de dentro do balão para ficar igual ao design limpo
+    // REMOVIDO: qualquer tag extra (como <p>) que possa vir do broadcast
+    // GARANTIDO: o conteúdo é injetado diretamente como no seu HTML.erb
     const bubbleHtml = `
-      <div class="message-bubble">
-        <p class="content">${escapeHtml(message.content)}</p>
-      </div>
+      <div class="message-bubble">${escapeHtml(message.content)}</div>
     `;
 
-    // 4. Junta tudo
+    // 4. Junta tudo e insere no chat
     el.innerHTML = avatarHtml + bubbleHtml;
 
     chatWindow.appendChild(el);
     scrollToBottom();
   }
 
+  
   // =======================================================
   //   FUNÇÕES ÚTEIS
   // =======================================================
