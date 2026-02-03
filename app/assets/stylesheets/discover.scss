@@ -102,7 +102,7 @@
   display: flex; align-items: center; justify-content: center;
   box-shadow: 0 4px 15px rgba(0,0,0,0.5); cursor: pointer; transition: transform 0.2s;
   &:active { transform: scale(0.95); }
-  &.fab-visibility { background: #966b1e; color: #fff; }
+  &.fab-visibility { background: #0fd118; color: #fff; }
   &.fab-visibility.active { background-color: #ff4d4d; color: white; }
   &[title="Centralizar no meu local"] { background: #b1a57f; color: #000; }
   svg { width: 22px; height: 22px; }
