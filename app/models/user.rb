@@ -15,6 +15,7 @@ class User < ApplicationRecord
 
   has_many :payments, dependent: :destroy
   has_many :likes, foreign_key: :liker_id, dependent: :destroy
+  has_many :push_subscriptions, dependent: :destroy
   
   # Matches
   has_many :matches_as_user, class_name: 'Match', foreign_key: 'user_id', dependent: :destroy

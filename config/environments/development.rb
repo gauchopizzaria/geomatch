@@ -83,4 +83,6 @@ Rails.application.configure do
   # config.generators.apply_rubocop_autocorrect_after_generate !
 
   config.active_job.queue_adapter = :async
+
+  
 end

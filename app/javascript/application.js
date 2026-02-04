@@ -7,4 +7,4 @@ import "./stories";
 import "trix";
 import "@rails/actiontext";
 import "./dark_mode_toggle";
-
+import "./push_notifications"; // Importa o arquivo de notificações push

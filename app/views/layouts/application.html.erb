@@ -21,6 +21,9 @@
 
     <!-- Leaflet CSS -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
+
+     <%= csrf_meta_tags %>
+  <meta name="vapid-public-key" content="<%= ENV["VAPID_PUBLIC_KEY"] %>">
   </head>
 
   <body>

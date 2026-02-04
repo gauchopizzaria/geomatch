@@ -115,4 +115,15 @@ Rails.application.routes.draw do
   # =================================================================
   mount ActionCable.server => '/cable'
   get "up" => "rails/health#show", as: :rails_health_check
+
+  # --- ADICIONE ESTAS DUAS LINHAS ABAIXO ---
+  get "/service-worker.js" => "rails/pwa#service_worker", as: :pwa_service_worker
+  get "/manifest.json" => "rails/pwa#manifest", as: :pwa_manifest
+  # ----------------------------------------
+
+  # =================================================================
+  # 8. PUSH SUBSCRIPTIONS
+  # =================================================================
+  resources :push_subscriptions, only: [:create, :destroy]
+  
 end
