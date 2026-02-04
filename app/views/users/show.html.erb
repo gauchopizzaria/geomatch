@@ -1,81 +1,95 @@
-<div class="profile-container">
-  <h1><%= @user.display_name %></h1>
+<div class="full-profile-sheet">
+  
+  <%# Botão Fechar (Seta para baixo conforme imagem) %>
+  <button class="close-profile-btn" onclick="history.back()">
+    <i class="fas fa-arrow-down"></i>
+  </button>
 
-  <div class="profile-card">
-
-    <!-- Avatar -->
-    <div class="profile-avatar-box">
-      <%# Usa o mesmo helper, mas sem o f.file_field %>
-      <%= image_tag @user.avatar_or_default, id: "avatar-preview" %>
+  <div class="profile-scroll-content">
+    
+    <%# --- TOPO: CARROSSEL IMERSIVO --- %>
+    <div class="profile-carousel-wrapper">
+      <div class="profile-carousel">
+        <%# Foto de Perfil (Primeira) %>
+        <div class="carousel-item">
+          <%= image_tag @user.avatar_or_default, class: "carousel-img" %>
+        </div>
+        
+        <%# Fotos do Álbum (Sequência) %>
+        <% if @user.album_photos.attached? %>
+          <% @user.album_photos.each do |photo| %>
+            <div class="carousel-item">
+              <%= image_tag photo, class: "carousel-img" %>
+            </div>
+          <% end %>
+        <% end %>
+      </div>
+      
+      <%# Overlay de Informações (Nome, Idade, Distância) %>
+      <div class="profile-cover-overlay">
+        <div class="cover-info">
+          <h2 class="cover-name">
+            <%= @user.display_name %>, <span class="cover-age"><%= @user.age %></span>
+            <% if @user.respond_to?(:verified) && @user.verified %>
+              <i class="fas fa-check-circle verified-badge"></i>
+            <% end %>
+          </h2>
+          <p class="cover-distance">
+            <i class="fas fa-location-arrow"></i> a <%= @distance || 2.0 %> km de distância
+          </p>
+        </div>
+      </div>
     </div>
 
-    <!-- Informações Principais -->
-    <div class="profile-grid">
-
-      <!-- Campo de Nome de Usuário (Exibição Estática) -->
-      <div class="profile-field">
-        <label>Nome de Usuário</label>
-        <p class="profile-static-text"><%= @user.username %></p>
-      </div>
-
-      <!-- Campo de Data de Nascimento (Exibição Estática) -->
-      <div class="profile-field">
-        <label>Data de Nascimento</label>
-        <p class="profile-static-text"><%= @user.birthdate.present? ? @user.birthdate.strftime("%d/%m/%Y") : "Não informado" %></p>
-      </div>
-
-      <!-- Campo de Gênero (Exibição Estática) -->
-      <div class="profile-field">
-        <label>Gênero</label>
-        <p class="profile-static-text"><%= @user.gender.present? ? @user.gender.capitalize : "Não informado" %></p>
-      </div>
-
-      <!-- Campo de Interesse (Exibição Estática) -->
-      <div class="profile-field">
-        <label>Interessado em</label>
-        <p class="profile-static-text"><%= @user.interested_in.present? ? @user.interested_in.capitalize : "Não informado" %></p>
-      </div>
-
-      <!-- Biografia (Exibição Estática) -->
-      <div class="profile-field" style="grid-column: 1 / -1;">
-        <label>Biografia</label>
-        <p class="profile-static-text"><%= @user.bio.present? ? @user.bio : "Sem biografia." %></p>
-      </div>
-
-      <!-- HOBBIES (Exibição Estática) -->
-      <div class="hobbies-box">
-        <label>Hobbys</label>
-        <div class="hobbies-list">
-          <% @user.hobbies_list.each do |hobby| %>
-            <span class="hobby-tag"><%= hobby.capitalize %></span>
-          <% end %>
-          <% if @user.hobbies_list.empty? %>
-            <p class="text-sm text-gray-500">Nenhum hobby listado.</p>
-          <% end %>
+    <div class="profile-body-container">
+      
+      <%# --- CARD: SOBRE MIM --- %>
+      <div class="profile-info-card">
+        <h3 class="card-header">SOBRE MIM</h3>
+        <div class="card-content-center">
+          <p class="profile-bio-text">
+            <%= @user.bio.present? ? @user.bio : "Sem biografia." %>
+          </p>
         </div>
       </div>
 
-    </div> <!-- /profile-grid -->
-
-    <!-- Botão de Ação (Ex: Dar Like ou Enviar Mensagem) -->
-    <%# Você pode adicionar aqui um botão para interagir com o usuário %>
-    <%# Exemplo: <%= link_to "Dar Like", likes_path(liked_id: @user.id), method: :post, class: "like-button" %>
-
-  </div> <!-- /profile-card -->
-
-  <!-- Seção do Álbum de Fotos (REUTILIZANDO O CÓDIGO ANTERIOR) -->
-  <% if @user.album_photos.attached? %>
-    <div class="profile-card" style="margin-top: 30px;">
-      <h2>Álbum de Fotos (<%= @user.album_photos.count %>)</h2>
-
-      <div class="photo-album-grid">
-        <% @user.album_photos.each do |photo| %>
-          <div class="album-photo-item">
-            <%= image_tag photo, class: "album-photo-image" %>
+      <%# --- CARD: INFORMAÇÕES BÁSICAS --- %>
+      <div class="profile-info-card">
+        <h3 class="card-header">INFORMAÇÕES BÁSICAS</h3>
+        <div class="basic-info-list">
+          <div class="basic-item">
+            <span class="basic-icon"><i class="fas fa-venus-mars"></i></span>
+            <span class="basic-text"><%= @user.gender.present? ? @user.gender.capitalize : "Não informado" %></span>
           </div>
-        <% end %>
+          <div class="basic-item">
+            <span class="basic-icon"><i class="fas fa-search"></i></span>
+            <span class="basic-text">Busca: <%= @user.interested_in.present? ? @user.interested_in.capitalize : "Homem" %></span>
+          </div>
+          <div class="basic-item">
+            <span class="basic-icon"><i class="fas fa-map-marker-alt"></i></span>
+            <span class="basic-text"><%= @user.city || "Ba" %></span>
+          </div>
+        </div>
       </div>
-    </div>
-  <% end %>
 
-</div> <!-- /profile-container -->
+      <%# --- BOTÕES DE SEGURANÇA (RODAPÉ) --- %>
+      <div class="profile-safety-actions">
+        <div class="safety-divider"></div>
+        
+        <button class="btn-safety-block">
+          DENUNCIAR <%= @user.display_name.upcase %>
+        </button>
+
+        <div class="safety-separator"></div>
+
+        <button class="btn-safety-block">
+          BLOQUEAR <%= @user.display_name.upcase %>
+        </button>
+        
+        <div class="safety-divider"></div>
+      </div>
+
+      <div class="bottom-spacer"></div>
+    </div>
+  </div>
+</div>

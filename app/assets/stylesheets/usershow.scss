@@ -271,3 +271,176 @@
     height: auto;
   }
 }
+
+
+/* =========================================================
+   PERFIL PÚBLICO - MODO DARK PREMIUM (NOVO)
+   ========================================================= */
+
+.full-profile-sheet {
+  background-color: #000; /* Fundo preto puro */
+  min-height: 100vh;
+  color: #fff;
+  position: relative;
+}
+
+/* Botão Fechar Bege conforme imagem */
+.close-profile-btn {
+  position: absolute;
+  top: 25px;
+  right: 20px;
+  z-index: 100;
+  background-color: #d4be91; /* Tom bege da imagem */
+  border: none;
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  color: #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.3);
+  cursor: pointer;
+}
+
+/* Carrossel de Fotos imersivo */
+.profile-carousel-wrapper {
+  position: relative;
+  width: 100%;
+  height: 75vh; /* Ocupa 75% da altura da tela */
+  overflow: hidden;
+
+  .profile-carousel {
+    display: flex;
+    height: 100%;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+    
+    &::-webkit-scrollbar { display: none; }
+
+    .carousel-item {
+      min-width: 100%;
+      scroll-snap-align: start;
+      .carousel-img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+    }
+  }
+}
+
+/* Overlay com gradiente preto para legibilidade */
+.profile-cover-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 40%;
+  background: linear-gradient(to top, #000 15%, transparent 100%);
+  display: flex;
+  align-items: flex-end;
+  padding: 0 20px 30px 20px;
+
+  .cover-name {
+    font-size: 2.2rem;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .cover-distance {
+    font-size: 1rem;
+    color: #ccc;
+    margin-top: 8px;
+    i { color: #fff; font-size: 0.8rem; }
+  }
+}
+
+/* Estilo dos Cards Escuros */
+.profile-body-container {
+  padding: 15px;
+  background-color: #000;
+}
+
+.profile-info-card {
+  background-color: #161618; /* Cinza levemente acima do preto */
+  border-radius: 16px;
+  padding: 20px;
+  margin-bottom: 12px;
+
+  .card-header {
+    font-size: 0.85rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 15px;
+    letter-spacing: 0.5px;
+  }
+
+  .card-content-center {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0;
+    
+    .profile-bio-text {
+      font-size: 1rem;
+      text-align: center;
+      color: #fff;
+      font-weight: 500;
+    }
+  }
+}
+
+/* Lista de Informações Básicas com Ícones */
+.basic-info-list {
+  .basic-item {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    padding: 10px 0;
+
+    .basic-icon {
+      width: 20px;
+      color: #888;
+      text-align: center;
+    }
+
+    .basic-text {
+      font-size: 1.05rem;
+      font-weight: 500;
+    }
+  }
+}
+
+/* Ações de Segurança no Rodapé */
+.profile-safety-actions {
+  margin-top: 40px;
+  text-align: center;
+
+  .safety-divider {
+    height: 1px;
+    background-color: #222;
+    margin: 20px 10%;
+  }
+
+  .btn-safety-block {
+    background: none;
+    border: none;
+    color: #555;
+    font-weight: 700;
+    font-size: 0.85rem;
+    padding: 12px;
+    width: 100%;
+    letter-spacing: 0.8px;
+    cursor: pointer;
+    transition: color 0.2s;
+
+    &:hover { color: #888; }
+  }
+}
+
+.bottom-spacer { height: 120px; }
