@@ -405,7 +405,7 @@ const STORAGE_KEYS = {
       
       // Bio
       const bio = userPopup.querySelector("#popup-bio");
-      if(bio) bio.textContent = user.bio || "Este usuário não escreveu uma biografia.";
+      if(bio) bio.textContent = user.bio || "📚 Advogado de 32 anos, apaixonado por livros, palavras e boas histórias. ✍️ Explorador do mundo, sempre em busca de destinos fascinantes, culturas diferentes e pratos que contam histórias através do sabor. 🌍🍴 Se viagens, literatura e descobertas gastronômicas também fazem seu coração bater mais forte, vamos compartilhar essa jornada! 😉";
 
       // Gênero
       const gender = userPopup.querySelector("#popup-gender");
