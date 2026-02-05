@@ -63,7 +63,6 @@
            <%= image_tag "icone-usuarios-proximos.png", class: "icon-users-header" %>
            <%= image_tag "texto-usuarios-proximos.png", class: "text-users-header" %>
         </div>
-        
         <span class="nearby-count" id="nearby-count">0</span>
       </div>
       
@@ -73,103 +72,104 @@
     </div>
   </div>
 
-<div id="user-popup" class="user-popup-fullscreen hidden">
-  <div class="popup-overlay"></div>
-  
-  <div class="popup-content-fullscreen dsc-sheet" id="draggable-popup">
+  <%# --- POPUP DE USUÁRIO CORRIGIDO --- %>
+  <div id="user-popup" class="user-popup-fullscreen hidden">
+    <div class="popup-overlay"></div>
     
-    <%# Alça de Arraste %>
-    <div class="dsc-drag-handle-area">
-      <div class="dsc-handle-bar"></div>
-    </div>
-
-    <%# Botão Fechar (Estilo seta para baixo) %>
-    <button id="close-popup-btn" class="dsc-close-btn">
-      <i class="fas fa-arrow-down"></i>
-    </button>
-
-    <div class="dsc-scroll-content">
+    <div class="popup-content-fullscreen dsc-sheet" id="draggable-popup">
       
-      <%# 1. TOPO: FOTO IMERSIVA %>
-      <div class="dsc-carousel-wrapper">
-        <div class="dsc-main-carousel">
-          <img id="popup-avatar" src="" class="dsc-carousel-img">
-        </div>
+      <div class="dsc-drag-handle-area">
+        <div class="dsc-handle-bar"></div>
+      </div>
+
+      <button id="close-popup-btn" class="dsc-close-btn">
+        <i class="fas fa-arrow-down"></i>
+      </button>
+
+      <%# CONTEÚDO SCROLLÁVEL %>
+      <div class="dsc-scroll-content">
         
-        <div class="dsc-cover-overlay">
-          <div class="dsc-cover-info">
-            <h2 class="dsc-cover-name"><span id="popup-username"></span></h2>
-            <p class="dsc-cover-distance">
-              <i class="fas fa-location-arrow"></i> a <span id="popup-distance-val">0.0</span> km de distância
-            </p>
+        <%# TOPO: FOTO IMERSIVA %>
+        <div class="dsc-carousel-wrapper">
+          <div class="dsc-main-carousel">
+            <img id="popup-avatar" src="" class="dsc-carousel-img">
           </div>
-        </div>
-      </div>
-
-      <%# 2. BOTÕES DE AÇÃO (ESTILO CIRCULAR FLUTUANTE) %>
-      <div class="dsc-action-container">
-        <%# Rejeitar %>
-        <%= button_to reject_user_path(user_id: 0), method: :post, class: "dsc-action-btn btn-reject", form: { id: "popup-reject-form", "data-base-action" => reject_user_path(user_id: 0) } do %>
-          <%= hidden_field_tag :source, "map" %> 
-          <%= image_tag "botao-rejeitar.svg", alt: "Rejeitar" %>
-        <% end %>
-
-        <%# Chat %>
-        <%= button_to start_chat_path(user_id: 0), method: :post, class: "dsc-action-btn btn-chat", form: { id: "popup-chat-form", "data-base-action" => start_chat_path(user_id: 0) } do %>
-          <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
-        <% end %>
-
-        <%# Like %>
-        <%= button_to likes_path(user_id: 0), method: :post, class: "dsc-action-btn btn-like", form: { id: "popup-like-form", "data-base-action" => likes_path(user_id: 0) } do %>
-          <%= hidden_field_tag :source, "map" %>
-          <div class="dsc-heart-icon-wrapper">
-            <%= image_tag "coracao-chapada.png", alt: "Curtir" %>
-          </div>
-        <% end %>
-      </div>
-
-      <%# 3. CONTEÚDO (CARDS) %>
-      <div class="dsc-body-container">
-        <div class="dsc-info-card">
-          <h3 class="dsc-card-header">SOBRE MIM</h3>
-          <div class="dsc-card-content-center">
-            <p id="popup-bio" class="dsc-bio-text">Este usuário não escreveu uma biografia.</p>
-          </div>
-        </div>
-
-        <div class="dsc-info-card">
-          <h3 class="dsc-card-header">INFORMAÇÕES BÁSICAS</h3>
-          <div class="dsc-basic-list">
-            <div class="dsc-basic-item">
-              <span class="dsc-basic-icon"><i class="fas fa-venus-mars"></i></span>
-              <span id="popup-gender" class="dsc-basic-text">Feminino</span>
-            </div>
-            <div class="dsc-basic-item">
-              <span class="dsc-basic-icon"><i class="fas fa-search"></i></span>
-              <span id="popup-interest" class="dsc-basic-text">Busca: Masculino</span>
-            </div>
-            <div class="dsc-basic-item">
-              <span class="dsc-basic-icon"><i class="fas fa-map-marker-alt"></i></span>
-              <span id="popup-city" class="dsc-basic-text">BA</span>
+          
+          <div class="dsc-cover-overlay">
+            <div class="dsc-cover-info">
+              <h2 class="dsc-cover-name"><span id="popup-username"></span></h2>
+              <p class="dsc-cover-distance">
+                <i class="fas fa-location-arrow"></i> a <span id="popup-distance-val">0.0</span> km de distância
+              </p>
             </div>
           </div>
         </div>
 
-        <%# Botões de Segurança %>
-        <div class="dsc-safety-area">
-          <div class="dsc-safety-divider"></div>
-          <button class="dsc-btn-safety">DENUNCIAR USUÁRIO</button>
-          <div class="dsc-safety-separator"></div>
-          <button class="dsc-btn-safety">BLOQUEAR USUÁRIO</button>
-          <div class="dsc-safety-divider"></div>
+        <%# ÁREA DOS BOTÕES DE AÇÃO - SEM FAIXA BRANCA %>
+        <div class="dsc-action-container">
+          
+          <%# 1. REJEITAR %>
+          <%= button_to reject_user_path(user_id: 0), method: :post, class: "dsc-action-btn btn-reject", form: { id: "popup-reject-form", class: "dsc-action-form", "data-base-action" => reject_user_path(user_id: 0) } do %>
+            <%= hidden_field_tag :source, "map" %> 
+            <%= image_tag "botao-rejeitar.svg", alt: "Rejeitar" %>
+          <% end %>
+
+          <%# 2. CHAT %>
+          <%= button_to start_chat_path(user_id: 0), method: :post, class: "dsc-action-btn btn-chat", form: { id: "popup-chat-form", class: "dsc-action-form", "data-base-action" => start_chat_path(user_id: 0) } do %>
+            <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
+          <% end %>
+
+          <%# 3. LIKE %>
+          <%= button_to likes_path(user_id: 0), method: :post, class: "dsc-action-btn btn-like", form: { id: "popup-like-form", class: "dsc-action-form", "data-base-action" => likes_path(user_id: 0) } do %>
+            <%= hidden_field_tag :source, "map" %>
+            <div class="dsc-heart-icon-wrapper">
+              <%= image_tag "coracao-chapada.png", alt: "Curtir" %>
+            </div>
+          <% end %>
         </div>
 
-        <div class="dsc-bottom-spacer"></div>
+        <%# DETALHES DO PERFIL %>
+        <div class="dsc-body-container">
+          <div class="dsc-info-card">
+            <h3 class="dsc-card-header">Sobre mim</h3>
+            <div class="dsc-card-content-center">
+              <p id="popup-bio" class="dsc-bio-text">Sem descrição.</p>
+            </div>
+          </div>
+
+          <div class="dsc-info-card">
+             <h3 class="dsc-card-header">Informações</h3>
+             <div class="dsc-basic-list">
+                <div class="dsc-basic-item">
+                    <span class="dsc-basic-icon"><i class="fas fa-venus-mars"></i></span>
+                    <span id="popup-gender" class="dsc-basic-text"></span>
+                </div>
+                <div class="dsc-basic-item">
+                    <span class="dsc-basic-icon"><i class="fas fa-search"></i></span>
+                    <span id="popup-interest" class="dsc-basic-text"></span>
+                </div>
+                <div class="dsc-basic-item">
+                  <span class="dsc-basic-icon"><i class="fas fa-map-marker-alt"></i></span>
+                  <span id="popup-city" class="dsc-basic-text">BA</span>
+                </div>
+             </div>
+          </div>
+
+          <div class="dsc-safety-area">
+            <div class="dsc-safety-divider"></div>
+            <button class="dsc-btn-safety">DENUNCIAR USUÁRIO</button>
+            <div class="dsc-safety-separator"></div>
+            <button class="dsc-btn-safety">BLOQUEAR USUÁRIO</button>
+            <div class="dsc-safety-divider"></div>
+          </div>
+          
+          <div class="dsc-bottom-spacer"></div>
+        </div>
       </div>
     </div>
   </div>
-</div>
-<div id="upgrade-modal-container" style="position: relative; z-index: 99999;"></div>
+
+  <div id="upgrade-modal-container" style="position: relative; z-index: 99999;"></div>
 </div>
 
 <%= javascript_include_tag "map", type: "module" %>

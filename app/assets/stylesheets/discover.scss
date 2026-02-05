@@ -464,45 +464,74 @@
   &::-webkit-scrollbar { display: none; }
 }
 
-/* 1. FOTO IMERSIVA (COBRE TUDO NO TOPO) */
+/* 1. FOTO IMERSIVA (CORRIGIDO) */
 .dsc-carousel-wrapper {
   position: relative;
   width: 100%;
-  height: 70vh; // Altura da foto (ajuste se quiser mais ou menos)
+  // Alteramos de 70vh para uma altura que preencha melhor o topo do modal
+  height: 500px; 
+  // Em dispositivos menores, garantimos que não ultrapasse a tela
+  max-height: 70vh; 
   margin: 0;
   padding: 0;
-  top: 0; // Garante que encoste no topo absoluto
+  background-color: #000; // Fundo preto caso a foto demore a carregar
+
+  .dsc-main-carousel {
+    height: 100%;
+    width: 100%;
+  }
 
   .dsc-carousel-img {
     width: 100%;
     height: 100%;
-    object-fit: cover; // Não distorce a imagem
+    object-fit: cover; // Mantém o enquadramento sem distorcer
     display: block;
   }
 }
 
-// Gradiente sobre a foto para leitura do nome
+// Ajuste o gradiente para começar exatamente de onde a foto termina
 .dsc-cover-overlay {
   position: absolute;
-  bottom: 0; left: 0; right: 0;
-  height: 40%;
-  background: linear-gradient(to top, #000 15%, transparent 100%);
+  bottom: 0; 
+  left: 0; 
+  right: 0;
+  height: 60%; // Aumentamos um pouco a área do gradiente para suavizar
+  // O gradiente deve ir do preto sólido (fundo do app) para o transparente
+  background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.8) 20%, transparent 100%);
   display: flex;
-  align-items: flex-end;
-  padding: 0 20px 60px 20px;
+  flex-direction: column; // Garante que nome e distância fiquem empilhados
+  justify-content: flex-end;
+  padding: 0 20px 65px 20px; // Aumentamos o padding inferior para não bater nos botões
+  pointer-events: none; // Evita que o overlay bloqueie cliques se necessário
 
   .dsc-cover-name {
     font-size: 2.5rem;
     font-weight: 700;
-    color: #fff;
+    color: #ffffff !important; // Força a cor branca
     margin: 0;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    // Sombra projetada para garantir leitura em fotos muito claras:
+    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8), 0px 0px 5px rgba(0, 0, 0, 0.5);
+    
+    span {
+      color: #ffffff !important; // Garante que o span interno também seja branco
+    }
   }
+
   .dsc-cover-distance {
     font-size: 1.1rem;
-    color: #ddd;
+    color: #ffffff !important; // Força a cor branca (ou #eeeeee para um leve contraste)
     margin-top: 5px;
-    font-weight: 300;
+    font-weight: 400; // Um pouco mais grosso para facilitar a leitura
+    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
+    
+    i {
+      color: #ffffff; // Cor do ícone de localização
+      margin-right: 5px;
+    }
+    
+    span {
+      color: #ffffff !important;
+    }
   }
 }
 
@@ -639,4 +668,73 @@
     &:hover { color: #888; }
   }
   .dsc-safety-divider { height: 1px; background: #222; margin: 10px 20%; }
+}
+
+/* AJUSTES DO CARROSSEL DSC */
+.dsc-carousel-wrapper {
+  position: relative;
+  width: 100%;
+  height: 500px;
+  max-height: 70vh;
+  overflow: hidden;
+  background: #000;
+
+  .dsc-main-carousel {
+    display: flex; /* Coloca as fotos lado a lado */
+    width: 100%;
+    height: 100%;
+    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+  }
+
+  .dsc-carousel-item {
+    min-width: 100%; /* Cada slide ocupa a largura total */
+    height: 100%;
+  }
+
+  .dsc-carousel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  /* Setas de navegação */
+  .dsc-carousel-nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    z-index: 20;
+    padding: 20px;
+    color: white;
+    font-size: 1.5rem;
+    cursor: pointer;
+    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
+    opacity: 0.6;
+    &:active { opacity: 1; transform: translateY(-50%) scale(0.9); }
+    &.prev { left: 0; }
+    &.next { right: 0; }
+  }
+
+  /* Pontinhos Indicadores */
+  .dsc-carousel-indicators {
+    position: absolute;
+    bottom: 90px; /* Acima do nome do usuário */
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+    z-index: 20;
+
+    .dsc-dot {
+      width: 6px;
+      height: 6px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 50%;
+      transition: all 0.3s ease;
+      &.active { 
+        background: #fff; 
+        width: 18px; 
+        border-radius: 10px; 
+      }
+    }
+  }
 }
