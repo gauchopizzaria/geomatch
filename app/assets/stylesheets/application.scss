@@ -1,7 +1,6 @@
 // --------------------------------------------------
 // GeoMatch - Layout Moderno e Responsivo
 // --------------------------------------------------
-
 @use "sass:color";
 
 @use "discover";
@@ -17,6 +16,25 @@
 @use "safety_center";
 @use "report_incident";
 @use "plans";
+
+
+// Importa os estilos base do Leaflet (se ainda não tiver)
+@import "leaflet/dist/leaflet.css";
+
+// Importa os estilos do MarkerCluster
+@import "leaflet.markercluster/dist/MarkerCluster.css";
+@import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+
+// Opcional: Customização para o GeoMatch
+.marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
+    background-color: rgba(212, 175, 55, 0.6); // Dourado com opacidade
+    div {
+        background-color: rgba(212, 175, 55, 1);
+        color: white;
+        font-weight: bold;
+    }
+}
+
 
 // ==================================================
 // 2. VARIÁVEIS CSS (CUSTOM PROPERTIES) - TEMAS

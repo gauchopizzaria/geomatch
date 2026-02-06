@@ -352,8 +352,15 @@ const STORAGE_KEYS = {
                   </div>
                 `;
                 
-                const uLat = parseFloat(user.latitude);
-                const uLng = parseFloat(user.longitude);
+                let uLat = parseFloat(user.latitude);
+                let uLng = parseFloat(user.longitude);
+
+                // Verifica se há outros usuários na mesma posição exata
+             // e adiciona um desvio de ~1-2 metros (0.00001 graus)
+                const jitter = () => (Math.random() - 0.5) * 0.0001;
+                uLat += jitter();
+                uLng += jitter();
+
 
                 if (!isNaN(uLat) && !isNaN(uLng)) {
                     const icon = L.divIcon({ html: avatarHtml, className: "custom-marker", iconSize: [56, 56], popupAnchor: [0, -20] });
