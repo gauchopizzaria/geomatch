@@ -47,6 +47,9 @@ class UsersController < ApplicationController
 
   # Ação para atualizar localização (chamada via JS as vezes)
   def update_location
+    if current_user.invisible
+    return head :ok # Retorna sucesso mas não salva nada
+    end
     if params[:latitude].present? && params[:longitude].present?
       current_user.update(latitude: params[:latitude], longitude: params[:longitude])
       head :ok
@@ -144,9 +147,9 @@ class UsersController < ApplicationController
     gender_filter = params[:gender]&.downcase
 
     # Sempre atualiza a posição do usuário atual para ele saber onde está
-    if latitude.present? && longitude.present?
-      current_user.update(latitude: latitude, longitude: longitude)
-    end
+    if latitude.present? && longitude.present? && !current_user.invisible
+  current_user.update(latitude: latitude, longitude: longitude)
+end
 
     # Se veio 0.0, 0.0, é bug de GPS, retorna vazio
     if latitude.zero? && longitude.zero?

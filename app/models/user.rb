@@ -57,6 +57,8 @@ class User < ApplicationRecord
     where(birthdate: start_date..end_date)
   }
 
+  scope :visible, -> { where(invisible: [false, nil]) }
+  
   # --- Callbacks ---
   after_create :attach_default_avatar
   before_validation :set_default_plan, on: :create

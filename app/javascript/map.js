@@ -7,6 +7,7 @@ const STORAGE_KEYS = {
   GENDER_FILTER: "geomatch_gender_filter",
   INVISIBLE_MODE: "geomatch_invisible_mode",
 };
+let isUserInvisible = false; // <-- Adicione esta linha
 
 ["DOMContentLoaded", "turbo:load"].forEach((evt) => {
   document.addEventListener(evt, () => {
@@ -497,6 +498,7 @@ const STORAGE_KEYS = {
         const eyeClosed = toggleVisibilityBtn.querySelector(".eye-closed");
 
         const updateVisibilityUI = (isInvisible) => {
+            isUserInvisible = isInvisible;
             if (isInvisible) {
                 toggleVisibilityBtn.classList.add("active");
                 toggleVisibilityBtn.classList.add("invisible-mode"); 
@@ -563,6 +565,11 @@ const STORAGE_KEYS = {
     
     // Função reutilizável para forçar o GPS
     const forceLocationUpdate = () => {
+        if (isUserInvisible) {
+        console.log("🚫 Modo Invisível ativo: Abortando atualização de GPS.");
+        return; 
+    }
+        
         if ("geolocation" in navigator) {
             console.log("📍 Solicitando posição atualizada (Sem Cache)...");
             
