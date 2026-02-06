@@ -17,6 +17,6 @@ class AlbumPhotosController < ApplicationController
     end
 
     # 3. Redireciona de volta para a página de perfil
-    redirect_back fallback_location: edit_user_path(current_user)
+    redirect_back fallback_location: edit_profile_path
   end
 end

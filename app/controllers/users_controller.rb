@@ -203,20 +203,27 @@ class UsersController < ApplicationController
   end
 
   def update
-    @user = current_user
+  @user = current_user
 
-    if params[:user][:album_photos].present?
-      @user.album_photos.attach(params[:user][:album_photos])
-    end
-
-    user_update_params = user_params.except(:album_photos)
-
-    if @user.update(user_update_params)
-      redirect_to edit_profile_path, notice: "Perfil atualizado!"
-    else
-      render :edit, status: :unprocessable_entity
-    end
+  # 1. Tratamento das fotos do álbum
+  if params[:user][:album_photos].present?
+    @user.album_photos.attach(params[:user][:album_photos])
   end
+
+  # 2. Removemos album_photos dos parâmetros de atualização em massa
+  # para evitar que o Rails tente sobrescrever o que acabamos de anexar
+  user_update_params = user_params.except(:album_photos)
+
+  if @user.update(user_update_params)
+    # 3. Respondemos de forma amigável ao Turbo/HTML
+    respond_to do |format|
+      format.html { redirect_to edit_profile_path, notice: "Perfil atualizado!" }
+      format.turbo_stream { flash.now[:notice] = "Perfil atualizado!" }
+    end
+  else
+    render :edit, status: :unprocessable_entity
+  end
+end
 
   # AÇÃO CORRIGIDA
   def reject

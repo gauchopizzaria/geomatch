@@ -1,6 +1,6 @@
 <div class="edit-profile-wrapper">
 
-  <%= form_with model: @user, url: profile_path, method: :patch, multipart: true, id: "edit-profile-form", data: { turbo: false } do |f| %>
+   <%= form_with model: @user, url: profile_path, method: :patch, multipart: true, id: "edit-profile-form" do |f| %>
 
     <%# --- 1. HEADER --- %>
     <div class="edit-header">
@@ -125,4 +125,14 @@ function previewAvatar(event) {
   };
   reader.readAsDataURL(event.target.files[0]);
 }
+
+document.addEventListener("turbo:load", function() {
+  document.querySelectorAll('.delete-badge').forEach(link => {
+    link.addEventListener('click', function(e) {
+      if (!confirm("Tem certeza que deseja apagar?")) {
+        e.preventDefault();
+      }
+    });
+  });
+});
 </script>
