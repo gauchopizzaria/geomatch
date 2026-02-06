@@ -259,10 +259,11 @@
      MOBILE: CARDS
      ========================================================= */
   .pricing-mobile-cards {
-    display: none; /* Oculto no desktop */
-    flex-direction: column;
-    gap: 25px;
-  }
+  display: none;
+  flex-direction: column;
+  gap: 35px; /* Aumentei o gap para dar espaço à tag do próximo card */
+  padding-top: 20px; /* Adiciona um espaço no topo da lista */
+}
 
   .mobile-plan-card {
     background: var(--p-surface);
@@ -270,6 +271,7 @@
     border-radius: 20px;
     padding: 30px 24px;
     position: relative;
+    margin-top: 15px; /* Garante que a tag não suba para fora da área clicável */
   }
 
   /* Card Recomendado Mobile */
@@ -279,19 +281,26 @@
   }
 
   .mobile-tag-recommended {
-    position: absolute;
-    top: -12px;
-    left: 50%;
-    transform: translateX(-50%);
-    background: var(--p-accent);
-    color: #000;
-    font-size: 0.75rem;
-    font-weight: 800;
-    text-transform: uppercase;
-    padding: 5px 15px;
-    border-radius: 20px;
-  }
+  position: absolute;
+  /* 3. Posicionamento fixo no topo, centralizado */
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%); 
+  
+  /* 4. Garante que fique acima de qualquer degradê */
+  z-index: 20; 
 
+  /* Estilização para garantir visibilidade */
+  background: #7e20d6; 
+  color: #fff !important;
+  padding: 6px 20px;
+  border-radius: 50px;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  white-space: nowrap;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+}
   .mobile-card-header {
     text-align: center;
     border-bottom: 1px solid var(--p-border);
@@ -486,8 +495,9 @@
 
   /* Ajuste para o Mobile Card ficar igual à imagem */
   .mobile-plan-card {
-    border-radius: 24px;
-    padding-top: 40px;
-    overflow: hidden; /* Garante que o gradiente respeite as bordas */
+    padding-top: 45px;
+    /* overflow: hidden;  Garante que o gradiente respeite as bordas */
+    position: relative;
+  border-radius: 24px;
   }
 }
