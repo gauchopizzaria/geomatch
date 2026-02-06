@@ -148,12 +148,48 @@
   &::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
 }
 
-.avatar-frame-wrapper {
-  position: relative; width: 56px; height: 56px;
-  display: flex; justify-content: center; align-items: center; flex-shrink: 0;
+// Garante que o marcador do Leaflet seja sempre um quadrado perfeito
+.custom-marker {
+    background: transparent !important;
+    border: none !important;
+    display: flex !important;
+    align-items: center;
+    justify-content: center;
 }
-.avatar-user-img { width: 86%; height: 86%; border-radius: 50%; object-fit: cover; z-index: 1; }
-.avatar-frame-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: contain; z-index: 2; pointer-events: none; }
+
+.avatar-frame-wrapper {
+    position: relative;
+    width: 56px !important;
+    height: 56px !important;
+    aspect-ratio: 1 / 1; // Força a proporção 1:1
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    flex-shrink: 0;
+    
+    // Se o círculo estiver oval, é provável que o overflow ou o flex do pai esteja afetando
+    border-radius: 50%; 
+}
+
+.avatar-user-img {
+    width: 86% !important;
+    height: 86% !important;
+    border-radius: 50%;
+    object-fit: cover;
+    z-index: 1;
+    display: block;
+}
+
+.avatar-frame-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain;
+    z-index: 2;
+    pointer-events: none;
+}
 
 .user-list-info { display: flex; flex-direction: column; gap: 2px; }
 .user-list-name { color: #fff; font-weight: 700; font-size: 1.1rem; }
