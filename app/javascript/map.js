@@ -372,6 +372,8 @@ let isUserInvisible = false; // <-- Adicione esta linha
 
                 const li = document.createElement("li");
                 li.className = "user-list-item";
+            
+
                 li.innerHTML = `
                     ${avatarHtml}
                     <div class="user-list-info">

@@ -143,9 +143,22 @@
 }
 
 .users-list-fullscreen {
+  
   list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1;
   &::-webkit-scrollbar { width: 4px; }
   &::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+
+  .user-list-item {
+    display: flex;       // <--- ACRESCENTE ESTA LINHA
+    align-items: center; // <--- ACRESCENTE ESTA LINHA
+    gap: 12px;           // <--- ACRESCENTE ESTA LINHA (para dar espaço entre foto e nome)
+    
+    padding: 10px 0;
+    border-bottom: 1px solid #222;
+    cursor: pointer;
+
+    // ... restante das regras ...
+  }
 }
 
 // Garante que o marcador do Leaflet seja sempre um quadrado perfeito
@@ -526,50 +539,50 @@
 }
 
 // Ajuste o gradiente para começar exatamente de onde a foto termina
-.dsc-cover-overlay {
-  position: absolute;
-  bottom: 0; 
-  left: 0; 
-  right: 0;
-  height: 60%; // Aumentamos um pouco a área do gradiente para suavizar
-  // O gradiente deve ir do preto sólido (fundo do app) para o transparente
-  background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.8) 20%, transparent 100%);
-  display: flex;
-  flex-direction: column; // Garante que nome e distância fiquem empilhados
-  justify-content: flex-end;
-  padding: 0 20px 65px 20px; // Aumentamos o padding inferior para não bater nos botões
-  pointer-events: none; // Evita que o overlay bloqueie cliques se necessário
+  .dsc-cover-overlay {
+    position: absolute;
+    bottom: 0; 
+    left: 0; 
+    right: 0;
+    height: 60%; // Aumentamos um pouco a área do gradiente para suavizar
+    // O gradiente deve ir do preto sólido (fundo do app) para o transparente
+    background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.8) 20%, transparent 100%);
+    display: flex;
+    flex-direction: column; // Garante que nome e distância fiquem empilhados
+    justify-content: flex-end;
+    padding: 0 20px 65px 20px; // Aumentamos o padding inferior para não bater nos botões
+    pointer-events: none; // Evita que o overlay bloqueie cliques se necessário
 
-  .dsc-cover-name {
-    font-size: 2.5rem;
-    font-weight: 700;
-    color: #ffffff !important; // Força a cor branca
-    margin: 0;
-    // Sombra projetada para garantir leitura em fotos muito claras:
-    text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8), 0px 0px 5px rgba(0, 0, 0, 0.5);
-    
-    span {
-      color: #ffffff !important; // Garante que o span interno também seja branco
+    .dsc-cover-name {
+      font-size: 2.5rem;
+      font-weight: 700;
+      color: #ffffff !important; // Força a cor branca
+      margin: 0;
+      // Sombra projetada para garantir leitura em fotos muito claras:
+      text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8), 0px 0px 5px rgba(0, 0, 0, 0.5);
+      
+      span {
+        color: #ffffff !important; // Garante que o span interno também seja branco
+      }
+    }
+
+    .dsc-cover-distance {
+      font-size: 1.1rem;
+      color: #ffffff !important; // Força a cor branca (ou #eeeeee para um leve contraste)
+      margin-top: 5px;
+      font-weight: 400; // Um pouco mais grosso para facilitar a leitura
+      text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
+      
+      i {
+        color: #ffffff; // Cor do ícone de localização
+        margin-right: 5px;
+      }
+      
+      span {
+        color: #ffffff !important;
+      }
     }
   }
-
-  .dsc-cover-distance {
-    font-size: 1.1rem;
-    color: #ffffff !important; // Força a cor branca (ou #eeeeee para um leve contraste)
-    margin-top: 5px;
-    font-weight: 400; // Um pouco mais grosso para facilitar a leitura
-    text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
-    
-    i {
-      color: #ffffff; // Cor do ícone de localização
-      margin-right: 5px;
-    }
-    
-    span {
-      color: #ffffff !important;
-    }
-  }
-}
 
 /* 2. BOTÕES DE AÇÃO (ESTILO CIRCULAR PREMIUM) */
 .dsc-action-container {
@@ -774,3 +787,5 @@
     }
   }
 }
+
+
