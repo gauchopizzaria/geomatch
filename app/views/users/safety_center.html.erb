@@ -67,26 +67,18 @@
 
 </button>
 
-      <%# CARD 4: Modo Pânico (Botão Ativo) %>
-      <button type="button" id="panic-btn" class="safety-card card-pink-light" style="border: none; width: 100%; text-align: left; cursor: pointer; padding: 15px; display: flex; align-items: center; justify-content: flex-start; gap: 12px;">
-        
-        <div class="card-icon-circle icon-red-light">
-           <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22M12 6l7.53 13H4.47M11 10v4h2v-4m-2 6v2h2v-2"/></svg>
-        </div>
-        
-        <div class="card-text">
-          <strong id="panic-text-title">Modo Pânico</strong>
-          <span id="panic-text-status">Toque para ativar</span>
-        </div>
-
-        <%# Elemento de Áudio (Escondido) %>
-        <%# Recomendo baixar um som de sirene e colocar em public/sounds/sirene.mp3 %>
-        <%# Para teste, estou usando um link externo de exemplo, mas troque pelo seu arquivo local depois %>
-        <audio id="panic-audio" loop>
-          <source src="https://www.soundjay.com/mechanical/sounds/smoke-detector-1.mp3" type="audio/mpeg">
-        </audio>
-
-      </button>
+      <%# CARD 4: Modo Pânico (Ajustado para Compartilhamento) %>
+<button type="button" id="panic-btn" class="safety-card card-pink-light" style="border: none; width: 100%; text-align: left; cursor: pointer; padding: 15px; display: flex; align-items: center; justify-content: flex-start; gap: 12px;">
+  
+  <div class="card-icon-circle icon-red-light">
+    <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22M12 6l7.53 13H4.47M11 10v4h2v-4m-2 6v2h2v-2"/></svg>
+  </div>
+  
+  <div class="card-text">
+    <strong id="panic-text-title">Modo Pânico</strong>
+    <span id="panic-text-status">Enviar alerta de emergência</span>
+  </div>
+</button>
 
     </div>
   </div>
@@ -184,69 +176,61 @@
 
 
   // --- FUNÇÃO MODO PÂNICO ---
-  function initPanicButton() {
-    const panicBtn = document.getElementById("panic-btn");
-    const panicAudio = document.getElementById("panic-audio");
-    const titleText = document.getElementById("panic-text-title");
-    const statusText = document.getElementById("panic-text-status");
-    
-    let isActive = false;
-    let vibrateInterval;
+ function initPanicButton() {
+  const panicBtn = document.getElementById("panic-btn");
+  const statusText = document.getElementById("panic-text-status");
 
-    if (panicBtn && panicAudio) {
-      panicBtn.addEventListener("click", () => {
-        if (!isActive) {
-          // --- ATIVAR ---
-          isActive = true;
+  if (panicBtn && !panicBtn.dataset.listenerAdded) {
+    panicBtn.dataset.listenerAdded = "true";
+
+    panicBtn.addEventListener("click", () => {
+      if (!navigator.geolocation) {
+        alert("Seu navegador não suporta geolocalização.");
+        return;
+      }
+
+      // Feedback visual de carregamento
+      const originalText = statusText.innerText;
+      statusText.innerText = "Preparando alerta...";
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const lat = position.coords.latitude;
+          const lng = position.coords.longitude;
           
-          // 1. Toca o Som
-          panicAudio.currentTime = 0;
-          panicAudio.play().catch(e => console.log("Erro ao tocar áudio (interação necessária):", e));
+          // Link do Google Maps
+          const mapUrl = `https://www.google.com/maps?q=${lat},${lng}`;
+          
+          // Sua mensagem personalizada
+          const messageText = `Olá! Esta é uma mensagem de alerta 🚨 do GeoMatch. Maria Clara ativou o modo de segurança e pode precisar da sua ajuda ou atenção. Por favor, entre em contato com ela o mais breve possível e acompanhe sua localização em tempo real aqui: ${mapUrl} Sua atenção é muito importante neste momento.`;
 
-          // 2. Inicia Vibração (Padrão SOS: ... --- ...)
-          // Navigator.vibrate funciona bem em Android. No iOS é limitado.
-          if (navigator.vibrate) {
-            // Vibra 500ms, espera 200ms, vibra 500ms...
-            navigator.vibrate([500, 200, 500, 200, 1000]); 
-            // Loop de vibração (pois o navegador para sozinho)
-            vibrateInterval = setInterval(() => {
-               navigator.vibrate([500, 200, 500, 200, 1000]);
-            }, 2500);
+          const shareData = {
+            title: 'ALERTA DE SEGURANÇA - GeoMatch',
+            text: messageText
+          };
+
+          // Disparar compartilhamento nativo ou WhatsApp
+          if (navigator.share) {
+            navigator.share(shareData)
+              .then(() => console.log('Alerta enviado'))
+              .catch((err) => console.log('Erro ao compartilhar', err));
+          } else {
+            // Fallback para WhatsApp
+            window.open(`https://wa.me/?text=${encodeURIComponent(messageText)}`, '_blank');
           }
 
-          // 3. Feedback Visual (Muda cor e texto)
-          panicBtn.style.backgroundColor = "#ff4d4d"; // Vermelho forte
-          panicBtn.style.color = "#fff";
-          titleText.innerText = "ALARME ATIVO!";
-          statusText.innerText = "Toque para PARAR";
-          
-          // Animação de pulso (opcional, via JS style)
-          panicBtn.style.animation = "pulse-red 1s infinite";
-
-        } else {
-          // --- DESATIVAR ---
-          isActive = false;
-
-          // 1. Para o Som
-          panicAudio.pause();
-          panicAudio.currentTime = 0;
-
-          // 2. Para Vibração
-          if (navigator.vibrate) {
-            navigator.vibrate(0); // Para imediatamente
-            clearInterval(vibrateInterval);
-          }
-
-          // 3. Restaura Visual
-          panicBtn.style.backgroundColor = ""; // Volta ao CSS original
-          panicBtn.style.color = "";
-          panicBtn.style.animation = "";
-          titleText.innerText = "Modo Pânico";
-          statusText.innerText = "Alerta de Emergência";
-        }
-      });
-    }
+          statusText.innerText = originalText;
+        },
+        (error) => {
+          console.error(error);
+          alert("Erro ao obter localização para o alerta.");
+          statusText.innerText = originalText;
+        },
+        { enableHighAccuracy: true, timeout: 10000 }
+      );
+    });
   }
+}
 
   // --- ATUALIZE OS LISTENERS NO FINAL DO SCRIPT ---
   document.addEventListener("turbo:load", () => {
