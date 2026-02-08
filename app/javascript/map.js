@@ -495,71 +495,97 @@ let isUserInvisible = false; // <-- Adicione esta linha
     // ========================================
     // CORREÇÃO 2: MODO INVISÍVEL
     // ========================================
-    if (toggleVisibilityBtn) {
-        const eyeOpen = toggleVisibilityBtn.querySelector(".eye-open");
-        const eyeClosed = toggleVisibilityBtn.querySelector(".eye-closed");
+   if (toggleVisibilityBtn) {
+  const eyeOpen = toggleVisibilityBtn.querySelector(".eye-open");
+  const eyeClosed = toggleVisibilityBtn.querySelector(".eye-closed");
 
-        const updateVisibilityUI = (isInvisible) => {
-            isUserInvisible = isInvisible;
-            if (isInvisible) {
-                toggleVisibilityBtn.classList.add("active");
-                toggleVisibilityBtn.classList.add("invisible-mode"); 
-                if (eyeOpen) eyeOpen.classList.add("hidden");
-                if (eyeClosed) eyeClosed.classList.remove("hidden");
-            } else {
-                toggleVisibilityBtn.classList.remove("active");
-                toggleVisibilityBtn.classList.remove("invisible-mode");
-                if (eyeOpen) eyeOpen.classList.remove("hidden");
-                if (eyeClosed) eyeClosed.classList.add("hidden");
-            }
-        };
-
-        const userData = document.getElementById('current-user-data'); 
-        const initialInvisible = userData ? (userData.dataset.invisible === 'true') : false;
-        
-        updateVisibilityUI(initialInvisible);
-
-        toggleVisibilityBtn.addEventListener("click", async () => {
-            console.log("Botão Invisibilidade clicado");
-            try {
-                const token = document.querySelector('meta[name="csrf-token"]').content;
-                const response = await fetch('/users/toggle_visibility', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': token }
-                });
-
-                // SE O SERVIDOR DISSER QUE PRECISA DE UPGRADE (Status 403)
-                if (response.status === 403) {
-                    console.log("Status 403: Upgrade necessário");
-                    const data = await response.json();
-                    if (data.upgrade_required) {
-                        const modalResponse = await fetch('/plans/modal?type=invisible');
-                        const modalHtml = await modalResponse.text();
-                        const container = document.getElementById("upgrade-modal-container");
-                        container.innerHTML = modalHtml;
-                        
-                        // Lógica extra para fechar o modal carregado via AJAX, se necessário
-                        const newModalCloseBtn = container.querySelector(".close-modal-btn"); 
-                        if(newModalCloseBtn) {
-                            newModalCloseBtn.addEventListener("click", () => {
-                                container.innerHTML = "";
-                            });
-                        }
-                    }
-                    return; 
-                }
-
-                if (!response.ok) throw new Error("Erro ao salvar no servidor");
-                
-                const data = await response.json();
-                console.log("Sucesso! Novo estado:", data.invisible);
-                updateVisibilityUI(data.invisible);
-                
-            } catch (error) {
-                console.error("Erro ao alternar visibilidade:", error);
-            }
-        });
+  const updateVisibilityUI = (isInvisible) => {
+    isUserInvisible = isInvisible;
+    if (isInvisible) {
+      toggleVisibilityBtn.classList.add("active");
+      toggleVisibilityBtn.classList.add("invisible-mode");
+      if (eyeOpen) eyeOpen.classList.add("hidden");
+      if (eyeClosed) eyeClosed.classList.remove("hidden");
+    } else {
+      toggleVisibilityBtn.classList.remove("active");
+      toggleVisibilityBtn.classList.remove("invisible-mode");
+      if (eyeOpen) eyeOpen.classList.remove("hidden");
+      if (eyeClosed) eyeClosed.classList.add("hidden");
     }
+  };
+
+  const userData = document.getElementById('current-user-data');
+  const initialInvisible = userData ? (userData.dataset.invisible === 'true') : false;
+
+  updateVisibilityUI(initialInvisible);
+
+  toggleVisibilityBtn.addEventListener("click", async () => {
+    console.log("Botão Invisibilidade clicado");
+    try {
+      const token = document.querySelector('meta[name="csrf-token"]').content;
+      const response = await fetch('/users/toggle_visibility', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-CSRF-Token': token
+        }
+      });
+
+      // SE O SERVIDOR DISSER QUE PRECISA DE UPGRADE (Status 403)
+      if (response.status === 403) {
+        console.log("Status 403: Upgrade necessário");
+        const data = await response.json();
+
+        if (data.upgrade_required) {
+          const modalResponse = await fetch('/plans/modal?type=invisible');
+          const modalHtml = await modalResponse.text();
+          const container = document.getElementById("upgrade-modal-container");
+
+          // Insere o HTML no container
+          container.innerHTML = modalHtml;
+
+          // --- LÓGICA DE FECHAMENTO CONSOLIDADA ---
+          const backdrop = container.querySelector(".upgrade-modal-backdrop");
+
+          const fecharModalGeoMatch = () => {
+            if (backdrop) {
+              backdrop.style.opacity = '0';
+              // Espera a animação de fade antes de limpar o HTML
+              setTimeout(() => {
+                container.innerHTML = "";
+              }, 300);
+            }
+          };
+
+          // Atribui o fechamento a TODOS os botões de fechar dentro do modal
+          container.querySelectorAll(".close-modal-btn").forEach(btn => {
+            btn.onclick = (e) => {
+              e.preventDefault();
+              fecharModalGeoMatch();
+            };
+          });
+
+          // Fechar ao clicar no fundo escuro (backdrop)
+          if (backdrop) {
+            backdrop.onclick = (e) => {
+              if (e.target === backdrop) fecharModalGeoMatch();
+            };
+          }
+        }
+        return;
+      }
+
+      if (!response.ok) throw new Error("Erro ao salvar no servidor");
+
+      const data = await response.json();
+      console.log("Sucesso! Novo estado:", data.invisible);
+      updateVisibilityUI(data.invisible);
+
+    } catch (error) {
+      console.error("Erro ao alternar visibilidade:", error);
+    }
+  });
+}
     
     // ========================================
     // INICIALIZAÇÃO GEOLOCALIZAÇÃO (TEMPO REAL & RETOMADA)

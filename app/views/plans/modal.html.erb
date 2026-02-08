@@ -45,23 +45,36 @@
       ASSINAR AGORA
     <% end %>
 
-    <button class="btn-maybe-later close-modal-btn">Talvez depois</button>
+    
   </div>
 </div>
 
 <style>
   /* CSS INLINE PARA O MODAL (Para garantir que carregue via AJAX) */
-  .upgrade-modal-backdrop {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+ .upgrade-modal-backdrop {
+    position: fixed; 
+    top: 0; 
+    left: 0; 
+    width: 100vw; /* Use vw para garantir largura total */
+    height: 100vh; /* Use vh para garantir altura total */
     background: rgba(0, 0, 0, 0.85);
     backdrop-filter: blur(8px);
-    z-index: 100000; /* Acima de tudo */
-    display: flex; align-items: center; justify-content: center;
+    -webkit-backdrop-filter: blur(8px); /* Para Safari */
+    
+    /* A MUDANÇA ESTÁ AQUI */
+    z-index: 999999 !important; 
+    pointer-events: all !important; 
+    
+    display: flex; 
+    align-items: center; 
+    justify-content: center;
     padding: 20px;
     animation: fadeIn 0.3s ease;
-  }
+}
 
   .upgrade-modal-content {
+  pointer-events: all !important;
+    z-index: 1000000 !important;
     background: linear-gradient(145deg, #1c1c1e 0%, #111 100%);
     border: 1px solid #333;
     border-radius: 24px;
