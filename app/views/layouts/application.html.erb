@@ -5,6 +5,16 @@
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
 
+    <link rel="manifest" href="/manifest.json">
+
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Geomatch">
+<link rel="apple-touch-icon" href="/icon.png">
+
+<%= tag.link rel: "manifest", href: pwa_manifest_path %>
+<meta name="apple-mobile-web-app-capable" content="yes">
+
     <!-- Meta responsivo -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="<%= form_authenticity_token %>">

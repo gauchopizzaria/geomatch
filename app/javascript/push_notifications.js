@@ -37,23 +37,29 @@ function urlBase64ToUint8Array(base64String) {
 
 
 function subscribeUserToPush(registration) {
-  // LER A CHAVE DA META TAG
   const applicationServerKeyElement = document.querySelector('meta[name="vapid-public-key"]');
   if (!applicationServerKeyElement) return;
 
   const applicationServerKey = applicationServerKeyElement.content;
   const convertedVapidKey = urlBase64ToUint8Array(applicationServerKey);
 
+  // No mobile, é melhor pedir permissão explicitamente via interação do usuário
+  // Mas aqui vamos garantir que a Promise seja tratada corretamente
   Notification.requestPermission().then(permission => {
+    console.log("Status da permissão:", permission);
     if (permission === "granted") {
-      registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: convertedVapidKey
+      registration.pushManager.getSubscription().then(existingSubscription => {
+        if (existingSubscription) return existingSubscription;
+
+        return registration.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidKey
+        });
       })
       .then(subscription => {
         sendSubscriptionToBackend(subscription);
       })
-      .catch(error => console.error("Erro na inscrição:", error));
+      .catch(error => console.error("Erro na inscrição Push:", error));
     }
   });
 }
