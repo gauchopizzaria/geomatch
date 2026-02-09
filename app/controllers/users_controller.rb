@@ -51,7 +51,7 @@ class UsersController < ApplicationController
     return head :ok # Retorna sucesso mas não salva nada
     end
     if params[:latitude].present? && params[:longitude].present?
-      current_user.update(latitude: params[:latitude], longitude: params[:longitude])
+      current_user.update(latitude: params[:latitude], longitude: params[:longitude], last_seen_at: Time.zone.now)
       head :ok
     else
       head :unprocessable_entity
@@ -146,10 +146,15 @@ class UsersController < ApplicationController
     range_km = params[:range].to_i.presence || 50 
     gender_filter = params[:gender]&.downcase
 
-    # Sempre atualiza a posição do usuário atual para ele saber onde está
-    if latitude.present? && longitude.present? && !current_user.invisible
-  current_user.update(latitude: latitude, longitude: longitude)
-end
+    # FORÇA A ATUALIZAÇÃO: 
+    # Usamos update_columns para gravar direto no banco sem disparar callbacks lentos
+    if current_user && !current_user.invisible
+      current_user.update_columns(
+        latitude: latitude, 
+        longitude: longitude, 
+        last_seen_at: Time.current
+      )
+    end
 
     # Se veio 0.0, 0.0, é bug de GPS, retorna vazio
     if latitude.zero? && longitude.zero?
@@ -158,17 +163,14 @@ end
     end
 
     # Busca usuários próximos usando o Service
-    # ATENÇÃO: Se o Service já devolve JSON (Hash), não podemos chamar .id nele
     users_data = DiscoveryService.new(current_user).find_nearby_users(range_km, gender_filter)
 
     # FILTRAGEM FINAL SEGURA:
     blocked_ids = current_user.excluded_user_ids
     
     visible_users = users_data.select do |u| 
-      # Verifica se 'u' é Objeto (User) ou Hash (JSON)
       uid = u.respond_to?(:id) ? u.id : u[:id] || u['id']
       
-      # Verifica invisibilidade (Se for Hash, assume visível ou checa chave)
       is_invisible = if u.respond_to?(:invisible)
                        u.invisible
                      elsif u.is_a?(Hash)
@@ -177,17 +179,22 @@ end
                        false
                      end
 
-      # Regra: Não pode estar bloqueado E não pode estar invisível
       !blocked_ids.include?(uid) && !is_invisible
     end
 
-    # Se for Hash, já está pronto. Se for User, converte.
+    # MAPEAMENTO DO JSON: Inserindo a lógica de Online/Offline
     final_json = visible_users.map do |u|
+      # Lógica para determinar se o usuário está online (ativo nos últimos 5 minutos)
+      # Funciona se for objeto User ou se o Service retornar last_seen_at no Hash
+      last_activity = u.respond_to?(:last_seen_at) ? u.last_seen_at : (u[:last_seen_at] || u['last_seen_at'])
+      is_online = last_activity.present? && last_activity > 10.minutes.ago
+
       if u.is_a?(Hash)
-        u # Já é JSON
+        u.merge({ online: is_online }) # Adiciona ao Hash existente
       else
         u.as_json(only: [:id, :username, :latitude, :longitude, :distance_km, :city, :bio, :gender, :interested_in, :hobbies_list]).merge({
-          avatar_url: u.avatar_url # Garante que avatar venha certo
+          avatar_url: u.avatar_url,
+          online: is_online # Injeta o status no objeto convertido
         })
       end
     end

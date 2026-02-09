@@ -788,3 +788,16 @@
   }
 }
 
+.dot-online {
+  color: #2ecc71; /* Verde */
+  text-shadow: 0 0 5px rgba(46, 204, 113, 0.4);
+}
+
+.dot-offline {
+  color: #888; /* Cinza */
+}
+
+.header-status {
+  color: #888;
+  font-weight: normal;
+}

@@ -19,6 +19,9 @@ module Geomatch
 
     config.load_solid_queue_database = true
 
+      config.time_zone = 'Brasilia'
+      config.active_record.default_timezone = :utc # O banco guarda em UTC, o Rails converte para você
+
     # I18n
     config.i18n.default_locale = :"pt-BR"
     config.i18n.available_locales = [:"pt-BR", :en]
@@ -46,4 +49,6 @@ module Geomatch
       "application.scss" => "application.css"
     }
   end
+
+
 end

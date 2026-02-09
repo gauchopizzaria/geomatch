@@ -221,17 +221,19 @@ function showQuickMessage(text) {
     // ========================================
     // 6. BOTTOM SHEET
     // ========================================
+    let startVh = 0;
     const bottomSheet = document.querySelector(".users-bottom-sheet");
     const handle = document.querySelector(".bottom-sheet-handle");
     if (bottomSheet && handle) {
       let startY = 0; let startHeight = 0; let isDraggingSheet = false;
       const SNAP_MIN = 25; const SNAP_MAX = 85; const SNAP_THRESHOLD = 50; 
       const onDragStart = (e) => {
-        isDraggingSheet = true;
-        bottomSheet.classList.add("dragging"); 
-        startY = e.touches ? e.touches[0].clientY : e.clientY;
-        startHeight = bottomSheet.getBoundingClientRect().height;
-      };
+  isDraggingSheet = true;
+  bottomSheet.classList.add("dragging");
+  startY = e.touches ? e.touches[0].clientY : e.clientY;
+  startHeight = bottomSheet.getBoundingClientRect().height;
+  startVh = (startHeight / window.innerHeight) * 100; // Salva a posição inicial
+};
       const onDragMove = (e) => {
         if (!isDraggingSheet) return;
         e.preventDefault(); 
@@ -244,16 +246,25 @@ function showQuickMessage(text) {
         if (newHeight > maxH) newHeight = maxH + (newHeight - maxH) * 0.2;
         bottomSheet.style.height = `${newHeight}px`;
       };
-      const onDragEnd = () => {
-        if (!isDraggingSheet) return;
-        isDraggingSheet = false;
-        bottomSheet.classList.remove("dragging"); 
-        const currentHeight = bottomSheet.getBoundingClientRect().height;
-        const viewportHeight = window.innerHeight;
-        const currentVh = (currentHeight / viewportHeight) * 100;
-        if (currentVh > SNAP_THRESHOLD) bottomSheet.style.height = `${SNAP_MAX}vh`;
-        else bottomSheet.style.height = `${SNAP_MIN}vh`;
-      };
+     const onDragEnd = () => {
+  if (!isDraggingSheet) return;
+  isDraggingSheet = false;
+  bottomSheet.classList.remove("dragging");
+
+  const currentHeight = bottomSheet.getBoundingClientRect().height;
+  const viewportHeight = window.innerHeight;
+  const currentVh = (currentHeight / viewportHeight) * 100;
+
+  // Sensibilidade: Se o usuário arrastar apenas 10% para cima ou para baixo, 
+  // a tela já completa o movimento sozinha.
+  const diff = currentVh - startVh; // Precisamos definir startVh no onDragStart
+
+  if (currentVh > 40) { // Se passar de 40% da tela, sobe tudo
+    bottomSheet.style.height = `${SNAP_MAX}vh`;
+  } else { // Senão, volta para o estado inicial
+    bottomSheet.style.height = `${SNAP_MIN}vh`;
+  }
+};
       handle.addEventListener("mousedown", onDragStart);
       handle.addEventListener("touchstart", onDragStart, { passive: false });
       window.addEventListener("mousemove", onDragMove);
@@ -374,6 +385,9 @@ function showQuickMessage(text) {
     }
 
     function updateUIWithUsers(users) {
+    
+      
+
         if (usersCountElement) usersCountElement.textContent = users.length;
         userMarkersGroup.clearLayers();
         
@@ -410,17 +424,24 @@ function showQuickMessage(text) {
                     userMarkersGroup.addLayer(marker);
                 }
 
+                const isOnline = user.online;
                 const li = document.createElement("li");
                 li.className = "user-list-item";
             
 
-                li.innerHTML = `
-                    ${avatarHtml}
-                    <div class="user-list-info">
-                        <span class="user-list-name">${user.username || user.display_name || 'Usuário'}</span>
-                        <span class="user-list-distance">${distDisplay} km</span>
-                    </div>
-                `;
+               li.innerHTML = `
+    ${avatarHtml}
+    <div class="user-list-info">
+        <div class="user-list-name-row" style="display: flex; align-items: center; gap: 5px;">
+            <span class="user-list-name">${user.username || user.display_name || 'Usuário'}</span>
+            <span class="header-status" style="font-size: 0.7rem;">
+                <span class="${isOnline ? 'dot-online' : 'dot-offline'}">●</span>
+                ${isOnline ? 'Online' : 'Offline'}
+            </span>
+        </div>
+        <div class="user-list-distance">${distDisplay} km</div>
+    </div>
+`;
                 li.addEventListener("click", () => {
                     if (!isNaN(uLat) && !isNaN(uLng)) {
                         map.flyTo([uLat, uLng], 16);
@@ -710,6 +731,14 @@ if (genderElement) {
     .skeleton-avatar { width: 40px; height: 40px; background: #444; border-radius: 50%; }
     .skeleton-text { flex: 1; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
     .skeleton-line { height: 10px; background: #444; border-radius: 4px; width: 80%; }
+    /* Adicione isso ao seu bloco de styles */
+.users-bottom-sheet {
+  transition: height 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* Transição suave */
+  will-change: height;
+}
+.users-bottom-sheet.dragging {
+  transition: none; /* Remove a transição enquanto arrasta para não dar lag */
+}
     `;
     document.head.appendChild(style);
 
@@ -841,4 +870,17 @@ if (genderElement) {
     }
 
   }); // Fim do AddEventListener DOMContentLoaded
+
+  // Envia um sinal de "estou aqui" a cada 2 minutos
+setInterval(() => {
+  if (fixedUserLat && fixedUserLng && !isUserInvisible) {
+    fetch(`/users/update_location?latitude=${fixedUserLat}&longitude=${fixedUserLng}`, {
+      method: 'POST',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      }
+    });
+  }
+}, 120000); // 120.000 ms = 2 minutos
+
 }); // Fim do ForEach
