@@ -186,7 +186,7 @@ end
       if u.is_a?(Hash)
         u # Já é JSON
       else
-        u.as_json(only: [:id, :username, :latitude, :longitude, :distance_km, :city]).merge({
+        u.as_json(only: [:id, :username, :latitude, :longitude, :distance_km, :city, :bio, :gender, :interested_in, :hobbies_list]).merge({
           avatar_url: u.avatar_url # Garante que avatar venha certo
         })
       end

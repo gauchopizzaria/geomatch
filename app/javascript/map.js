@@ -393,6 +393,7 @@ let isUserInvisible = false; // <-- Adicione esta linha
     }
 
     function showUserPopup(user) {
+      console.log("Dados do usuário recebidos:", user);
       if (!userPopup) return;
       
       userPopup.dataset.userId = user.id;
@@ -415,7 +416,7 @@ let isUserInvisible = false; // <-- Adicione esta linha
       
       // Bio
       const bio = userPopup.querySelector("#popup-bio");
-      if(bio) bio.textContent = user.bio || "📚 Advogado de 32 anos, apaixonado por livros, palavras e boas histórias. ✍️ Explorador do mundo, sempre em busca de destinos fascinantes, culturas diferentes e pratos que contam histórias através do sabor. 🌍🍴 Se viagens, literatura e descobertas gastronômicas também fazem seu coração bater mais forte, vamos compartilhar essa jornada! 😉";
+      if(bio) bio.textContent = user.bio || "Não informado!";
 
       // Gênero
       const gender = userPopup.querySelector("#popup-gender");

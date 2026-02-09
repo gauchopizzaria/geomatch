@@ -20,24 +20,28 @@
       end
 
       # 3. Mapeia os resultados para o formato JSON
-      query.map do |u|
-        # Recalcula a distância para garantir precisão e formato (round(1))
-        distance = Geocoder::Calculations.distance_between(
-          [@user.latitude, @user.longitude],
-          [u.latitude, u.longitude]
-        ).round(1)
+query.map do |u|
+  # Recalcula a distância para garantir precisão
+  distance = Geocoder::Calculations.distance_between(
+    [@user.latitude, @user.longitude],
+    [u.latitude, u.longitude]
+  ).round(1)
 
-        {
-          id: u.id,
-          username: u.username,
-          latitude: u.latitude,
-          longitude: u.longitude,
-          # Adiciona o campo 'gender' ao retorno para que o frontend possa usá-lo
-          gender: u.gender, 
-          city: u.city, 
-          avatar_url: (u.avatar.attached? ? Rails.application.routes.url_helpers.rails_blob_url(u.avatar, only_path: true) : nil),
-          distance_km: distance
-        }
-      end
+  {
+    id: u.id,
+    username: u.username,
+    latitude: u.latitude,
+    longitude: u.longitude,
+    gender: u.gender, 
+    city: u.city,
+    # --- ADICIONE ESTAS LINHAS ABAIXO ---
+    bio: u.bio,
+    interested_in: u.interested_in,
+    hobbies_list: u.hobbies_list,
+    # ------------------------------------
+    avatar_url: (u.avatar.attached? ? Rails.application.routes.url_helpers.rails_blob_url(u.avatar, only_path: true) : nil),
+    distance_km: distance
+  }
+end
     end
   end
