@@ -161,23 +161,63 @@ let isUserInvisible = false; // <-- Adicione esta linha
     // ========================================
     // 5. FILTRO GÊNERO
     // ========================================
-    if (genderToggleBtn) {
-      genderToggleBtn.addEventListener("click", () => {
-        if (currentGenderFilter === "all") currentGenderFilter = "male";
-        else if (currentGenderFilter === "male") currentGenderFilter = "female";
-        else currentGenderFilter = "all";
+if (genderToggleBtn) {
+  genderToggleBtn.addEventListener("click", () => {
+    let message = "";
 
-        localStorage.setItem(STORAGE_KEYS.GENDER_FILTER, currentGenderFilter);
-        genderToggleBtn.style.opacity = "0.5";
-        setTimeout(() => genderToggleBtn.style.opacity = "1", 200);
-
-        if (fixedUserLat && fixedUserLng) {
-          showLoadingAnimation();
-          loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
-        }
-      });
+    // 1. Ciclo de estados
+    if (currentGenderFilter === "all") {
+      currentGenderFilter = "male";
+      message = "Exibindo apenas: Homens";
+    } else if (currentGenderFilter === "male") {
+      currentGenderFilter = "female";
+      message = "Exibindo apenas: Mulheres";
+    } else if (currentGenderFilter === "female") {
+      currentGenderFilter = "non-binary";
+      message = "Exibindo apenas: Não Binários";
+    } else {
+      currentGenderFilter = "all";
+      message = "Exibindo: Todos";
     }
 
+    // 2. Salva a escolha
+    localStorage.setItem(STORAGE_KEYS.GENDER_FILTER, currentGenderFilter);
+    
+    // 3. Mostra a mensagem rápida (Toast)
+    showQuickMessage(message);
+
+    // 4. Feedback visual de clique (pulso)
+    genderToggleBtn.style.transform = "scale(0.8)";
+    setTimeout(() => {
+      genderToggleBtn.style.transform = "scale(1)";
+      
+      // 5. Recarrega os usuários no mapa
+      if (fixedUserLat && fixedUserLng) {
+        showLoadingAnimation();
+        loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
+      }
+    }, 150);
+  });
+}
+
+// Função para a mensagem rápida
+function showQuickMessage(text) {
+  let toast = document.getElementById("gender-toast");
+  
+  if (!toast) {
+    toast = document.createElement("div");
+    toast.id = "gender-toast";
+    document.body.appendChild(toast);
+  }
+
+  toast.textContent = text;
+  toast.classList.add("show");
+
+  // Esconde após 2 segundos
+  setTimeout(() => {
+    toast.classList.remove("show");
+  }, 2000);
+}
     // ========================================
     // 6. BOTTOM SHEET
     // ========================================
@@ -358,7 +398,7 @@ let isUserInvisible = false; // <-- Adicione esta linha
 
                 // Verifica se há outros usuários na mesma posição exata
              // e adiciona um desvio de ~1-2 metros (0.00001 graus)
-                const jitter = () => (Math.random() - 0.5) * 0.0001;
+                const jitter = () => (Math.random() - 0.5) * 0.0005;
                 uLat += jitter();
                 uLng += jitter();
 
@@ -419,8 +459,24 @@ let isUserInvisible = false; // <-- Adicione esta linha
       if(bio) bio.textContent = user.bio || "Não informado!";
 
       // Gênero
-      const gender = userPopup.querySelector("#popup-gender");
-      if(gender) gender.textContent = user.gender ? (user.gender === 'male' ? 'Masculino' : 'Feminino') : "Não informado";
+const genderElement = userPopup.querySelector("#popup-gender");
+if (genderElement) {
+  const genderValue = user.gender ? user.gender.toLowerCase() : "";
+
+  let genderText = "Não informado";
+
+  if (genderValue === 'homem' || genderValue === 'male') {
+    genderText = 'Masculino';
+  } else if (genderValue === 'mulher' || genderValue === 'female') {
+    genderText = 'Feminino';
+  } else if (genderValue === 'não binário' || genderValue === 'nao binario' || genderValue === 'non-binary') {
+    genderText = 'Não Binário';
+  } else if (genderValue === 'nao-dizer') {
+    genderText = 'Prefere não dizer';
+  }
+
+  genderElement.textContent = genderText;
+}
       
       // Interesse
       const interest = userPopup.querySelector("#popup-interest");
