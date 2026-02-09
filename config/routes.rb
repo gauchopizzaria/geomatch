@@ -125,5 +125,7 @@ Rails.application.routes.draw do
   # 8. PUSH SUBSCRIPTIONS
   # =================================================================
   resources :push_subscriptions, only: [:create, :destroy]
+
+  resources :reports, only: [:create]
   
 end

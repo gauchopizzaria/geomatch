@@ -2,16 +2,19 @@
 // TELA DE DENÚNCIA RÁPIDA (CORRIGIDA - BOTÃO MAIS ALTO)
 // =========================================================
 
+html, body {
+  height: auto;
+  overflow-y: auto; /* Garante que o scroll do navegador funcione */
+}
+
 .report-wrapper {
-  background-color: #050507; /* Fundo Preto Profundo */
-  /* Removemos min-height 100vh para o conteudo nao esticar forçadamente */
-  min-height: 100vh; 
+  background-color: #050507; 
+  min-height: 100vh;
   width: 100%;
-  font-family: 'Poppins', sans-serif;
-  color: #fff;
   display: flex;
   flex-direction: column;
-  /* Isso permite que o conteúdo dite a altura */
+  /* Garante que o fundo preto cubra tudo, mesmo no scroll */
+  position: relative; 
 }
 
 /* --- 1. HEADER --- */
@@ -57,13 +60,12 @@
 
 /* --- 2. BODY --- */
 .report-body {
-  /* Flex 1 aqui faria ocupar a tela toda. Removemos para o botão subir. */
-  padding: 10px 25px; /* Reduzi um pouco o padding superior */
+  flex: 1 0 auto; /* Permite que o corpo cresça e empurre o footer */
+  padding: 10px 25px;
   display: flex;
   flex-direction: column;
-  gap: 25px;
+  gap: 20px;
 }
-
 /* Área de Texto */
 .form-section {
   display: flex;
@@ -167,13 +169,11 @@
 
 /* --- 3. FOOTER (CORREÇÃO DE POSIÇÃO) --- */
 .report-footer {
-  padding: 0 25px 40px 25px;
+  flex-shrink: 0; /* Impede o botão de amassar */
+  padding: 20px 25px 80px 25px; /* O padding de 80px evita que o botão fique atrás do menu inferior */
   display: flex;
   justify-content: center;
-  
-  /* AQUI ESTÁ A MUDANÇA: */
-  /* Removemos 'margin-top: auto' que empurrava para baixo */
-  margin-top: 40px; /* Dá apenas um espaço fixo do formulário */
+  background-color: #050507; /* Garante que não apareça branco aqui */
 }
 
 .btn-submit-report {
