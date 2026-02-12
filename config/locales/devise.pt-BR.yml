@@ -1,0 +1,17 @@
+# config/locales/devise.pt-BR.yml
+
+pt-BR:
+  devise:
+    passwords:
+      send_instructions: "Você receberá um e-mail com instruções sobre como redefinir sua senha em alguns minutos."
+      send_paranoid_instructions: "Se o seu endereço de e-mail existir em nosso banco de dados, você receberá um link de recuperação de senha em seu e-mail em alguns minutos."
+      updated: "Sua senha foi alterada com sucesso. Você está logado."
+      updated_not_active: "Sua senha foi alterada com sucesso."
+      no_token: "Você não pode acessar esta página sem vir de um e-mail de redefinição de senha. Se você veio de um e-mail de redefinição de senha, certifique-se de ter usado o URL completo fornecido."
+    mailer:
+      reset_password_instructions:
+        subject: "Instruções para redefinir sua senha"
+    failure:
+      invalid: "E-mail ou senha inválidos."
+      not_found_in_database: "E-mail ou senha inválidos."
+    # ... outras traduções do Devise conforme necessário
