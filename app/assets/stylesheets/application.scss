@@ -137,6 +137,14 @@
   box-sizing: border-box;
 }
 
+html.dark-mode, body.dark-mode {
+  --color-background: #121212;
+  --color-text: #f8f2e7;
+  // ... outras variáveis de dark mode
+}
+
+
+
 html, body {
   margin: 0;
   padding: 0;

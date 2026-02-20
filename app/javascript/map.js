@@ -20,8 +20,8 @@ let isUserInvisible = false; // <-- Adicione esta linha
     // ========================================
     // 1. CONFIGURAÇÃO DO MAPA
     // ========================================
-    const defaultLat = -14.788;
-    const defaultLng = -39.278;
+    const defaultLat = -14.2350;
+    const defaultLng = -51.9253;
     const defaultZoom = 15;
 
     const map = L.map("map", {

@@ -9,9 +9,13 @@
       <button class="header-btn" data-action="click->filters#open">
         <%= image_tag "filtro-dourado.svg", alt: "Filtros" %>
       </button>
-      <button class="header-btn">
-        <%= image_tag "sol-dourado.svg", alt: "Tema" %>
-      </button>
+     <button class="header-btn" 
+        data-controller="theme" 
+        data-action="click->theme#toggle"
+        data-theme-sol-icon="<%= asset_path('sol-dourado.svg') %>"
+        data-theme-lua-icon="<%= asset_path('lua-dourado.svg') %>">
+  <%= image_tag "sol-dourado.svg", alt: "Tema", data: { theme_target: "icon" } %>
+</button>
     </div>
   </div>
 
