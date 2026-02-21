@@ -1,4 +1,5 @@
 import L from "leaflet";
+import { toggleLiveTracking, isCurrentlyTracking } from "./live_location";
 window.L = L;
 
 const INITIAL_RANGE_METERS = 150; 
@@ -11,6 +12,7 @@ let isUserInvisible = false; // <-- Adicione esta linha
 
 ["DOMContentLoaded", "turbo:load"].forEach((evt) => {
   document.addEventListener(evt, () => {
+    
     const mapContainer = document.getElementById("map");
     if (!mapContainer) return;
 
@@ -70,6 +72,9 @@ let isUserInvisible = false; // <-- Adicione esta linha
     const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
     const genderToggleBtn = document.getElementById("gender-filter-toggle");
 
+    const fabLiveTracking = document.getElementById("fab-live-tracking");
+    let lastUserFetchTime = 0;
+    const FETCH_COOLDOWN_MS = 10000;
     // ========================================
     // 3. SLIDER DE RAIO & SINCRONIZAÇÃO VISUAL
     // ========================================
@@ -568,6 +573,40 @@ if (genderElement) {
                 map.flyTo([defaultLat, defaultLng], defaultZoom);
             }
         });
+    }
+
+    // ========================================
+    // MODO TEMPO REAL (FOLLOW ME)
+    // ========================================
+    if (fabLiveTracking) {
+      fabLiveTracking.addEventListener("click", () => {
+        // Usa a função do novo arquivo
+        toggleLiveTracking(map, fabLiveTracking, (newLat, newLng) => {
+          // Atualiza as variáveis globais de posição do usuário
+          fixedUserLat = newLat;
+          fixedUserLng = newLng;
+
+          // 1. Atualiza visualmente o Radar e a Posição da Câmera (Rápido)
+          updateRadarCircle();
+          addUserMarker(newLat, newLng);
+          updateSpotlightPosition();
+
+          // 2. Atualiza os usuários próximos com um "cooldown" para não derrubar o servidor (A cada 10s)
+          const now = Date.now();
+          if (now - lastUserFetchTime > FETCH_COOLDOWN_MS) {
+            lastUserFetchTime = now;
+            loadNearbyUsers(newLat, newLng, currentRangeMeters, currentGenderFilter);
+            
+            // Também manda o ping para o servidor dizendo onde o usuário está
+            if (!isUserInvisible) {
+              fetch(`/users/update_location?latitude=${newLat}&longitude=${newLng}`, {
+                method: 'POST',
+                headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
+              });
+            }
+          }
+        });
+      });
     }
 
     // ========================================
