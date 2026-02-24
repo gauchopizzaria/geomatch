@@ -38,9 +38,32 @@ document.addEventListener('turbo:load', () => {
         //     MENSAGEM RECEBIDA
         // -------------------------
         if (data.message) {
-          appendMessageToDOM(data.message);
-        }
-      },
+    appendMessageToDOM(data.message);
+
+    // --- LÓGICA DE MOVER PARA O TOPO ---
+    // 1. Tenta encontrar a linha da conversa na lista lateral/index
+    const conversationList = document.getElementById('conversations-master-list');
+    // Você precisa adicionar id="match-row-<%= match.id %>" no seu index.html.erb
+    const conversationRow = document.getElementById(`match-row-${data.message.match_id}`);
+
+    if (conversationList && conversationRow) {
+      // Move para o topo da lista
+      conversationList.prepend(conversationRow);
+
+      // Atualiza o texto da prévia da mensagem na lista
+      const lastMsgText = conversationRow.querySelector('.conv-last-message');
+      if (lastMsgText) {
+        lastMsgText.innerText = data.message.content.substring(0, 30);
+      }
+      
+      // Remove o prefixo "Você:" se a mensagem for de outra pessoa
+      const prefix = conversationRow.querySelector('.msg-prefix');
+      if (prefix && data.message.sender_id !== currentUserId) {
+        prefix.remove();
+      }
+    }
+  }
+},
 
       sendTypingStatus(isTyping) {
         this.perform("receive", { typing: isTyping });

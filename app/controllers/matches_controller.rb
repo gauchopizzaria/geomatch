@@ -4,31 +4,30 @@ class MatchesController < ApplicationController
   before_action :set_match, only: [:show, :clear_conversation]
 
   def index
-    # 1. Busca matches e evita consultas repetitivas (Eager Loading)
-    all_matches = current_user.matches.includes(:messages, :user, :matched_user)
+  # 1. Busca matches iniciados ordenados pela data da última mensagem
+  # Usamos a função de agregação MAX diretamente no ORDER BY para evitar o erro de coluna inexistente no Postgres
+  @matches_initiated = current_user.matches
+    .joins(:messages)
+    .select('matches.*, MAX(messages.created_at) AS last_msg_at')
+    .group('matches.id')
+    .order('MAX(messages.created_at) DESC') # Repetimos a função aqui para o Postgres aceitar
+    .includes(:user, :matched_user)
 
-    @matches_initiated = []
-    @matches_uninitiated = []
+  # 2. Pega os IDs para não duplicar na lista de baixo
+  initiated_ids = @matches_initiated.pluck(:id)
 
-    # Otimização: Carregar IDs dos likes em memória
-    my_likes_ids = current_user.likes.pluck(:liked_id)
+  # 3. Matches não iniciados (mantendo sua lógica original de verificação de likes)
+  @all_uninitiated = current_user.matches
+    .where.not(id: initiated_ids)
+    .includes(:user, :matched_user)
 
-    all_matches.each do |match|
-      if match.messages.any?
-        @matches_initiated << match
-      else
-        other = match.other_user(current_user)
-        
-        # Verifica se ambos se curtiram (Lógica de Match)
-        i_liked = Like.exists?(liker_id: current_user.id, liked_id: other.id)
-        he_liked = Like.exists?(liker_id: other.id, liked_id: current_user.id)
-        
-        if i_liked && he_liked
-          @matches_uninitiated << match
-        end
-      end
-    end
+  @matches_uninitiated = @all_uninitiated.select do |match|
+    other = match.other_user(current_user)
+    # Sua lógica de segurança de likes
+    Like.exists?(liker_id: current_user.id, liked_id: other.id) &&
+    Like.exists?(liker_id: other.id, liked_id: current_user.id)
   end
+end
 
   def show
     # @match já definido pelo before_action de forma segura

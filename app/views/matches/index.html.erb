@@ -72,10 +72,10 @@
     </div>
 
     <% if @matches_initiated.any? %>
-      <div class="conversations-list">
+      <div class="conversations-list" id="conversations-master-list">
         <% @matches_initiated.each do |match| %>
           <% other = match.other_user(current_user) %>
-          <%= link_to match_path(match), class: "conversation-row" do %>
+          <%= link_to match_path(match), class: "conversation-row", id: "match-row-#{match.id}" do %>
             
             <div class="conv-avatar-container">
               <% if other.avatar.attached? %>
