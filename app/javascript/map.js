@@ -580,24 +580,21 @@ if (genderElement) {
     // ========================================
     if (fabLiveTracking) {
       fabLiveTracking.addEventListener("click", () => {
-        // Usa a função do novo arquivo
-        toggleLiveTracking(map, fabLiveTracking, (newLat, newLng) => {
-          // Atualiza as variáveis globais de posição do usuário
+        
+        // toggleLiveTracking retorna 'true' se ligou e 'false' se desligou
+        const isNowTracking = toggleLiveTracking(map, fabLiveTracking, (newLat, newLng) => {
           fixedUserLat = newLat;
           fixedUserLng = newLng;
 
-          // 1. Atualiza visualmente o Radar e a Posição da Câmera (Rápido)
           updateRadarCircle();
           addUserMarker(newLat, newLng);
           updateSpotlightPosition();
 
-          // 2. Atualiza os usuários próximos com um "cooldown" para não derrubar o servidor (A cada 10s)
           const now = Date.now();
           if (now - lastUserFetchTime > FETCH_COOLDOWN_MS) {
             lastUserFetchTime = now;
             loadNearbyUsers(newLat, newLng, currentRangeMeters, currentGenderFilter);
             
-            // Também manda o ping para o servidor dizendo onde o usuário está
             if (!isUserInvisible) {
               fetch(`/users/update_location?latitude=${newLat}&longitude=${newLng}`, {
                 method: 'POST',
@@ -606,6 +603,14 @@ if (genderElement) {
             }
           }
         });
+
+        // 👇 LÓGICA DO POPUP (TOAST) DE AVISO 👇
+        if (isNowTracking) {
+          showTrackingToast("✅ Visibilidade em tempo real ligada! Prepare-se para encontros espontâneos.");
+        } else {
+          showTrackingToast("❌ Visibilidade em tempo real desativada. Sua localização não está mais visível, impossibilitando novos encontros espontâneos no mapa.");
+        }
+
       });
     }
 
@@ -767,6 +772,38 @@ if (genderElement) {
             forceLocationUpdate();
         }
     });
+
+    // ========================================
+    // HELPER: POPUP RÁPIDO DO TEMPO REAL
+    // ========================================
+    function showTrackingToast(text) {
+      let toast = document.getElementById("tracking-toast");
+      
+      // Se o elemento ainda não existir no HTML, nós o criamos
+      if (!toast) {
+        toast = document.createElement("div");
+        toast.id = "tracking-toast";
+        document.body.appendChild(toast);
+      }
+
+      toast.textContent = text;
+      
+      // Remove a classe se ela já estiver lá (para reiniciar a animação se clicar rápido)
+      toast.classList.remove("show");
+      
+      // Um pequeno delay para o navegador processar a remoção antes de adicionar de novo
+      setTimeout(() => {
+        toast.classList.add("show");
+      }, 10);
+
+      // Limpa qualquer temporizador anterior para não bugar se clicar várias vezes seguidas
+      if (window.trackingToastTimer) clearTimeout(window.trackingToastTimer);
+
+      // Esconde o popup exatamente após 3 segundos (3000 milissegundos)
+      window.trackingToastTimer = setTimeout(() => {
+        toast.classList.remove("show");
+      }, 3000);
+    }
 
     const style = document.createElement("style");
     // ... (o resto do seu estilo permanece igual)

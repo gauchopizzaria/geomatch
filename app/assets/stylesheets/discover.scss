@@ -816,3 +816,33 @@
   70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
   100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
 }
+
+/* Estilo do Popup de Aviso de Rastreamento */
+    #tracking-toast {
+      position: fixed;
+      bottom: 120px; /* Fica acima do Bottom Sheet e dos botões */
+      left: 50%;
+      transform: translateX(-50%); /* Centraliza na tela */
+      background-color: rgba(26, 26, 26, 0.95); /* Fundo escuro levemente transparente */
+      color: #fff;
+      padding: 12px 20px;
+      border-radius: 8px;
+      border: 1px solid #d4af37; /* Bordinha dourada combinando com o tema */
+      font-size: 14px;
+      line-height: 1.4;
+      text-align: center;
+      width: 90%;
+      max-width: 350px;
+      z-index: 999999;
+      
+      /* Animação suave */
+      opacity: 0;
+      visibility: hidden;
+      transition: opacity 0.3s ease, visibility 0.3s ease;
+    }
+
+    /* Classe que faz o toast aparecer */
+    #tracking-toast.show {
+      opacity: 1;
+      visibility: visible;
+    }
