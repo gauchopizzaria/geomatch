@@ -751,6 +751,15 @@ if (genderElement) {
     // 1. Chama imediatamente ao abrir
     forceLocationUpdate();
 
+    setTimeout(() => {
+        if (fabLiveTracking) {
+            // O JavaScript simula um clique no botão, ativando a função de rastreio
+            fabLiveTracking.click();
+            console.log("Rastreamento automático ativado na entrada da tela.");
+        }
+    }, 1000); // 1 segundo de delay
+    // 👆 FIM DO BLOCO 👆
+
     // 2. Chama toda vez que o usuário voltar para a aba/app (Sair e Entrar)
     document.addEventListener("visibilitychange", () => {
         if (document.visibilityState === "visible") {
