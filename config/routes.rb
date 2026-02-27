@@ -127,5 +127,10 @@ Rails.application.routes.draw do
   resources :push_subscriptions, only: [:create, :destroy]
 
   resources :reports, only: [:create]
+
+  # Rota exclusiva para receber a localização do app nativo Android
+  namespace :api do
+    post 'atualizar_localizacao', to: 'locations#update'
+  end
   
 end
