@@ -24,25 +24,23 @@ const setupServiceWorkerMessageListener = () => {
 };
 
 document.addEventListener("turbo:load", () => {
-  // Configura o ouvinte de mensagens IMEDIATAMENTE
-  setupServiceWorkerMessageListener();
-  
-  // Verifica se o navegador suporta Service Workers e Push API
-  if ("serviceWorker" in navigator && "PushManager" in window) {
-    console.log("Service Worker e Push API suportados.");
+  console.log("Iniciando verificação de Service Worker...");
 
-    // 1. Registrar o Service Worker
-    navigator.serviceWorker.register("/service-worker.js")
+  if ("serviceWorker" in navigator) {
+    // O segredo está em colocar o caminho completo e tratar o erro
+    navigator.serviceWorker.register("/service-worker.js", { scope: "/" })
       .then(registration => {
-        console.log("Service Worker registrado com sucesso:", registration);
-        // Após o registro, tente se inscrever para notificações
+        console.log("SUCESSO: Service Worker registrado com escopo:", registration.scope);
+        // Tenta garantir que o worker atualize imediatamente
+        registration.update();
         subscribeUserToPush(registration);
       })
       .catch(error => {
-        console.error("Falha ao registrar o Service Worker:", error);
+        // ISSO VAI APARECER NO CONSOLE SE FALHAR
+        console.error("ERRO CRÍTICO no registro do Worker:", error.message);
       });
   } else {
-    console.warn("Notificações Push não suportadas neste navegador.");
+    console.error("O navegador/WebView não suporta Service Workers.");
   }
 });
 
