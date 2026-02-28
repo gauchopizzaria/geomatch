@@ -24,23 +24,25 @@ const setupServiceWorkerMessageListener = () => {
 };
 
 document.addEventListener("turbo:load", () => {
-  console.log("Iniciando verificação de Service Worker...");
+  // Configura o ouvinte de mensagens IMEDIATAMENTE
+  setupServiceWorkerMessageListener();
+  
+  // Verifica se o navegador suporta Service Workers e Push API
+  if ("serviceWorker" in navigator && "PushManager" in window) {
+    console.log("Service Worker e Push API suportados.");
 
-  if ("serviceWorker" in navigator) {
-    // O segredo está em colocar o caminho completo e tratar o erro
-    navigator.serviceWorker.register("/service-worker.js", { scope: "/" })
+    // 1. Registrar o Service Worker
+    navigator.serviceWorker.register("/service-worker.js")
       .then(registration => {
-        console.log("SUCESSO: Service Worker registrado com escopo:", registration.scope);
-        // Tenta garantir que o worker atualize imediatamente
-        registration.update();
+        console.log("Service Worker registrado com sucesso:", registration);
+        // Após o registro, tente se inscrever para notificações
         subscribeUserToPush(registration);
       })
       .catch(error => {
-        // ISSO VAI APARECER NO CONSOLE SE FALHAR
-        console.error("ERRO CRÍTICO no registro do Worker:", error.message);
+        console.error("Falha ao registrar o Service Worker:", error);
       });
   } else {
-    console.error("O navegador/WebView não suporta Service Workers.");
+    console.warn("Notificações Push não suportadas neste navegador.");
   }
 });
 
@@ -64,28 +66,30 @@ function subscribeUserToPush(registration) {
   const applicationServerKeyElement = document.querySelector('meta[name="vapid-public-key"]');
   if (!applicationServerKeyElement) return;
 
-  const applicationServerKey = applicationServerKeyElement.content;
-  const convertedVapidKey = urlBase64ToUint8Array(applicationServerKey);
+  // Usa uma verificação segura para o objeto Notification
+  const notificationApi = window.Notification || self.Notification;
 
-  // No mobile, é melhor pedir permissão explicitamente via interação do usuário
-  // Mas aqui vamos garantir que a Promise seja tratada corretamente
-  Notification.requestPermission().then(permission => {
-    console.log("Status da permissão:", permission);
-    if (permission === "granted") {
-      registration.pushManager.getSubscription().then(existingSubscription => {
-        if (existingSubscription) return existingSubscription;
+  if (notificationApi) {
+    notificationApi.requestPermission().then(permission => {
+      console.log("Status da permissão:", permission);
+      if (permission === "granted") {
+        registration.pushManager.getSubscription().then(existingSubscription => {
+          if (existingSubscription) return existingSubscription;
 
-        return registration.pushManager.subscribe({
-          userVisibleOnly: true,
-          applicationServerKey: convertedVapidKey
-        });
-      })
-      .then(subscription => {
-        sendSubscriptionToBackend(subscription);
-      })
-      .catch(error => console.error("Erro na inscrição Push:", error));
-    }
-  });
+          return registration.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: urlBase64ToUint8Array(applicationServerKeyElement.content)
+          });
+        })
+        .then(subscription => {
+          sendSubscriptionToBackend(subscription);
+        })
+        .catch(error => console.error("Erro na inscrição Push:", error));
+      }
+    });
+  } else {
+    console.warn("API de Notificação não encontrada neste ambiente.");
+  }
 }
 
 function sendSubscriptionToBackend(subscription) {

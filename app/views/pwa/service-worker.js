@@ -9,21 +9,16 @@ self.addEventListener("push", async (event) => {
     }
   }
 
-  // 1. Tenta encontrar abas abertas da aplicação
-  const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-  
-  let notifiedNatively = false;
-
-  // 2. Itera sobre os clientes para tentar enviar a mensagem para a ponte Android
-  for (const client of allClients) {
-    // Envia mensagem para o arquivo JS que está na página (ex: push_notifications.js)
-    client.postMessage({
-      type: 'PUSH_RECEIVED',
-      title: payload.title,
-      body: payload.body,
-      path: payload.data.path
-    });
-    notifiedNatively = true;
+ // Tenta a ponte nativa primeiro
+  if (self.Android && typeof self.Android.mostrarNotificacao === 'function') {
+      self.Android.mostrarNotificacao(payload.title, payload.body, payload.data.path);
+  } else {
+      // Fallback seguro usando self.registration
+      const options = {
+          body: payload.body,
+          data: payload.data
+      };
+      event.waitUntil(self.registration.showNotification(payload.title, options));
   }
 
   // 3. Se não houver abas abertas (App em background total), usamos o fallback padrão
