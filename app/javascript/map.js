@@ -2,8 +2,8 @@ import L from "leaflet";
 import { toggleLiveTracking, isCurrentlyTracking } from "./live_location";
 window.L = L;
 
-let fixedUserLat = null;
-let fixedUserLng = null;
+var fixedUserLat = fixedUserLat || null;
+var fixedUserLng = fixedUserLng || null;
 
 
 const INITIAL_RANGE_METERS = 150; 

@@ -29,35 +29,33 @@ class Message < ApplicationRecord
   end
 
   # Envia a notificação push (para quem está com o celular bloqueado ou app fechado)
-  def send_push_notification
-    recipient = match.other_user(sender)
-    return if recipient == sender
+ def send_push_notification
+  recipient = match.other_user(sender)
+  return if recipient == sender
 
-    # Itera sobre todas as inscrições de dispositivos do destinatário
-    recipient.push_subscriptions.each do |subscription|
-      begin
-        WebPush.payload_send(
-          message: "Nova mensagem de #{sender.display_name}: #{content.truncate(50)}",
-          endpoint: subscription.endpoint,
-          p256dh: subscription.p256dh,
-          auth: subscription.auth,
-          vapid: {
-            subject: 'mailto:seu_email@exemplo.com',
-            public_key: ENV['VAPID_PUBLIC_KEY'],
-            private_key: ENV['VAPID_PRIVATE_KEY']
-          },
-          payload: { 
-            title: "Geomatch", 
-            body: "Nova mensagem de #{sender.display_name}", 
-            data: { path: "/matches/#{match.id}" } 
-          }.to_json
-        )
-      rescue WebPush::ExpiredSubscription
-        # Remove a inscrição se ela não for mais válida
-        subscription.destroy
-      rescue => e
-        Rails.logger.error "Erro ao enviar push: #{e.message}"
-      end
+  recipient.push_subscriptions.each do |subscription|
+    begin
+      # O segredo é passar o JSON diretamente no campo 'message'
+      WebPush.payload_send(
+        message: { 
+          title: "GeoMatch", 
+          body: "Nova mensagem de #{sender.display_name}: #{content.truncate(50)}", 
+          data: { path: "/matches/#{match.id}" } 
+        }.to_json,
+        endpoint: subscription.endpoint,
+        p256dh: subscription.p256dh,
+        auth: subscription.auth,
+        vapid: {
+          subject: 'mailto:suporte@geomtachbr.com', # Use o seu email real aqui
+          public_key: ENV['VAPID_PUBLIC_KEY'],
+          private_key: ENV['VAPID_PRIVATE_KEY']
+        }
+      )
+    rescue WebPush::ExpiredSubscription
+      subscription.destroy
+    rescue => e
+      Rails.logger.error "Erro ao enviar push: #{e.message}"
     end
   end
+end
 end
