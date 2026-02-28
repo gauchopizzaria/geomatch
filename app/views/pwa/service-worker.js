@@ -1,50 +1,46 @@
-self.addEventListener("push", async (event) => {
+// service-worker.js
+
+self.addEventListener("push", (event) => { // Remova o async daqui
   let payload = { title: "GeoMatch", body: "Nova notificação!", data: { path: "/" } };
 
   if (event.data) {
     try {
-      payload = await event.data.json();
+      // Use o método síncrono .json() para garantir compatibilidade na WebView
+      payload = event.data.json();
     } catch (e) {
       payload.body = event.data.text();
     }
   }
 
-  // 1. Tenta a ponte nativa Android primeiro (O que funcionou no seu teste)
-  if (typeof Android !== 'undefined' && Android.mostrarNotificacao) {
-    Android.mostrarNotificacao(payload.title, payload.body, payload.data.path);
-  } 
-  // 2. Se não for Android, tenta avisar as janelas abertas (Página do JS)
-  else {
-    const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-    
-    if (allClients.length > 0) {
-      allClients.forEach(client => {
-        client.postMessage({
-          type: 'PUSH_RECEIVED',
-          title: payload.title,
-          body: payload.body,
-          path: payload.data.path
+  // Envolva tudo em um waitUntil para o Service Worker não "dormir" antes de terminar
+  event.waitUntil((async () => {
+    // 1. Tenta a ponte nativa Android primeiro
+    if (typeof Android !== 'undefined' && Android.mostrarNotificacao) {
+      Android.mostrarNotificacao(payload.title, payload.body, payload.data.path || "/");
+    } 
+    // 2. Se não for Android ou a ponte falhar, tenta as janelas abertas
+    else {
+      const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+      
+      if (allClients.length > 0) {
+        allClients.forEach(client => {
+          client.postMessage({
+            type: 'PUSH_RECEIVED',
+            title: payload.title,
+            body: payload.body,
+            path: payload.data ? payload.data.path : "/"
+          });
         });
-      });
-    } else {
-      // 3. Fallback final apenas se não houver outra opção
-      const options = {
-        body: payload.body,
-        data: payload.data,
-        icon: '/icon.png'
-      };
-      // Usamos uma verificação extra para evitar o erro do print
-      if (self.registration && 'showNotification' in self.registration) {
-        event.waitUntil(self.registration.showNotification(payload.title, options));
+      } else {
+        // 3. Fallback para notificação padrão do navegador
+        const options = {
+          body: payload.body,
+          data: payload.data,
+          icon: '/assets/logo.png', // Verifique se este caminho existe
+          badge: '/assets/logo.png'
+        };
+        await self.registration.showNotification(payload.title, options);
       }
     }
-  }
-});
-
-self.addEventListener("notificationclick", function(event) {
-  event.notification.close();
-  const path = event.notification.data.path;
-  event.waitUntil(
-    clients.openWindow(path)
-  );
+  })());
 });
