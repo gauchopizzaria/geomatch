@@ -32,22 +32,20 @@ document.addEventListener("turbo:load", () => {
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/service-worker.js", { scope: "/" })
-      .then(registration => {
-        console.log("Service Worker registrado com sucesso.");
-        
-        // AJUSTE AQUI: Verificamos o PushManager no registro, não apenas no window
-        const pushManager = registration.pushManager || window.PushManager;
+  .then(async (registration) => {
+    console.log("Service Worker registrado.");
 
-        if (pushManager) {
-          console.log("PushManager detectado. Tentando inscrever...");
-          subscribeUserToPush(registration);
-        } else {
-          console.warn("ALERTA: PushManager não encontrado. O celular não receberá push real.");
-        }
-      })
-      .catch(error => {
-        console.error("Falha ao registrar o Service Worker:", error);
-      });
+    // Tenta encontrar o PushManager de 3 formas diferentes
+    const pushManager = registration.pushManager || window.PushManager || self.PushManager;
+
+    if (pushManager) {
+      console.log("PushManager encontrado! Iniciando inscrição...");
+      subscribeUserToPush(registration);
+    } else {
+      // Se ainda assim não encontrar, o Android está bloqueando a nível de sistema
+      console.error("ERRO: PushManager continua indisponível. Verifique as permissões da WebView.");
+    }
+  });
   }
 });
 
