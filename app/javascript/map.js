@@ -604,16 +604,35 @@ if (genderElement) {
           }
         });
 
-        // 👇 LÓGICA DO POPUP (TOAST) DE AVISO 👇
-        if (isNowTracking) {
-          showTrackingToast("✅ Visibilidade em tempo real ligada! Prepare-se para encontros espontâneos.");
-        } else {
-          showTrackingToast("❌ Visibilidade em tempo real desativada. Sua localização não está mais visível, impossibilitando novos encontros espontâneos no mapa.");
-        }
+        // 👇 INTEGRAÇÃO COM O ANDROID E AVISOS 👇
+        
+        // Tenta obter o ID do utilizador logado a partir da meta tag
+        const metaUserId = document.querySelector('meta[name="current-user-id"]');
+        const userId = metaUserId ? metaUserId.content : null;
 
+        if (isNowTracking) {
+          // O UTILIZADOR LIGOU O RASTREAMENTO
+          showTrackingToast("✅ Visibilidade em tempo real ligada! Prepare-se para encontros espontâneos.");
+          
+          if (window.Android && userId) {
+             console.log("Ativando rastreio nativo em 2º plano para o utilizador: " + userId);
+             window.Android.iniciarRastreioSegundoPlano(userId); 
+          } else {
+             console.log("Não está no Android ou o ID do utilizador não foi encontrado.");
+          }
+
+        } else {
+          // O UTILIZADOR DESLIGOU O RASTREAMENTO
+          showTrackingToast("❌ Visibilidade em tempo real desativada. Sua localização não está mais visível.");
+          
+          if (window.Android) {
+             console.log("Desativando rastreio nativo em 2º plano.");
+             window.Android.pararRastreioSegundoPlano();
+          }
+        }
       });
     }
-
+    
     // ========================================
     // CORREÇÃO 2: MODO INVISÍVEL
     // ========================================
