@@ -5,19 +5,38 @@ self.addEventListener("push", async (event) => {
     try {
       payload = await event.data.json();
     } catch (e) {
-      // Se não for JSON, trata como texto simples
       payload.body = event.data.text();
     }
   }
 
-  const options = {
-    body: payload.body,
-    icon: '/icon.png', // Certifique-se de que este arquivo existe em /public
-    badge: '/icon.png',
-    data: payload.data
-  };
+  // 1. Tenta encontrar abas abertas da aplicação
+  const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+  
+  let notifiedNatively = false;
 
-  event.waitUntil(self.registration.showNotification(payload.title, options));
+  // 2. Itera sobre os clientes para tentar enviar a mensagem para a ponte Android
+  for (const client of allClients) {
+    // Envia mensagem para o arquivo JS que está na página (ex: push_notifications.js)
+    client.postMessage({
+      type: 'PUSH_RECEIVED',
+      title: payload.title,
+      body: payload.body,
+      path: payload.data.path
+    });
+    notifiedNatively = true;
+  }
+
+  // 3. Se não houver abas abertas (App em background total), usamos o fallback padrão
+  // No Android, se o app está fechado, o sistema gerencia o Push via FCM/WebPush
+  if (!notifiedNatively) {
+    const options = {
+      body: payload.body,
+      icon: '/icon.png',
+      data: payload.data,
+      vibrate: [100, 50, 100]
+    };
+    event.waitUntil(self.registration.showNotification(payload.title, options));
+  }
 });
 
 self.addEventListener("notificationclick", function(event) {

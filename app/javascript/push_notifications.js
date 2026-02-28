@@ -1,6 +1,32 @@
 // app/javascript/push_notifications.js
 
+
+// Função para lidar com mensagens vindas do Service Worker
+const setupServiceWorkerMessageListener = () => {
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.addEventListener('message', (event) => {
+      if (event.data && event.data.type === 'PUSH_RECEIVED') {
+        console.log("Mensagem Push recebida do Worker:", event.data);
+        
+        // Verifica se a ponte nativa Android existe (WebView)
+        if (typeof Android !== 'undefined' && Android.mostrarNotificacao) {
+          Android.mostrarNotificacao(
+            event.data.title, 
+            event.data.body, 
+            event.data.path
+          );
+        } else {
+          console.log("Ponte Android não encontrada. Ignorando chamada nativa.");
+        }
+      }
+    });
+  }
+};
+
 document.addEventListener("turbo:load", () => {
+  // Configura o ouvinte de mensagens IMEDIATAMENTE
+  setupServiceWorkerMessageListener();
+  
   // Verifica se o navegador suporta Service Workers e Push API
   if ("serviceWorker" in navigator && "PushManager" in window) {
     console.log("Service Worker e Push API suportados.");
