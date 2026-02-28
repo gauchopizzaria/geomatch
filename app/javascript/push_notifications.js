@@ -27,25 +27,33 @@ const setupServiceWorkerMessageListener = () => {
 // 2. Inicialização Principal
 document.addEventListener("turbo:load", () => {
   console.log("Iniciando verificação de Service Worker...");
-
   setupServiceWorkerMessageListener();
 
   if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("/service-worker.js", { scope: "/" })
-  .then(async (registration) => {
-    console.log("Service Worker registrado.");
+      .then(async (registration) => {
+        // Aguarda o Service Worker estar pronto/ativo
+        await navigator.serviceWorker.ready;
+        console.log("Service Worker está pronto.");
 
-    // Tenta encontrar o PushManager de 3 formas diferentes
-    const pushManager = registration.pushManager || window.PushManager || self.PushManager;
+        // Tenta buscar o PushManager com 2 segundos de delay para a WebView carregar tudo
+        setTimeout(() => {
+          const pushManager = registration.pushManager || window.PushManager;
 
-    if (pushManager) {
-      console.log("PushManager encontrado! Iniciando inscrição...");
-      subscribeUserToPush(registration);
-    } else {
-      // Se ainda assim não encontrar, o Android está bloqueando a nível de sistema
-      console.error("ERRO: PushManager continua indisponível. Verifique as permissões da WebView.");
-    }
-  });
+          if (pushManager) {
+            console.log("PushManager encontrado com sucesso!");
+            subscribeUserToPush(registration);
+          } else {
+            // Se cair aqui, vamos tentar um método de emergência:
+            console.warn("PushManager não veio no window, tentando via registration direto...");
+            if (registration.pushManager) {
+               subscribeUserToPush(registration);
+            } else {
+               console.error("ERRO FATAL: A WebView desativou o PushManager completamente.");
+            }
+          }
+        }, 2000);
+      });
   }
 });
 
