@@ -24,25 +24,32 @@ const setupServiceWorkerMessageListener = () => {
 };
 
 document.addEventListener("turbo:load", () => {
-  // Configura o ouvinte de mensagens IMEDIATAMENTE
-  setupServiceWorkerMessageListener();
-  
-  // Verifica se o navegador suporta Service Workers e Push API
-  if ("serviceWorker" in navigator && "PushManager" in window) {
-    console.log("Service Worker e Push API suportados.");
+  console.log("Iniciando verificação de Service Worker...");
 
-    // 1. Registrar o Service Worker
-    navigator.serviceWorker.register("/service-worker.js")
+  // Ajuste na verificação: permitimos que continue se for Android Nativo
+  const supportsPush = ("serviceWorker" in navigator && "PushManager" in window);
+  const isAndroidWebView = (typeof Android !== 'undefined');
+
+  if (supportsPush || isAndroidWebView) {
+    console.log("Ambiente compatível detectado.");
+
+    navigator.serviceWorker.register("/service-worker.js", { scope: "/" })
       .then(registration => {
-        console.log("Service Worker registrado com sucesso:", registration);
-        // Após o registro, tente se inscrever para notificações
-        subscribeUserToPush(registration);
+        console.log("Service Worker registrado com sucesso.");
+        
+        // Só tenta a inscrição Push se o navegador realmente suportar a API nativa de Push
+        if ("PushManager" in window) {
+          subscribeUserToPush(registration);
+        } else {
+          console.log("Usando apenas ponte nativa Android para notificações.");
+        }
       })
       .catch(error => {
         console.error("Falha ao registrar o Service Worker:", error);
       });
   } else {
-    console.warn("Notificações Push não suportadas neste navegador.");
+    // Esse é o erro que você está vendo no console (linha 45)
+    console.warn("Notificações Push não suportadas e ponte Android não detectada.");
   }
 });
 
