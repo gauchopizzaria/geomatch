@@ -2,6 +2,10 @@ import L from "leaflet";
 import { toggleLiveTracking, isCurrentlyTracking } from "./live_location";
 window.L = L;
 
+let fixedUserLat = null;
+let fixedUserLng = null;
+
+
 const INITIAL_RANGE_METERS = 150; 
 const STORAGE_KEYS = {
   RANGE: "geomatch_range",
@@ -43,8 +47,8 @@ let isUserInvisible = false; // <-- Adicione esta linha
     let currentRangeMeters = INITIAL_RANGE_METERS;
     let currentGenderFilter = "all";
     
-    let fixedUserLat = null;
-    let fixedUserLng = null;
+   fixedUserLat = null;
+   fixedUserLng = null;
 
     let radarCircle = null;
     let userMarker = null;

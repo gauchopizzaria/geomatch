@@ -1,20 +1,21 @@
 // app/javascript/push_notifications.js
 
-
-// Função para lidar com mensagens vindas do Service Worker
+// 1. Função para lidar com mensagens vindas do Service Worker (Ponte Android)
 const setupServiceWorkerMessageListener = () => {
   if ('serviceWorker' in navigator) {
     navigator.serviceWorker.addEventListener('message', (event) => {
       if (event.data && event.data.type === 'PUSH_RECEIVED') {
         console.log("Mensagem Push recebida do Worker:", event.data);
-        
+
+        // Garante que nunca envie 'undefined' para o Java convertendo para String
+        const titulo = String(event.data.title || "GeoMatch");
+        const msg    = String(event.data.body  || "Nova mensagem recebida");
+        const rota   = String(event.data.path  || "/");
+
         // Verifica se a ponte nativa Android existe (WebView)
         if (typeof Android !== 'undefined' && Android.mostrarNotificacao) {
-          Android.mostrarNotificacao(
-            event.data.title, 
-            event.data.body, 
-            event.data.path
-          );
+          Android.mostrarNotificacao(titulo, msg, rota);
+          console.log("Notificação enviada para a ponte nativa Android.");
         } else {
           console.log("Ponte Android não encontrada. Ignorando chamada nativa.");
         }
@@ -23,10 +24,13 @@ const setupServiceWorkerMessageListener = () => {
   }
 };
 
+// 2. Inicialização Principal
 document.addEventListener("turbo:load", () => {
   console.log("Iniciando verificação de Service Worker...");
 
-  // Ajuste na verificação: permitimos que continue se for Android Nativo
+  // Configura o ouvinte de mensagens imediatamente
+  setupServiceWorkerMessageListener();
+
   const supportsPush = ("serviceWorker" in navigator && "PushManager" in window);
   const isAndroidWebView = (typeof Android !== 'undefined');
 
@@ -48,32 +52,26 @@ document.addEventListener("turbo:load", () => {
         console.error("Falha ao registrar o Service Worker:", error);
       });
   } else {
-    // Esse é o erro que você está vendo no console (linha 45)
     console.warn("Notificações Push não suportadas e ponte Android não detectada.");
   }
 });
 
+// 3. Funções Auxiliares de Inscrição
 function urlBase64ToUint8Array(base64String) {
   const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/\-/g, '+')
-    .replace(/_/g, '/');
-
+  const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
   const rawData = window.atob(base64);
   const outputArray = new Uint8Array(rawData.length);
-
   for (let i = 0; i < rawData.length; ++i) {
     outputArray[i] = rawData.charCodeAt(i);
   }
   return outputArray;
 }
 
-
 function subscribeUserToPush(registration) {
   const applicationServerKeyElement = document.querySelector('meta[name="vapid-public-key"]');
   if (!applicationServerKeyElement) return;
 
-  // Usa uma verificação segura para o objeto Notification
   const notificationApi = window.Notification || self.Notification;
 
   if (notificationApi) {
@@ -101,12 +99,13 @@ function subscribeUserToPush(registration) {
 
 function sendSubscriptionToBackend(subscription) {
   const subscriptionData = subscription.toJSON();
+  const csrfToken = document.querySelector("meta[name='csrf-token']").content;
 
   fetch("/push_subscriptions", {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
+      "X-CSRF-Token": csrfToken
     },
     body: JSON.stringify({
       push_subscription: {
@@ -118,24 +117,13 @@ function sendSubscriptionToBackend(subscription) {
   });
 }
 
-document.addEventListener("turbo:load", () => {
-  if ("serviceWorker" in navigator && "PushManager" in window) {
-    navigator.serviceWorker.register("/service-worker.js")
-      .then(registration => {
-        subscribeUserToPush(registration);
-      });
-  }
-});
-
-
-// Opcional: Adicionar lógica para desinscrever o usuário
+// 4. Lógica de Desinscrição (Opcional)
 function unsubscribeUserFromPush() {
   navigator.serviceWorker.ready.then(registration => {
     registration.pushManager.getSubscription().then(subscription => {
       if (subscription) {
         subscription.unsubscribe().then(successful => {
           console.log("Usuário desinscrito com sucesso.");
-          // Enviar solicitação para remover a inscrição do backend
           sendUnsubscriptionToBackend(subscription.endpoint);
         }).catch(error => {
           console.error("Falha ao desinscrever o usuário:", error);
@@ -146,22 +134,18 @@ function unsubscribeUserFromPush() {
 }
 
 function sendUnsubscriptionToBackend(endpoint) {
+  const csrfToken = document.querySelector("meta[name='csrf-token']").content;
+
   fetch("/push_subscriptions", {
     method: "DELETE",
     headers: {
       "Content-Type": "application/json",
-      "X-CSRF-Token": document.querySelector("meta[name='csrf-token']").content
+      "X-CSRF-Token": csrfToken
     },
     body: JSON.stringify({ endpoint: endpoint })
   })
   .then(response => {
-    if (response.ok) {
-      console.log("Inscrição de Push removida do backend com sucesso.");
-    } else {
-      console.error("Falha ao remover inscrição de Push do backend.");
-    }
+    if (response.ok) console.log("Inscrição removida do backend.");
   })
-  .catch(error => {
-    console.error("Erro de rede ao remover inscrição de Push:", error);
-  });
+  .catch(error => console.error("Erro ao remover inscrição:", error));
 }
