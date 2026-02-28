@@ -30,17 +30,20 @@ class Message < ApplicationRecord
 
   # Envia a notificação push (para quem está com o celular bloqueado ou app fechado)
  def send_push_notification
-  recipient = match.other_user(sender)
-  return if recipient == sender
+  # Garante que estamos pegando o outro usuário do match
+  recipient = (match.user_1_id == sender_id) ? match.user_2 : match.user_1
+  
+  # Segurança extra: não envia para si mesmo
+  return if recipient.id == sender_id 
 
-  recipient.push_subscriptions.each do |subscription|
+  recipient.push_subscriptions.each do |sub|
     begin
       # O segredo é passar o JSON diretamente no campo 'message'
       WebPush.payload_send(
         message: { 
           title: "GeoMatch", 
-          body: "Nova mensagem de #{sender.display_name}: #{content.truncate(50)}", 
-          data: { path: "/matches/#{match.id}" } 
+          body: "Nova mensagem de #{sender.display_name}", 
+          data: { path: "/matches/#{match.id}" }
         }.to_json,
         endpoint: subscription.endpoint,
         p256dh: subscription.p256dh,
