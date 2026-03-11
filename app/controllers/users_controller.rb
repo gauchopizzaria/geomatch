@@ -65,6 +65,11 @@ class UsersController < ApplicationController
   def discover
     # Apenas renderiza a view do mapa. A busca real é feita via AJAX no 'nearby'
   end
+  
+  def discover_3d
+  # Esta ação renderizará a view app/views/users/discover-3d.html.erb
+  end
+
 
   def show
     @user = User.find(params[:id])

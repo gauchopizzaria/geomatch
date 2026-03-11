@@ -12,3 +12,4 @@ import L from "leaflet";
 window.L = L; // Isso garante que o plugin encontre o 'L' global
 import "leaflet.markercluster"; // Importe o plugin LOGO DEPOIS do window.L
 import "./live_location"; // Importa o módulo de rastreamento contínuo
+import "./map_3d"; // Importa o módulo do mapa 3D (Mapbox GL JS)

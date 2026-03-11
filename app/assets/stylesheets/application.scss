@@ -17,6 +17,7 @@
 @use "report_incident";
 @use "plans";
 @use "preview";
+@use "map_3d";
 
 // Importa os estilos base do Leaflet (se ainda não tiver)
 @import "leaflet/dist/leaflet.css";

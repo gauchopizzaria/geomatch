@@ -37,6 +37,9 @@ Rails.application.routes.draw do
   # =================================================================
   get "/discover", to: "users#discover", as: :discover
 
+  get "/discover_3d", to: "users#discover_3d", as: :discover_3d
+
+
   # Lead/Swipe
   get  "/lead",        to: "users#lead",   as: :lead
   post "/lead",        to: "users#lead"

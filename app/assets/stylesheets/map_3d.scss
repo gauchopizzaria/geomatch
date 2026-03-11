@@ -1,0 +1,62 @@
+#map-3d .mapboxgl-canvas {
+    filter: brightness(0.8) contrast(1.2); /* Deixa o mapa mais "premium" */
+}
+
+/* Garante que o radar fique atrás dos cards mas na frente do mapa */
+.discover-fullscreen-container {
+    perspective: 1000px;
+}
+
+/* Container do Mapa com fundo claro */
+#map-3d {
+    background-color: #f0f0f0;
+}
+
+/* Marcador estilo Apple/Uber */
+.floating-marker {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.marker-content {
+    width: 50px;
+    height: 50px;
+    background: white;
+    border-radius: 12px; /* Bordas arredondadas estilo iOS */
+    padding: 3px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    border: 2px solid white;
+}
+
+.marker-content img {
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    object-fit: cover;
+}
+
+/* Sombra projetada no chão do mapa */
+.marker-shadow {
+    width: 20px;
+    height: 10px;
+    background: rgba(0,0,0,0.1);
+    border-radius: 50%;
+    margin-top: 5px;
+    filter: blur(3px);
+}
+
+/* Marcador Flutuante com Sombra */
+.custom-marker {
+    filter: drop-shadow(0 10px 10px rgba(0,0,0,0.3));
+    transition: transform 0.3s ease;
+}
+
+.custom-marker:hover {
+    transform: translateY(-10px) scale(1.1); /* Efeito de flutuar ao passar o mouse */
+}
+
+/* Deixa o mapa com cores mais vivas e detalhadas */
+.mapboxgl-canvas {
+    outline: none;
+}
