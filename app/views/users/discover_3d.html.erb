@@ -1,5 +1,6 @@
 <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+<script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 
 <div id="assets-data" 
      data-frame-url="<%= image_path('aurea-dourada-mensagens.svg') %>"
@@ -181,4 +182,5 @@
   <div id="upgrade-modal-container" style="position: relative; z-index: 99999;"></div>
 </div>
 
+<%= javascript_include_tag "live_location", type: "module" %>
 <%= javascript_include_tag "map_3d", type: "module" %>

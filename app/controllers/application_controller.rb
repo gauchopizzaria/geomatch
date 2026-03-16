@@ -23,4 +23,9 @@ class ApplicationController < ActionController::Base
 
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
+
+    # Redireciona para /discover_3d após o login
+  def after_sign_in_path_for(resource)
+    discover_3d_path
+  end
 end

@@ -33,8 +33,13 @@ function startTracking(map, buttonElement, onLocationChange) {
       
       console.log(`🚶 Movimento detectado: ${lat}, ${lng}`);
 
-      // Move a câmera do mapa suavemente para a nova localização
-      map.panTo([lat, lng], { animate: true, duration: 1.0 });
+          // Move a câmera do mapa suavemente para a nova localização
+      // Adaptação para Mapbox GL JS ou Leaflet
+      if (map.getCenter && map.setCenter) { // É um mapa Mapbox GL JS
+        map.panTo([lng, lat], { duration: 1000 }); // Mapbox usa [lng, lat]
+      } else if (map.setView) { // É um mapa Leaflet
+        map.panTo([lat, lng], { animate: true, duration: 1.0 }); // Leaflet usa [lat, lng]
+      }
 
       // Chama a função de callback no map.js para atualizar marcadores e buscar usuários
       if (onLocationChange) onLocationChange(lat, lng);
