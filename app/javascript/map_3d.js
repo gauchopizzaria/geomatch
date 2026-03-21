@@ -1,4 +1,3 @@
-
 import { toggleLiveTracking, isCurrentlyTracking } from "./live_location";
 // Turf.js é esperado estar disponível globalmente (ex: via CDN)
 // import * as turf from '@turf/turf'; // Removido para evitar erro de build se não instalado
@@ -103,9 +102,6 @@ function updateRadarVisuals() {
 
   // 2. Escala do Raio (CSS)
   const zoom = map.getZoom();
-  // A conversão de metros para pixels no Mapbox é mais complexa e geralmente não é feita diretamente para CSS como no Leaflet.
-  // Em vez disso, o círculo geográfico é o principal indicador de raio.
-  // Manteremos a variável CSS para compatibilidade, mas seu efeito visual pode ser diferente.
   const metersPerPixel = 156543.03392 * Math.abs(Math.cos(fixedUserLat * Math.PI / 180)) / Math.pow(2, zoom);
   const radiusInPixels = currentRangeMeters / metersPerPixel;
   container.style.setProperty('--radar-radius', `${radiusInPixels}px`);
@@ -113,7 +109,7 @@ function updateRadarVisuals() {
   // 3. Círculo Geográfico (Turf.js no Mapbox)
   if (map.isStyleLoaded()) {
     const center = [fixedUserLng, fixedUserLat];
-    const circle = turf.circle(center, currentRangeMeters / 1000, { steps: 64, units: 'kilometers' }); // Assume turf global
+    const circle = turf.circle(center, currentRangeMeters / 1000, { steps: 64, units: 'kilometers' });
 
     if (map.getSource(radarSourceId)) {
       map.getSource(radarSourceId).setData(circle);
@@ -124,7 +120,7 @@ function updateRadarVisuals() {
         'type': 'fill',
         'source': radarSourceId,
         'paint': { 'fill-color': '#F4E4BC', 'fill-opacity': 0.1 }
-      }); // Adiciona a camada do radar sem depender de uma camada específica para posicionamento.
+      });
     }
   }
 }
@@ -169,7 +165,6 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
       let uLat = parseFloat(user.latitude);
       let uLng = parseFloat(user.longitude);
 
-      // Adiciona jitter para evitar marcadores sobrepostos
       const jitter = () => (Math.random() - 0.5) * 0.0005;
       uLat += jitter();
       uLng += jitter();
@@ -186,7 +181,6 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
         el.onclick = () => showUserPopup(user);
       }
 
-      // Adiciona na lista
       if (usersList) {
         const isOnline = user.online;
         const li = document.createElement("li");
@@ -316,13 +310,14 @@ function initializeMapAndLocation() {
   const mapElement = document.getElementById('map-3d');
   if (!mapElement) return;
 
+  // Inicia em 2D (pitch 0, bearing 0)
   map = new mapboxgl.Map({
     container: 'map-3d',
     style: 'mapbox://styles/mapbox/standard',
-    center: [-39.2781, -14.7876], // Default center
-    zoom: 16.5,
-    pitch: 75,
-    bearing: -20,
+    center: [-39.2781, -14.7876],
+    zoom: 14, // Começa um pouco mais longe para o efeito 2D
+    pitch: 0, 
+    bearing: 0,
     antialias: true
   });
 
@@ -345,46 +340,56 @@ function initializeMapAndLocation() {
     });
     map.setPaintProperty('landuse', 'fill-color', '#e8f5e9');
 
-    // Tenta obter a localização atual do usuário
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
           fixedUserLat = position.coords.latitude;
           fixedUserLng = position.coords.longitude;
-          map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 16.5, essential: true });
+          // Ao obter localização, voamos para o local mas mantemos 2D inicialmente se o zoom for baixo
+          map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 14, essential: true });
           updateRadarVisuals();
           loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
         },
         (error) => {
           console.warn("⚠️ Erro ao obter localização:", error.message);
-          // Fallback para localização padrão se não conseguir o GPS
           fixedUserLat = -14.2350;
           fixedUserLng = -51.9253;
-          map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 16.5, essential: true });
+          map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 14, essential: true });
           updateRadarVisuals();
           loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
           if (error.code === 1) {
             alert("O GeoMatch precisa da sua localização para funcionar. Por favor, verifique as permissões do seu navegador/celular.");
           }
         },
-        {
-          enableHighAccuracy: true,
-          maximumAge: 0,
-          timeout: 10000
-        }
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
       );
     } else {
-      // Fallback para localização padrão se a geolocalização não for suportada
       fixedUserLat = -14.2350;
       fixedUserLng = -51.9253;
-      map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 16.5, essential: true });
+      map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 14, essential: true });
       updateRadarVisuals();
       loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
     }
   });
 
+  // LOGICA PARA TRANSIÇÃO 2D -> 3D NO ZOOM
+  map.on('zoom', () => {
+    const currentZoom = map.getZoom();
+    const targetPitch = currentZoom > 15.5 ? 75 : 0;
+    const targetBearing = currentZoom > 15.5 ? -20 : 0;
+    
+    // EaseTo permite uma transição suave de inclinação
+    map.easeTo({
+      pitch: targetPitch,
+      bearing: targetBearing,
+      duration: 500,
+      easing: (t) => t
+    });
+    
+    updateRadarVisuals();
+  });
+
   map.on('move', updateRadarVisuals);
-  map.on('zoom', updateRadarVisuals);
 }
 
 // --- Event Listeners e Inicialização ---
@@ -528,7 +533,6 @@ document.addEventListener("turbo:load", () => {
       const currentHeight = bottomSheet.getBoundingClientRect().height;
       const viewportHeight = window.innerHeight;
       const currentVh = (currentHeight / viewportHeight) * 100;
-      const diff = currentVh - startVh;
       if (currentVh > 40) {
         bottomSheet.style.height = `${SNAP_MAX}vh`;
       } else {
@@ -546,12 +550,11 @@ document.addEventListener("turbo:load", () => {
   // BOTÃO CENTRALIZAR MAPA
   if (fabCenterMap) {
     fabCenterMap.addEventListener("click", () => {
-      console.log("Centralizar mapa clicado");
       if (fixedUserLat && fixedUserLng) {
-        map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 16.5, essential: true });
+        // Ao centralizar manualmente, forçamos o zoom para 3D
+        map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 16.5, pitch: 75, bearing: -20, essential: true });
       } else {
-        // Fallback se ainda não pegou o GPS
-        map.flyTo({ center: [-39.2781, -14.7876], zoom: 16.5, essential: true });
+        map.flyTo({ center: [-39.2781, -14.7876], zoom: 16.5, pitch: 75, bearing: -20, essential: true });
       }
     });
   }
@@ -563,7 +566,6 @@ document.addEventListener("turbo:load", () => {
         fixedUserLat = newLat;
         fixedUserLng = newLng;
         updateRadarVisuals();
-        // Não há addUserMarker separado para o usuário no Mapbox GL JS, ele é o centro do radar
         const now = Date.now();
         if (now - lastUserFetchTime > FETCH_COOLDOWN_MS) {
           lastUserFetchTime = now;
@@ -583,15 +585,11 @@ document.addEventListener("turbo:load", () => {
       if (isNowTracking) {
         showTrackingToast("✅ Visibilidade em tempo real ligada! Prepare-se para encontros espontâneos.");
         if (window.Android && userId) {
-           console.log("Ativando rastreio nativo em 2º plano para o utilizador: " + userId);
            window.Android.iniciarRastreioSegundoPlano(userId);
-        } else {
-           console.log("Não está no Android ou o ID do utilizador não foi encontrado.");
         }
       } else {
         showTrackingToast("❌ Visibilidade em tempo real desativada. Sua localização não está mais visível.");
         if (window.Android) {
-           console.log("Desativando rastreio nativo em 2º plano.");
            window.Android.pararRastreioSegundoPlano();
         }
       }
@@ -623,7 +621,6 @@ document.addEventListener("turbo:load", () => {
     updateVisibilityUI(initialInvisible);
 
     toggleVisibilityBtn.addEventListener("click", async () => {
-      console.log("Botão Invisibilidade clicado");
       try {
         const token = document.querySelector('meta[name="csrf-token"]').content;
         const response = await fetch('/users/toggle_visibility', {
@@ -635,7 +632,6 @@ document.addEventListener("turbo:load", () => {
         });
 
         if (response.status === 403) {
-          console.log("Status 403: Upgrade necessário");
           const data = await response.json();
           if (data.upgrade_required) {
             const modalResponse = await fetch('/plans/modal?type=invisible');
@@ -646,64 +642,47 @@ document.addEventListener("turbo:load", () => {
             const fecharModalGeoMatch = () => {
               if (backdrop) {
                 backdrop.style.opacity = '0';
-                setTimeout(() => {
-                  container.innerHTML = "";
-                }, 300);
+                setTimeout(() => { container.innerHTML = ""; }, 300);
               }
             };
             container.querySelectorAll(".close-modal-btn").forEach(btn => {
-              btn.onclick = (e) => {
-                e.preventDefault();
-                fecharModalGeoMatch();
-              };
+              btn.onclick = (e) => { e.preventDefault(); fecharModalGeoMatch(); };
             });
             if (backdrop) {
-              backdrop.onclick = (e) => {
-                if (e.target === backdrop) fecharModalGeoMatch();
-              };
+              backdrop.onclick = (e) => { if (e.target === backdrop) fecharModalGeoMatch(); };
             }
           }
           return;
         }
 
         if (!response.ok) throw new Error("Erro ao salvar no servidor");
-
         const data = await response.json();
-        console.log("Sucesso! Novo estado:", data.invisible);
         updateVisibilityUI(data.invisible);
-
       } catch (error) {
         console.error("Erro ao alternar visibilidade:", error);
       }
     });
   }
 
-  // FECHAR POPUP APÓS AÇÃO (Like/Reject)
+  // FECHAR POPUP APÓS AÇÃO
   document.addEventListener("turbo:submit-end", (e) => {
     const formId = e.target.id;
     if (formId === "popup-like-form" || formId === "popup-reject-form") {
-      if (e.detail.success) {
-        closeUserPopup();
-      }
+      if (e.detail.success) { closeUserPopup(); }
     }
   });
 
-  // FUNÇÃO GLOBAL DE FECHAR POPUP
   if (closePopupBtn) {
     const newBtn = closePopupBtn.cloneNode(true);
     closePopupBtn.parentNode.replaceChild(newBtn, closePopupBtn);
     newBtn.addEventListener("click", (e) => {
       e.preventDefault();
-      console.log("Botão fechar clicado");
       closeUserPopup();
     });
   }
 
   if (popupOverlay) {
-    popupOverlay.addEventListener("click", (e) => {
-      console.log("Fundo clicado");
-      closeUserPopup();
-    });
+    popupOverlay.addEventListener("click", (e) => { closeUserPopup(); });
   }
 
   // DRAG / SWIPE NO POPUP
@@ -722,11 +701,7 @@ document.addEventListener("turbo:load", () => {
       const onTouchStart = (e) => {
           const detailsContainer = document.getElementById("popup-full-details");
           const scrollTop = detailsContainer ? detailsContainer.scrollTop : 0;
-
-          if (isExpanded() && scrollTop > 0 && !popupHandle.contains(e.target)) {
-              return; 
-          }
-
+          if (isExpanded() && scrollTop > 0 && !popupHandle.contains(e.target)) { return; }
           isDragging = true;
           startY = e.touches[0].clientY;
           startHeight = popupContent.offsetHeight;
@@ -735,10 +710,8 @@ document.addEventListener("turbo:load", () => {
 
       const onTouchMove = (e) => {
           if (!isDragging) return;
-          
           currentY = e.touches[0].clientY;
           const deltaY = startY - currentY; 
-
           if (!isExpanded() && deltaY > 0) {
                e.preventDefault();
                popupContent.style.height = `${startHeight + deltaY}px`;
@@ -757,17 +730,11 @@ document.addEventListener("turbo:load", () => {
           isDragging = false;
           popupContent.style.transition = "height 0.3s cubic-bezier(0.25, 1, 0.5, 1)";
           popupContent.style.height = ""; 
-
           const deltaY = startY - currentY;
-
           if (!isExpanded()) {
-              if (deltaY > THRESHOLD) {
-                  popupContent.classList.add("expanded");
-              }
+              if (deltaY > THRESHOLD) { popupContent.classList.add("expanded"); }
           } else {
-              if (deltaY < -THRESHOLD) {
-                  popupContent.classList.remove("expanded");
-              }
+              if (deltaY < -THRESHOLD) { popupContent.classList.remove("expanded"); }
           }
       };
 
@@ -776,31 +743,23 @@ document.addEventListener("turbo:load", () => {
       popupContent.addEventListener("touchend", onTouchEnd);
   }
 
-  // Envia um sinal de "estou aqui" a cada 2 minutos
   setInterval(() => {
     if (fixedUserLat && fixedUserLng && !isUserInvisible) {
       fetch(`/users/update_location?latitude=${fixedUserLat}&longitude=${fixedUserLng}`, {
         method: 'POST',
-        headers: {
-          'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
-        }
+        headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
       });
     }
-  }, 120000); // 120.000 ms = 2 minutos
+  }, 120000);
 
-  // Ativa rastreamento automático na entrada da tela
   setTimeout(() => {
     if (fabLiveTracking) {
       fabLiveTracking.click();
-      console.log("Rastreamento automático ativado na entrada da tela.");
     }
-  }, 1000); // 1 segundo de delay
+  }, 1000);
 
-  // Chama toda vez que o usuário voltar para a aba/app (Sair e Entrar)
   document.addEventListener("visibilitychange", () => {
     if (document.visibilityState === "visible") {
-      console.log("👁️ Usuário voltou para o app. Atualizando GPS...");
-      // Força a atualização da localização e recarrega usuários
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
@@ -809,20 +768,13 @@ document.addEventListener("turbo:load", () => {
             updateRadarVisuals();
             loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
           },
-          (error) => {
-            console.warn("⚠️ Erro ao obter localização ao retornar:", error.message);
-          },
-          {
-            enableHighAccuracy: true,
-            maximumAge: 0,
-            timeout: 10000
-          }
+          (error) => { console.warn("⚠️ Localização erro:", error.message); },
+          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
         );
       }
     }
   });
 
-  // Adiciona estilos CSS dinamicamente
   const style = document.createElement("style");
   style.textContent = `
     .user-location-marker { position: relative; width: 40px; height: 40px; }
@@ -833,13 +785,8 @@ document.addEventListener("turbo:load", () => {
     .skeleton-avatar { width: 40px; height: 40px; background: #444; border-radius: 50%; }
     .skeleton-text { flex: 1; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
     .skeleton-line { height: 10px; background: #444; border-radius: 4px; width: 80%; }
-    .users-bottom-sheet {
-      transition: height 0.4s cubic-bezier(0.25, 1, 0.5, 1); /* Transição suave */
-      will-change: height;
-    }
-    .users-bottom-sheet.dragging {
-      transition: none; /* Remove a transição enquanto arrasta para não dar lag */
-    }
+    .users-bottom-sheet { transition: height 0.4s cubic-bezier(0.25, 1, 0.5, 1); will-change: height; }
+    .users-bottom-sheet.dragging { transition: none; }
   `;
   document.head.appendChild(style);
 });
