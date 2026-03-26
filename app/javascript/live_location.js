@@ -1,5 +1,6 @@
 let watchId = null;
 let isTracking = false;
+let lastLoggedState = null;
 
 // Função para iniciar ou parar o rastreamento
 export function toggleLiveTracking(map, buttonElement, onLocationChange) {
@@ -19,11 +20,12 @@ function startTracking(map, buttonElement, onLocationChange) {
   }
 
   isTracking = true;
-  
-  // Atualiza o visual do botão (adiciona classe para ficar "ativo")
   if (buttonElement) buttonElement.classList.add("active-tracking");
 
-  console.log("📍 Iniciando rastreamento contínuo...");
+  if (lastLoggedState !== true) {
+    console.log("📍 Iniciando rastreamento contínuo...");
+    lastLoggedState = true;
+  }
 
   // watchPosition é o segredo para atualizar em tempo real
   watchId = navigator.geolocation.watchPosition(
@@ -62,9 +64,12 @@ function stopTracking(buttonElement) {
     watchId = null;
   }
   isTracking = false;
-  
   if (buttonElement) buttonElement.classList.remove("active-tracking");
-  console.log("🛑 Rastreamento contínuo parado.");
+
+  if (lastLoggedState !== false) {
+    console.log("🛑 Rastreamento contínuo parado.");
+    lastLoggedState = false;
+  }
 }
 
 // Verifica se o rastreamento está ativo

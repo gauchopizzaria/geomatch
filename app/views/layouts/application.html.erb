@@ -11,6 +11,7 @@
 
     <link rel="manifest" href="/manifest.json">
 
+<meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Geomatch">
@@ -26,7 +27,6 @@
 <link rel="apple-touch-icon" sizes="180x180" href="/icon-iphone.png">
 
 <%= tag.link rel: "manifest", href: pwa_manifest_path %>
-<meta name="apple-mobile-web-app-capable" content="yes">
 
     <!-- Meta responsivo -->
     <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -41,9 +41,6 @@
 
     <!-- CSS principal -->
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
-
-    <!-- Leaflet CSS -->
-    <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css">
 
      <%= csrf_meta_tags %>
   <meta name="vapid-public-key" content="<%= ENV["VAPID_PUBLIC_KEY"] %>">

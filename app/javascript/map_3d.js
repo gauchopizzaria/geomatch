@@ -20,6 +20,9 @@ let currentGenderFilter = localStorage.getItem(STORAGE_KEYS.GENDER_FILTER) || "a
 let mapboxUserMarkers = {}; // Para gerenciar marcadores de usuários no Mapbox
 let lastUserFetchTime = 0;
 let isUserInvisible = false;
+let rotationAnimId = null;
+let isCinematicMode = false;
+let cinematicPopup = null;
 
 const radarSourceId = 'radar-circle-source';
 const radarLayerId = 'radar-circle-layer';
@@ -87,6 +90,58 @@ function closeUserPopup() {
     if(rejectInput) rejectInput.value = "";
     if(likeInput) likeInput.value = "";
   }
+}
+
+// --- Funções Cinematográficas ---
+
+function stopRotation() {
+  if (rotationAnimId) { cancelAnimationFrame(rotationAnimId); rotationAnimId = null; }
+}
+
+function startCinematicRotation() {
+  function rotate() {
+    map.setBearing((map.getBearing() + 0.3) % 360);
+    rotationAnimId = requestAnimationFrame(rotate);
+  }
+  rotationAnimId = requestAnimationFrame(rotate);
+}
+
+function resetCamera() {
+  stopRotation();
+  isCinematicMode = false;
+  map.easeTo({ pitch: 0, bearing: 0, duration: 800, easing: t => t });
+}
+
+function openCinematicPopup(user, lngLat) {
+  if (cinematicPopup) { cinematicPopup.remove(); cinematicPopup = null; }
+  const distVal = user.distance_km || user.distance;
+  const distHtml = distVal ? `<p class="cp-distance">${distVal} km</p>` : '';
+  cinematicPopup = new mapboxgl.Popup({
+    closeButton: false,
+    closeOnClick: false,
+    className: 'cinematic-popup',
+    offset: 28,
+    anchor: 'left',
+    maxWidth: '200px'
+  })
+    .setLngLat(lngLat)
+    .setHTML(`
+      <p class="cp-name">${user.username || user.display_name || 'Usuário'}</p>
+      ${distHtml}
+      <button class="cp-btn" data-action="expand">Ver Perfil</button>
+    `)
+    .addTo(map);
+
+  cinematicPopup.getElement().querySelector('[data-action="expand"]')
+    .addEventListener('click', () => {
+      closeCinematicPopup();
+      showUserPopup(user);
+    });
+}
+
+function closeCinematicPopup() {
+  if (cinematicPopup) { cinematicPopup.remove(); cinematicPopup = null; }
+  resetCamera();
 }
 
 // --- Funções de Mapa e Dados ---
@@ -171,14 +226,22 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
 
       if (!isNaN(uLat) && !isNaN(uLng)) {
         const el = document.createElement('div');
-        el.className = 'custom-marker';
-        el.innerHTML = avatarHtml;
+        el.className = 'premium-marker';
+        el.innerHTML = `<img src="${user.avatar_url || '/default-avatar.png'}" class="premium-marker-img" alt="${user.username || ''}">`;
 
         const marker = new mapboxgl.Marker(el)
           .setLngLat([uLng, uLat])
           .addTo(map);
         mapboxUserMarkers[user.id] = marker;
-        el.onclick = () => showUserPopup(user);
+        el.onclick = () => {
+          isCinematicMode = true;
+          map.flyTo({ center: [uLng, uLat], zoom: 18, pitch: 60, duration: 2000, essential: true });
+          map.once('moveend', () => {
+            if (!isCinematicMode) return;
+            startCinematicRotation();
+            openCinematicPopup(user, [uLng, uLat]);
+          });
+        };
       }
 
       if (usersList) {
@@ -200,8 +263,13 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
         `;
         li.addEventListener("click", () => {
           if (!isNaN(uLat) && !isNaN(uLng)) {
-            map.flyTo({ center: [uLng, uLat], zoom: 16 });
-            showUserPopup(user);
+            isCinematicMode = true;
+            map.flyTo({ center: [uLng, uLat], zoom: 18, pitch: 60, duration: 2000, essential: true });
+            map.once('moveend', () => {
+              if (!isCinematicMode) return;
+              startCinematicRotation();
+              openCinematicPopup(user, [uLng, uLat]);
+            });
           }
         });
         usersList.appendChild(li);
@@ -310,35 +378,38 @@ function initializeMapAndLocation() {
   const mapElement = document.getElementById('map-3d');
   if (!mapElement) return;
 
+  mapElement.innerHTML = '';
+
   // Inicia em 2D (pitch 0, bearing 0)
   map = new mapboxgl.Map({
     container: 'map-3d',
     style: 'mapbox://styles/mapbox/standard',
     center: [-39.2781, -14.7876],
-    zoom: 14, // Começa um pouco mais longe para o efeito 2D
-    pitch: 0, 
+    zoom: 14,
+    pitch: 0,
     bearing: 0,
-    antialias: true
+    antialias: true,
+    trackResize: true,
+    fadeDuration: 0
+  });
+
+  // Fechar popup cinematográfico ao clicar no mapa
+  map.on('click', () => { if (cinematicPopup) closeCinematicPopup(); });
+
+  // Fade-in: usa 'load' (tiles prontos) em vez de 'style.load' para maior confiabilidade
+  map.once('load', () => {
+    const mapEl = document.getElementById('map-3d');
+    if (mapEl) mapEl.classList.add('map-loaded');
   });
 
   map.on('style.load', () => {
+    // Configurações do estilo "standard" — cores vivas, relevo e prédios 3D
+    map.setConfigProperty('basemap', 'lightPreset', 'day');
     map.setConfigProperty('basemap', 'show3dObjects', true);
     map.setConfigProperty('basemap', 'show3dTrees', true);
-    map.setConfigProperty('basemap', 'lightPreset', 'day');
-    
-    map.addSource('mapbox-dem', {
-      'type': 'raster-dem',
-      'url': 'mapbox://mapbox.mapbox-terrain-dem-v1',
-      'tileSize': 512,
-      'maxzoom': 14
-    });
-    map.setTerrain({ 'source': 'mapbox-dem', 'exaggeration': 1.5 });
-    map.setFog({
-      'range': [0.5, 10],
-      'color': '#f8f0e3',
-      'horizon-blend': 0.1
-    });
-    map.setPaintProperty('landuse', 'fill-color', '#e8f5e9');
+
+    // Esconde labels de estabelecimentos (POIs) mantendo foco nos usuários
+    map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
 
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -372,24 +443,24 @@ function initializeMapAndLocation() {
     }
   });
 
-  // LOGICA PARA TRANSIÇÃO 2D -> 3D NO ZOOM
-  map.on('zoom', () => {
+  // TRANSIÇÃO 2D -> 3D: usa 'zoomend' para evitar loop de feedback com easeTo durante o zoom
+  map.on('zoomend', () => {
     const currentZoom = map.getZoom();
     const targetPitch = currentZoom > 15.5 ? 75 : 0;
     const targetBearing = currentZoom > 15.5 ? -20 : 0;
-    
-    // EaseTo permite uma transição suave de inclinação
-    map.easeTo({
-      pitch: targetPitch,
-      bearing: targetBearing,
-      duration: 500,
-      easing: (t) => t
-    });
-    
-    updateRadarVisuals();
+    map.easeTo({ pitch: targetPitch, bearing: targetBearing, duration: 500, easing: (t) => t });
   });
 
-  map.on('move', updateRadarVisuals);
+  // Throttle via requestAnimationFrame para não recalcular turf.circle() a cada frame
+  let rafPending = false;
+  map.on('move', () => {
+    if (rafPending) return;
+    rafPending = true;
+    requestAnimationFrame(() => {
+      updateRadarVisuals();
+      rafPending = false;
+    });
+  });
 }
 
 // --- Event Listeners e Inicialização ---
@@ -787,6 +858,17 @@ document.addEventListener("turbo:load", () => {
     .skeleton-line { height: 10px; background: #444; border-radius: 4px; width: 80%; }
     .users-bottom-sheet { transition: height 0.4s cubic-bezier(0.25, 1, 0.5, 1); will-change: height; }
     .users-bottom-sheet.dragging { transition: none; }
+    .premium-marker { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 0 rgba(34,197,94,0.5), 0 4px 15px rgba(0,0,0,0.15); overflow: hidden; cursor: pointer; transition: transform 0.2s ease; will-change: transform; animation: markerPulse 2s ease-out infinite; }
+    .premium-marker:hover { transform: scale(1.1); animation-play-state: paused; }
+    .premium-marker-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+    @keyframes markerPulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5), 0 4px 15px rgba(0,0,0,0.15); } 70% { box-shadow: 0 0 0 10px rgba(34,197,94,0), 0 4px 15px rgba(0,0,0,0.15); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0), 0 4px 15px rgba(0,0,0,0.15); } }
+    .cinematic-popup .mapboxgl-popup-tip { display: none; }
+    .cinematic-popup .mapboxgl-popup-content { background: rgba(255,255,255,0.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 15px; padding: 14px 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); min-width: 150px; animation: cpAppear 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
+    @keyframes cpAppear { 0% { opacity:0; transform:scale(0.75); } 100% { opacity:1; transform:scale(1); } }
+    .cp-name { font-weight: 700; font-size: 0.92rem; color: #1a1a1a; margin: 0 0 3px; }
+    .cp-distance { font-size: 0.75rem; color: #888; margin: 0 0 10px; }
+    .cp-btn { width: 100%; background: linear-gradient(135deg,#22c55e,#16a34a); color: #fff; border: none; border-radius: 10px; padding: 8px 0; font-weight: 700; font-size: 0.8rem; cursor: pointer; box-shadow: 0 4px 12px rgba(34,197,94,0.3); transition: transform 0.15s ease; }
+    .cp-btn:active { transform: scale(0.95); }
   `;
   document.head.appendChild(style);
 });
