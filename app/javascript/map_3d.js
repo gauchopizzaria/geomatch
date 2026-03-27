@@ -21,8 +21,10 @@ let mapboxUserMarkers = {}; // Para gerenciar marcadores de usuários no Mapbox
 let lastUserFetchTime = 0;
 let isUserInvisible = false;
 let rotationAnimId = null;
+let rotationTimer = null;
 let isCinematicMode = false;
 let cinematicPopup = null;
+let activeMarkerEl = null;
 
 const radarSourceId = 'radar-circle-source';
 const radarLayerId = 'radar-circle-layer';
@@ -96,13 +98,30 @@ function closeUserPopup() {
 
 function stopRotation() {
   if (rotationAnimId) { cancelAnimationFrame(rotationAnimId); rotationAnimId = null; }
+  if (rotationTimer) { clearTimeout(rotationTimer); rotationTimer = null; }
 }
 
-function startCinematicRotation() {
-  function rotate() {
-    map.setBearing((map.getBearing() + 0.3) % 360);
+function startTimedRotation(onComplete) {
+  stopRotation();
+  const startBearing = map.getBearing();
+  const startTime = performance.now();
+  const DURATION = 10000;
+
+  function rotate(now) {
+    const elapsed = now - startTime;
+    if (elapsed >= DURATION) {
+      rotationAnimId = null;
+      if (isCinematicMode && onComplete) onComplete();
+      return;
+    }
+    const progress = elapsed / DURATION;
+    const easedProgress = progress < 0.5
+      ? 2 * progress * progress
+      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+    map.setBearing(startBearing + 360 * easedProgress);
     rotationAnimId = requestAnimationFrame(rotate);
   }
+
   rotationAnimId = requestAnimationFrame(rotate);
 }
 
@@ -115,20 +134,28 @@ function resetCamera() {
 function openCinematicPopup(user, lngLat) {
   if (cinematicPopup) { cinematicPopup.remove(); cinematicPopup = null; }
   const distVal = user.distance_km || user.distance;
-  const distHtml = distVal ? `<p class="cp-distance">${distVal} km</p>` : '';
+  const distText = distVal ? `a ${distVal} km` : '';
+  const nameAge = user.age
+    ? `${user.username || user.display_name || 'Usuário'}, ${user.age}`
+    : (user.username || user.display_name || 'Usuário');
   cinematicPopup = new mapboxgl.Popup({
     closeButton: false,
     closeOnClick: false,
     className: 'cinematic-popup',
-    offset: 28,
+    offset: 32,
     anchor: 'left',
-    maxWidth: '200px'
+    maxWidth: '220px'
   })
     .setLngLat(lngLat)
     .setHTML(`
-      <p class="cp-name">${user.username || user.display_name || 'Usuário'}</p>
-      ${distHtml}
-      <button class="cp-btn" data-action="expand">Ver Perfil</button>
+      <div class="cp-mini-card">
+        <img src="${user.avatar_url || '/default-avatar.png'}" class="cp-avatar" alt="${user.username || ''}">
+        <div class="cp-info">
+          <p class="cp-name">${nameAge}</p>
+          ${distText ? `<p class="cp-distance">${distText}</p>` : ''}
+        </div>
+        <button class="cp-btn" data-action="expand">Ver Perfil</button>
+      </div>
     `)
     .addTo(map);
 
@@ -141,6 +168,7 @@ function openCinematicPopup(user, lngLat) {
 
 function closeCinematicPopup() {
   if (cinematicPopup) { cinematicPopup.remove(); cinematicPopup = null; }
+  if (activeMarkerEl) { activeMarkerEl.style.opacity = '1'; activeMarkerEl = null; }
   resetCamera();
 }
 
@@ -233,15 +261,22 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
           .setLngLat([uLng, uLat])
           .addTo(map);
         mapboxUserMarkers[user.id] = marker;
-        el.onclick = () => {
+        el.addEventListener('click', (e) => {
+          e.stopPropagation();
+          if (activeMarkerEl && activeMarkerEl !== el) activeMarkerEl.style.opacity = '1';
+          activeMarkerEl = el;
+          el.style.opacity = '0';
           isCinematicMode = true;
+          stopRotation();
           map.flyTo({ center: [uLng, uLat], zoom: 18, pitch: 60, duration: 2000, essential: true });
+          openCinematicPopup(user, [uLng, uLat]);
           map.once('moveend', () => {
-            if (!isCinematicMode) return;
-            startCinematicRotation();
-            openCinematicPopup(user, [uLng, uLat]);
+            setTimeout(() => {
+              if (!isCinematicMode) return;
+              startTimedRotation(null);
+            }, 50);
           });
-        };
+        });
       }
 
       if (usersList) {
@@ -263,12 +298,18 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
         `;
         li.addEventListener("click", () => {
           if (!isNaN(uLat) && !isNaN(uLng)) {
+            const markerEl = mapboxUserMarkers[user.id]?.getElement()?.querySelector('.premium-marker');
+            if (activeMarkerEl && activeMarkerEl !== markerEl) activeMarkerEl.style.opacity = '1';
+            if (markerEl) { activeMarkerEl = markerEl; markerEl.style.opacity = '0'; }
             isCinematicMode = true;
+            stopRotation();
             map.flyTo({ center: [uLng, uLat], zoom: 18, pitch: 60, duration: 2000, essential: true });
+            openCinematicPopup(user, [uLng, uLat]);
             map.once('moveend', () => {
-              if (!isCinematicMode) return;
-              startCinematicRotation();
-              openCinematicPopup(user, [uLng, uLat]);
+              setTimeout(() => {
+                if (!isCinematicMode) return;
+                startTimedRotation(null);
+              }, 50);
             });
           }
         });
@@ -394,7 +435,7 @@ function initializeMapAndLocation() {
   });
 
   // Fechar popup cinematográfico ao clicar no mapa
-  map.on('click', () => { if (cinematicPopup) closeCinematicPopup(); });
+  map.on('click', () => { if (isCinematicMode || cinematicPopup) closeCinematicPopup(); });
 
   // Fade-in: usa 'load' (tiles prontos) em vez de 'style.load' para maior confiabilidade
   map.once('load', () => {
@@ -441,14 +482,6 @@ function initializeMapAndLocation() {
       updateRadarVisuals();
       loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
     }
-  });
-
-  // TRANSIÇÃO 2D -> 3D: usa 'zoomend' para evitar loop de feedback com easeTo durante o zoom
-  map.on('zoomend', () => {
-    const currentZoom = map.getZoom();
-    const targetPitch = currentZoom > 15.5 ? 75 : 0;
-    const targetBearing = currentZoom > 15.5 ? -20 : 0;
-    map.easeTo({ pitch: targetPitch, bearing: targetBearing, duration: 500, easing: (t) => t });
   });
 
   // Throttle via requestAnimationFrame para não recalcular turf.circle() a cada frame
@@ -858,16 +891,21 @@ document.addEventListener("turbo:load", () => {
     .skeleton-line { height: 10px; background: #444; border-radius: 4px; width: 80%; }
     .users-bottom-sheet { transition: height 0.4s cubic-bezier(0.25, 1, 0.5, 1); will-change: height; }
     .users-bottom-sheet.dragging { transition: none; }
-    .premium-marker { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #fff; box-shadow: 0 0 0 0 rgba(34,197,94,0.5), 0 4px 15px rgba(0,0,0,0.15); overflow: hidden; cursor: pointer; transition: transform 0.2s ease; will-change: transform; animation: markerPulse 2s ease-out infinite; }
+    .premium-marker { width: 46px; height: 46px; border-radius: 50%; border: 3px solid #22c55e; box-shadow: 0 0 0 0 rgba(34,197,94,0.5), 0 4px 15px rgba(0,0,0,0.15); overflow: hidden; cursor: pointer; pointer-events: auto; position: relative; z-index: 10; transition: opacity 0.25s ease; will-change: transform; animation: markerPulse 2s ease-out infinite; }
     .premium-marker:hover { transform: scale(1.1); animation-play-state: paused; }
-    .premium-marker-img { width: 100%; height: 100%; object-fit: cover; display: block; }
-    @keyframes markerPulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.5), 0 4px 15px rgba(0,0,0,0.15); } 70% { box-shadow: 0 0 0 10px rgba(34,197,94,0), 0 4px 15px rgba(0,0,0,0.15); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0), 0 4px 15px rgba(0,0,0,0.15); } }
-    .cinematic-popup .mapboxgl-popup-tip { display: none; }
-    .cinematic-popup .mapboxgl-popup-content { background: rgba(255,255,255,0.82); backdrop-filter: blur(10px); -webkit-backdrop-filter: blur(10px); border-radius: 15px; padding: 14px 16px; box-shadow: 0 8px 32px rgba(0,0,0,0.12); min-width: 150px; animation: cpAppear 0.3s cubic-bezier(0.34,1.56,0.64,1) forwards; }
-    @keyframes cpAppear { 0% { opacity:0; transform:scale(0.75); } 100% { opacity:1; transform:scale(1); } }
-    .cp-name { font-weight: 700; font-size: 0.92rem; color: #1a1a1a; margin: 0 0 3px; }
-    .cp-distance { font-size: 0.75rem; color: #888; margin: 0 0 10px; }
-    .cp-btn { width: 100%; background: linear-gradient(135deg,#22c55e,#16a34a); color: #fff; border: none; border-radius: 10px; padding: 8px 0; font-weight: 700; font-size: 0.8rem; cursor: pointer; box-shadow: 0 4px 12px rgba(34,197,94,0.3); transition: transform 0.15s ease; }
+    .premium-marker-img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
+    @keyframes markerPulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6), 0 4px 15px rgba(0,0,0,0.15); } 70% { box-shadow: 0 0 0 12px rgba(34,197,94,0), 0 4px 15px rgba(0,0,0,0.15); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0), 0 4px 15px rgba(0,0,0,0.15); } }
+    .mapboxgl-marker { pointer-events: auto !important; }
+    .cinematic-popup { will-change: transform; }
+    .cinematic-popup .mapboxgl-popup-tip { display: none !important; }
+    .cinematic-popup .mapboxgl-popup-content { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.6); padding: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); min-width: 175px; max-width: 220px; will-change: transform, opacity; transform: translateZ(0); animation: cpAppear 200ms ease-out forwards; }
+    @keyframes cpAppear { 0% { opacity:0; transform:translateZ(0) scale(0.85); } 100% { opacity:1; transform:translateZ(0) scale(1); } }
+    .cp-mini-card { display: flex; flex-direction: column; align-items: center; gap: 8px; }
+    .cp-avatar { width: 62px; height: 62px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.9); box-shadow: 0 4px 14px rgba(0,0,0,0.2); flex-shrink: 0; }
+    .cp-info { text-align: center; line-height: 1.3; }
+    .cp-name { font-weight: 700; font-size: 0.95rem; color: #1a1a1a; margin: 0; }
+    .cp-distance { font-size: 0.78rem; color: #666; margin: 3px 0 0; }
+    .cp-btn { width: 100%; background: linear-gradient(135deg,#d4be91,#b8975a); color: #1a1a1a; border: none; border-radius: 12px; padding: 8px 0; font-weight: 700; font-size: 0.82rem; cursor: pointer; box-shadow: 0 3px 10px rgba(180,140,70,0.35); transition: transform 0.15s ease; }
     .cp-btn:active { transform: scale(0.95); }
   `;
   document.head.appendChild(style);

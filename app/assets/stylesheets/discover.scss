@@ -846,3 +846,75 @@
       opacity: 1;
       visibility: visible;
     }
+
+// =========================================================
+// MINI CARD CINEMATOGRÁFICO (GLASSMORPHISM)
+// =========================================================
+
+.cinematic-popup {
+  // Remove a seta padrão do Mapbox
+  .mapboxgl-popup-tip { display: none !important; }
+
+  .mapboxgl-popup-content {
+    background: rgba(255, 255, 255, 0.82);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-radius: 20px;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
+    padding: 14px;
+    min-width: 175px;
+    max-width: 220px;
+  }
+}
+
+.cp-mini-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.cp-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 3px solid rgba(255, 255, 255, 0.9);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
+  flex-shrink: 0;
+}
+
+.cp-info {
+  text-align: center;
+  line-height: 1.3;
+}
+
+.cp-name {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 0;
+}
+
+.cp-distance {
+  font-size: 0.78rem;
+  color: #666;
+  margin: 3px 0 0;
+}
+
+.cp-btn {
+  background: linear-gradient(135deg, #d4be91 0%, #b8975a 100%);
+  color: #1a1a1a;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 0;
+  font-size: 0.82rem;
+  font-weight: 700;
+  cursor: pointer;
+  width: 100%;
+  letter-spacing: 0.3px;
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  box-shadow: 0 3px 10px rgba(180, 140, 70, 0.35);
+  &:active { transform: scale(0.96); box-shadow: none; }
+}
