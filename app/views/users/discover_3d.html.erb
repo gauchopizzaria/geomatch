@@ -2,14 +2,7 @@
 <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
 <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
 <style>
-  #map-3d {
-    opacity: 0;
-    transition: opacity 0.8s ease;
-    /* Fallback: força visibilidade após 3s caso o evento JS não dispare */
-    animation: mapReveal 0.8s ease 3s forwards;
-  }
-  #map-3d.map-loaded { opacity: 1; animation: none; }
-  @keyframes mapReveal { to { opacity: 1; } }
+  #map-3d { opacity: 1; }
 </style>
 
 <div id="assets-data" 
@@ -21,6 +14,13 @@
 <div class="discover-fullscreen-container">
 
   <div id="map-3d" class="map-fullscreen"></div>
+
+  <div id="map-loader">
+    <div class="map-loader-inner">
+      <div class="map-loader-spinner"></div>
+      <p class="map-loader-text">Localizando matches próximos...</p>
+    </div>
+  </div>
 
   <div class="discover-header-floating">
     <div class="header-left">

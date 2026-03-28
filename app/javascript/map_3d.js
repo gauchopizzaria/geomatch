@@ -464,11 +464,25 @@ function initializeMapAndLocation() {
 
   map.once('load', () => {
     map.resize();
-    const mapEl = document.getElementById('map-3d');
-    if (mapEl) mapEl.classList.add('map-loaded');
     setTimeout(() => map.resize(), 500);
     setTimeout(() => map.resize(), 900);
   });
+
+  // Revela o mapa quando os tiles terminam de carregar (sem tela cinza)
+  const revealMap = (() => {
+    let revealed = false;
+    return () => {
+      if (revealed) return;
+      revealed = true;
+      const loader = document.getElementById('map-loader');
+      if (!loader) return;
+      loader.classList.add('fade-out');
+      setTimeout(() => loader.remove(), 850);
+    };
+  })();
+
+  map.once('idle', revealMap);
+  setTimeout(revealMap, 4000); // segurança: força remoção após 4s
 
   // ResizeObserver: detecta mudança de tamanho do container e força redesenho do canvas
   if (mapResizeObserver) mapResizeObserver.disconnect();
