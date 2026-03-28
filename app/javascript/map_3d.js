@@ -105,7 +105,7 @@ function startTimedRotation(onComplete) {
   stopRotation();
   const startBearing = map.getBearing();
   const startTime = performance.now();
-  const DURATION = 10000;
+  const DURATION = 30000;
 
   function rotate(now) {
     const elapsed = now - startTime;
@@ -115,9 +115,8 @@ function startTimedRotation(onComplete) {
       return;
     }
     const progress = elapsed / DURATION;
-    const easedProgress = progress < 0.5
-      ? 2 * progress * progress
-      : 1 - Math.pow(-2 * progress + 2, 2) / 2;
+    // Curva de seno: mais suave que quadrática em movimentos longos
+    const easedProgress = -(Math.cos(Math.PI * progress) - 1) / 2;
     map.setBearing(startBearing + 360 * easedProgress);
     rotationAnimId = requestAnimationFrame(rotate);
   }
@@ -128,6 +127,7 @@ function startTimedRotation(onComplete) {
 function resetCamera() {
   stopRotation();
   isCinematicMode = false;
+  document.body.classList.remove('cinematic-mode');
   map.easeTo({ pitch: 0, bearing: 0, duration: 800, easing: t => t });
 }
 
@@ -267,6 +267,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
           activeMarkerEl = el;
           el.style.opacity = '0';
           isCinematicMode = true;
+          document.body.classList.add('cinematic-mode');
           stopRotation();
           map.flyTo({ center: [uLng, uLat], zoom: 18, pitch: 60, duration: 2000, essential: true });
           openCinematicPopup(user, [uLng, uLat]);

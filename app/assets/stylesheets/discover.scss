@@ -851,9 +851,15 @@
 // MINI CARD CINEMATOGRÁFICO (GLASSMORPHISM)
 // =========================================================
 
+// Enquanto o mapa gira, congela transições CSS do popup para evitar tremor
+body.cinematic-mode .mapboxgl-popup {
+  transition: none !important;
+}
+
 .cinematic-popup {
   // Remove a seta padrão do Mapbox
   .mapboxgl-popup-tip { display: none !important; }
+  will-change: transform;
 
   .mapboxgl-popup-content {
     background: rgba(255, 255, 255, 0.82);
