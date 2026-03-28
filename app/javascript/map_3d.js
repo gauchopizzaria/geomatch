@@ -144,12 +144,12 @@ function openCinematicPopup(user, lngLat) {
     className: 'cinematic-popup',
     offset: 32,
     anchor: 'left',
-    maxWidth: '220px'
+    maxWidth: '210px'
   })
     .setLngLat(lngLat)
     .setHTML(`
       <div class="cp-mini-card">
-        <img src="${user.avatar_url || '/default-avatar.png'}" class="cp-avatar" alt="${user.username || ''}">
+        <img src="${user.avatar_url || '/default-avatar.png'}" class="cp-avatar-rect" alt="${user.username || ''}">
         <div class="cp-info">
           <p class="cp-name">${nameAge}</p>
           ${distText ? `<p class="cp-distance">${distText}</p>` : ''}
@@ -899,15 +899,16 @@ document.addEventListener("turbo:load", () => {
     .mapboxgl-marker { pointer-events: auto !important; }
     .cinematic-popup { will-change: transform; }
     .cinematic-popup .mapboxgl-popup-tip { display: none !important; }
-    .cinematic-popup .mapboxgl-popup-content { background: rgba(255,255,255,0.85); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.6); padding: 14px; box-shadow: 0 8px 32px rgba(0,0,0,0.25); min-width: 175px; max-width: 220px; will-change: transform, opacity; transform: translateZ(0); animation: cpAppear 200ms ease-out forwards; }
+    .cinematic-popup .mapboxgl-popup-content { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.55); padding: 0; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.8); min-width: 180px; max-width: 210px; will-change: transform, opacity; transform: translateZ(0); animation: cpAppear 200ms ease-out forwards; }
     @keyframes cpAppear { 0% { opacity:0; transform:translateZ(0) scale(0.85); } 100% { opacity:1; transform:translateZ(0) scale(1); } }
-    .cp-mini-card { display: flex; flex-direction: column; align-items: center; gap: 8px; }
-    .cp-avatar { width: 62px; height: 62px; border-radius: 50%; object-fit: cover; border: 3px solid rgba(255,255,255,0.9); box-shadow: 0 4px 14px rgba(0,0,0,0.2); flex-shrink: 0; }
-    .cp-info { text-align: center; line-height: 1.3; }
-    .cp-name { font-weight: 700; font-size: 0.95rem; color: #1a1a1a; margin: 0; }
-    .cp-distance { font-size: 0.78rem; color: #666; margin: 3px 0 0; }
-    .cp-btn { width: 100%; background: linear-gradient(135deg,#d4be91,#b8975a); color: #1a1a1a; border: none; border-radius: 12px; padding: 8px 0; font-weight: 700; font-size: 0.82rem; cursor: pointer; box-shadow: 0 3px 10px rgba(180,140,70,0.35); transition: transform 0.15s ease; }
+    .cp-mini-card { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
+    .cp-avatar-rect { width: 100%; height: 145px; object-fit: cover; display: block; border-radius: 0; }
+    .cp-info { text-align: center; line-height: 1.4; padding: 10px 14px 6px; }
+    .cp-name { font-weight: 700; font-size: 1rem; color: #1a1a1a; margin: 0; letter-spacing: -0.2px; }
+    .cp-distance { font-size: 0.78rem; color: #555; margin: 3px 0 0; }
+    .cp-btn { width: calc(100% - 24px); margin: 0 12px 12px; background: linear-gradient(135deg,#d4be91,#b8975a); color: #1a1a1a; border: none; border-radius: 10px; padding: 9px 0; font-weight: 700; font-size: 0.82rem; cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 3px 10px rgba(180,140,70,0.35); transition: transform 0.15s ease; }
     .cp-btn:active { transform: scale(0.95); }
+    body.cinematic-mode .premium-marker { box-shadow: none !important; animation-play-state: paused !important; border-color: rgba(34,197,94,0.4) !important; }
   `;
   document.head.appendChild(style);
 });

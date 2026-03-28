@@ -856,56 +856,63 @@ body.cinematic-mode .mapboxgl-popup {
   transition: none !important;
 }
 
+// Cinematic mode: remove visual noise from the marker
+body.cinematic-mode .premium-marker {
+  box-shadow: none !important;
+  animation-play-state: paused !important;
+  border-color: rgba(34, 197, 94, 0.4) !important;
+}
+
 .cinematic-popup {
-  // Remove a seta padrão do Mapbox
   .mapboxgl-popup-tip { display: none !important; }
   will-change: transform;
 
   .mapboxgl-popup-content {
-    background: rgba(255, 255, 255, 0.82);
+    background: rgba(255, 255, 255, 0.7);
     backdrop-filter: blur(12px);
     -webkit-backdrop-filter: blur(12px);
     border-radius: 20px;
-    border: 1px solid rgba(255, 255, 255, 0.6);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.25), 0 2px 8px rgba(0, 0, 0, 0.15);
-    padding: 14px;
-    min-width: 175px;
-    max-width: 220px;
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.22), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    padding: 0;
+    overflow: hidden;
+    min-width: 180px;
+    max-width: 210px;
   }
 }
 
 .cp-mini-card {
   display: flex;
   flex-direction: column;
-  align-items: center;
-  gap: 8px;
+  align-items: stretch;
+  gap: 0;
 }
 
-.cp-avatar {
-  width: 64px;
-  height: 64px;
-  border-radius: 50%;
+.cp-avatar-rect {
+  width: 100%;
+  height: 145px;
   object-fit: cover;
-  border: 3px solid rgba(255, 255, 255, 0.9);
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2);
-  flex-shrink: 0;
+  display: block;
+  border-radius: 0;
 }
 
 .cp-info {
   text-align: center;
-  line-height: 1.3;
+  line-height: 1.4;
+  padding: 10px 14px 6px;
 }
 
 .cp-name {
-  font-size: 0.95rem;
+  font-size: 1rem;
   font-weight: 700;
   color: #1a1a1a;
   margin: 0;
+  letter-spacing: -0.2px;
 }
 
 .cp-distance {
   font-size: 0.78rem;
-  color: #666;
+  color: #555;
   margin: 3px 0 0;
 }
 
@@ -913,12 +920,13 @@ body.cinematic-mode .mapboxgl-popup {
   background: linear-gradient(135deg, #d4be91 0%, #b8975a 100%);
   color: #1a1a1a;
   border: none;
-  border-radius: 12px;
-  padding: 8px 0;
+  border-radius: 10px;
+  padding: 9px 0;
   font-size: 0.82rem;
   font-weight: 700;
   cursor: pointer;
-  width: 100%;
+  width: calc(100% - 24px);
+  margin: 0 12px 12px;
   letter-spacing: 0.3px;
   transition: transform 0.15s ease, box-shadow 0.15s ease;
   box-shadow: 0 3px 10px rgba(180, 140, 70, 0.35);
