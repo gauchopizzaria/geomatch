@@ -134,17 +134,39 @@ function resetCamera() {
   map.easeTo({ pitch: 0, bearing: 0, duration: 800, easing: t => t });
 }
 
+function calculateAge(birthdate) {
+  if (!birthdate) {
+    console.error('[GeoMatch] user.birthdate ausente — usando idade padrão 25');
+    return 25;
+  }
+  const birth = new Date(birthdate);
+  if (isNaN(birth.getTime())) {
+    console.error('[GeoMatch] user.birthdate inválido:', birthdate, '— usando idade padrão 25');
+    return 25;
+  }
+  const today = new Date();
+  let age = today.getFullYear() - birth.getFullYear();
+  const monthDiff = today.getMonth() - birth.getMonth();
+  if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) age--;
+  return age;
+}
+
 function openCinematicPopup(user) {
   const overlay = document.getElementById('mini-card-overlay');
   if (!overlay) return;
 
+  const username = user.username || user.display_name || 'Usuário';
+  const age = calculateAge(user.birthdate);
   const distVal = user.distance_km || user.distance;
-  const nameAge = user.age
-    ? `${user.username || user.display_name || 'Usuário'}, ${user.age}`
-    : (user.username || user.display_name || 'Usuário');
 
+  // Título: "Username, Idade"
+  const nameEl = document.getElementById('mco-name');
+  nameEl.innerHTML = `<span style="font-weight:bold">${username}</span><span style="font-weight:normal">, ${age}</span>`;
+
+  // Avatar
   document.getElementById('mco-avatar').src = user.avatar_url || '/default-avatar.png';
-  document.getElementById('mco-name').textContent = nameAge;
+
+  // Distância
   const distEl = document.getElementById('mco-distance');
   distEl.textContent = distVal ? `a ${distVal} km` : '';
   distEl.style.display = distVal ? '' : 'none';
