@@ -463,9 +463,13 @@ function initializeMapAndLocation() {
   map.on('click', () => { if (isCinematicMode || cinematicPopup) closeCinematicPopup(); });
 
   // Fade-in: usa 'load' (tiles prontos) em vez de 'style.load' para maior confiabilidade
+  // map.resize() garante que o Mapbox recalcula o canvas se o container mudou de tamanho/visibilidade
   map.once('load', () => {
+    map.resize();
     const mapEl = document.getElementById('map-3d');
     if (mapEl) mapEl.classList.add('map-loaded');
+    // Segunda chamada após a transição CSS de opacity terminar (0.8s)
+    setTimeout(() => map.resize(), 900);
   });
 
   map.on('style.load', () => {
@@ -523,8 +527,15 @@ function initializeMapAndLocation() {
 
 // --- Event Listeners e Inicialização ---
 
+// Garante resize ao voltar para a página via Turbo Drive (cache restaurado)
+document.addEventListener("turbo:render", () => {
+  if (map) map.resize();
+});
+
 document.addEventListener("turbo:load", () => {
   initializeMapAndLocation();
+  // Forçar resize após montagem do DOM via Turbo (container pode ter mudado de tamanho)
+  requestAnimationFrame(() => { if (map) map.resize(); });
 
   const rangeSlider = document.getElementById("radar-range");
   const rangeValueText = document.getElementById("range-value-text");
