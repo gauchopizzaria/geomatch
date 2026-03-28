@@ -134,43 +134,42 @@ function resetCamera() {
   map.easeTo({ pitch: 0, bearing: 0, duration: 800, easing: t => t });
 }
 
-function openCinematicPopup(user, lngLat) {
-  if (cinematicPopup) { cinematicPopup.remove(); cinematicPopup = null; }
+function openCinematicPopup(user) {
+  const overlay = document.getElementById('mini-card-overlay');
+  if (!overlay) return;
+
   const distVal = user.distance_km || user.distance;
-  const distText = distVal ? `a ${distVal} km` : '';
   const nameAge = user.age
     ? `${user.username || user.display_name || 'Usuário'}, ${user.age}`
     : (user.username || user.display_name || 'Usuário');
-  cinematicPopup = new mapboxgl.Popup({
-    closeButton: false,
-    closeOnClick: false,
-    className: 'cinematic-popup',
-    offset: 32,
-    anchor: 'left',
-    maxWidth: '210px'
-  })
-    .setLngLat(lngLat)
-    .setHTML(`
-      <div class="cp-mini-card">
-        <img src="${user.avatar_url || '/default-avatar.png'}" class="cp-avatar-rect" alt="${user.username || ''}">
-        <div class="cp-info">
-          <p class="cp-name">${nameAge}</p>
-          ${distText ? `<p class="cp-distance">${distText}</p>` : ''}
-        </div>
-        <button class="cp-btn" data-action="expand">Ver Perfil</button>
-      </div>
-    `)
-    .addTo(map);
 
-  cinematicPopup.getElement().querySelector('[data-action="expand"]')
-    .addEventListener('click', () => {
-      closeCinematicPopup();
-      showUserPopup(user);
-    });
+  document.getElementById('mco-avatar').src = user.avatar_url || '/default-avatar.png';
+  document.getElementById('mco-name').textContent = nameAge;
+  const distEl = document.getElementById('mco-distance');
+  distEl.textContent = distVal ? `a ${distVal} km` : '';
+  distEl.style.display = distVal ? '' : 'none';
+
+  // Registra o clique em "Ver Perfil" — clona para evitar listeners acumulados
+  const btn = document.getElementById('mco-view-btn');
+  const newBtn = btn.cloneNode(true);
+  btn.parentNode.replaceChild(newBtn, btn);
+  newBtn.addEventListener('click', () => { closeCinematicPopup(); showUserPopup(user); });
+
+  // Anima entrada de baixo para cima
+  overlay.style.display = 'block';
+  requestAnimationFrame(() => {
+    overlay.style.opacity = '1';
+    overlay.style.transform = 'translateX(-50%) translateY(0)';
+  });
 }
 
 function closeCinematicPopup() {
-  if (cinematicPopup) { cinematicPopup.remove(); cinematicPopup = null; }
+  const overlay = document.getElementById('mini-card-overlay');
+  if (overlay) {
+    overlay.style.opacity = '0';
+    overlay.style.transform = 'translateX(-50%) translateY(30px)';
+    setTimeout(() => { overlay.style.display = 'none'; }, 300);
+  }
   if (activeMarkerEl) { activeMarkerEl.style.opacity = '1'; activeMarkerEl = null; }
   resetCamera();
 }
@@ -295,7 +294,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
           document.body.classList.add('cinematic-mode');
           stopRotation();
           map.flyTo({ center: [uLng, uLat], zoom: 18, pitch: 60, duration: 2000, essential: true });
-          openCinematicPopup(user, [uLng, uLat]);
+          openCinematicPopup(user);
           map.once('moveend', () => {
             setTimeout(() => {
               if (!isCinematicMode) return;
@@ -331,7 +330,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
             isCinematicMode = true;
             stopRotation();
             map.flyTo({ center: [uLng, uLat], zoom: 18, pitch: 60, duration: 2000, essential: true });
-            openCinematicPopup(user, [uLng, uLat]);
+            openCinematicPopup(user);
             map.once('moveend', () => {
               setTimeout(() => {
                 if (!isCinematicMode) return;
@@ -962,18 +961,8 @@ document.addEventListener("turbo:load", () => {
     .premium-marker-img { width: 100%; height: 100%; object-fit: cover; display: block; pointer-events: none; }
     @keyframes markerPulse { 0% { box-shadow: 0 0 0 0 rgba(34,197,94,0.6), 0 4px 15px rgba(0,0,0,0.15); } 70% { box-shadow: 0 0 0 12px rgba(34,197,94,0), 0 4px 15px rgba(0,0,0,0.15); } 100% { box-shadow: 0 0 0 0 rgba(34,197,94,0), 0 4px 15px rgba(0,0,0,0.15); } }
     .mapboxgl-marker { pointer-events: auto !important; }
-    .cinematic-popup { will-change: transform; }
-    .cinematic-popup .mapboxgl-popup-tip { display: none !important; }
-    .cinematic-popup .mapboxgl-popup-content { background: rgba(255,255,255,0.7); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); border-radius: 20px; border: 1px solid rgba(255,255,255,0.55); padding: 0; overflow: hidden; box-shadow: 0 8px 32px rgba(0,0,0,0.22), inset 0 1px 0 rgba(255,255,255,0.8); min-width: 180px; max-width: 210px; will-change: transform, opacity; transform: translateZ(0); animation: cpAppear 200ms ease-out forwards; }
-    @keyframes cpAppear { 0% { opacity:0; transform:translateZ(0) scale(0.85); } 100% { opacity:1; transform:translateZ(0) scale(1); } }
-    .cp-mini-card { display: flex; flex-direction: column; align-items: stretch; gap: 0; }
-    .cp-avatar-rect { width: 100%; height: 145px; object-fit: cover; display: block; border-radius: 0; }
-    .cp-info { text-align: center; line-height: 1.4; padding: 10px 14px 6px; }
-    .cp-name { font-weight: 700; font-size: 1rem; color: #1a1a1a; margin: 0; letter-spacing: -0.2px; }
-    .cp-distance { font-size: 0.78rem; color: #555; margin: 3px 0 0; }
-    .cp-btn { width: calc(100% - 24px); margin: 0 12px 12px; background: linear-gradient(135deg,#d4be91,#b8975a); color: #1a1a1a; border: none; border-radius: 10px; padding: 9px 0; font-weight: 700; font-size: 0.82rem; cursor: pointer; letter-spacing: 0.3px; box-shadow: 0 3px 10px rgba(180,140,70,0.35); transition: transform 0.15s ease; }
-    .cp-btn:active { transform: scale(0.95); }
     body.cinematic-mode .premium-marker { box-shadow: none !important; animation-play-state: paused !important; border-color: rgba(34,197,94,0.4) !important; }
+    #mco-view-btn:active { transform: scale(0.95); }
   `;
   document.head.appendChild(style);
 });
