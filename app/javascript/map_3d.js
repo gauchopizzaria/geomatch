@@ -652,15 +652,14 @@ document.addEventListener("turbo:load", () => {
     window.addEventListener("touchend", onDragEnd);
   }
 
-  // BOTÃO CENTRALIZAR MAPA
+  // BOTÃO CENTRALIZAR MAPA — reset para visão 2D de navegação
   if (fabCenterMap) {
     fabCenterMap.addEventListener("click", () => {
-      if (fixedUserLat && fixedUserLng) {
-        // Ao centralizar manualmente, forçamos o zoom para 3D
-        map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 16.5, pitch: 75, bearing: -20, essential: true });
-      } else {
-        map.flyTo({ center: [-39.2781, -14.7876], zoom: 16.5, pitch: 75, bearing: -20, essential: true });
-      }
+      closeCinematicPopup();
+      const center = (fixedUserLat && fixedUserLng)
+        ? [fixedUserLng, fixedUserLat]
+        : [-39.2781, -14.7876];
+      map.flyTo({ center, zoom: 14, pitch: 0, bearing: 0, essential: true });
     });
   }
 
