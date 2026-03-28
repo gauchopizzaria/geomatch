@@ -489,7 +489,7 @@ function initializeMapAndLocation() {
     bearing: 0,
     antialias: false, // Economiza GPU no mobile — principal causa de crash no Safari/iOS
     trackResize: true,
-    fadeDuration: 0
+    fadeDuration: 150 // Evita buracos visíveis ao trocar tiles durante zoom no iPhone
   });
 
   map.on('click', () => { if (isCinematicMode || cinematicPopup) closeCinematicPopup(); });
@@ -536,7 +536,7 @@ function initializeMapAndLocation() {
       map.setConfigProperty('basemap', 'show3dTrees', show);
     };
     update3D();
-    map.on('zoom', update3D);
+    map.on('zoomend', update3D); // Só roda ao soltar o dedo — não bloqueia a GPU frame a frame
     map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
 
     if ("geolocation" in navigator) {
