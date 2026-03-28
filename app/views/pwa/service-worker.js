@@ -1,5 +1,31 @@
 // service-worker.js
 
+self.addEventListener("notificationclick", (event) => {
+  event.notification.close();
+
+  const data = event.notification.data || {};
+  const path = data.path || data.url || "/";
+  const targetUrl = new URL(path, self.location.origin).href;
+
+  event.waitUntil(
+    clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
+      // Procura aba do GeoMatch já aberta
+      const existing = windowClients.find(c => c.url.startsWith(self.location.origin));
+
+      if (existing) {
+        // navigate() devolve um novo WindowClient — é nele que chamamos focus()
+        return existing.navigate(targetUrl).then((navigated) => {
+          const target = navigated || existing;
+          return target.focus();
+        });
+      }
+
+      // Nenhuma aba aberta — abre nova diretamente
+      return clients.openWindow(targetUrl);
+    })
+  );
+});
+
 self.addEventListener("push", (event) => { // Remova o async daqui
   let payload = { title: "GeoMatch", body: "Nova notificação!", data: { path: "/" } };
 

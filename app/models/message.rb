@@ -40,10 +40,10 @@ class Message < ApplicationRecord
         # AJUSTE: Enviamos o JSON completo dentro do campo 'message'
         # Isso garante que o Service Worker receba title, body e path corretamente
         WebPush.payload_send(
-          message: { 
-            title: "GeoMatch", 
-            body: "Nova mensagem de #{sender.display_name}: #{content.truncate(50)}", 
-            data: { path: "/matches/#{match.id}" } 
+          message: {
+            title: sender.display_name,
+            body: content.truncate(80),
+            data: { path: "/matches/#{match.id}" }
           }.to_json,
           endpoint: subscription.endpoint,
           p256dh: subscription.p256dh,
