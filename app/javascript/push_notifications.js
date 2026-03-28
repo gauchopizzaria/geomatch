@@ -17,7 +17,19 @@ const setupServiceWorkerMessageListener = () => {
           Android.mostrarNotificacao(titulo, msg, rota);
           console.log("Notificação enviada para a ponte nativa Android.");
         } else {
-          console.log("Ponte Android não encontrada. Ignorando chamada nativa.");
+          // Fallback Web: exibe via browser notification API
+          if (Notification.permission === 'granted') {
+            navigator.serviceWorker.ready.then(reg => {
+              reg.showNotification(titulo, {
+                body: msg,
+                icon: '/assets/logo.png',
+                badge: '/assets/logo.png',
+                data: { path: rota }
+              });
+            });
+          } else {
+            console.warn("[GeoMatch] Push recebido mas permissão de notificação não concedida.");
+          }
         }
       }
     });
