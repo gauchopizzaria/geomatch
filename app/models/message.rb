@@ -42,8 +42,9 @@ class Message < ApplicationRecord
         WebPush.payload_send(
           message: {
             title: sender.display_name,
-            body: content.truncate(80),
-            data: { path: "/matches/#{match.id}" }
+            body:  content.truncate(80),
+            data:  { path: "/matches/#{match.id}" },
+            tag:   "match-#{match.id}"
           }.to_json,
           endpoint: subscription.endpoint,
           p256dh: subscription.p256dh,

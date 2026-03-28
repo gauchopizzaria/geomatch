@@ -7,66 +7,66 @@ self.addEventListener("notificationclick", (event) => {
   const path = data.path || data.url || "/";
   const targetUrl = new URL(path, self.location.origin).href;
 
+  console.log('[SW] notificationclick — URL de destino:', targetUrl);
+
   event.waitUntil(
     clients.matchAll({ type: "window", includeUncontrolled: true }).then((windowClients) => {
-      // Procura aba do GeoMatch já aberta
+      console.log('[SW] Abas abertas encontradas:', windowClients.length);
+
       const existing = windowClients.find(c => c.url.startsWith(self.location.origin));
 
       if (existing) {
-        // navigate() devolve um novo WindowClient — é nele que chamamos focus()
-        return existing.navigate(targetUrl).then((navigated) => {
-          const target = navigated || existing;
-          return target.focus();
-        });
+        console.log('[SW] Navegando aba existente:', existing.url, '→', targetUrl);
+        return existing.navigate(targetUrl)
+          .then((navigated) => (navigated || existing).focus())
+          .catch(() => {
+            // navigate() rejeita em clientes não controlados no Chrome — abre nova aba
+            console.log('[SW] navigate() falhou — abrindo nova janela');
+            return clients.openWindow(targetUrl);
+          });
       }
 
-      // Nenhuma aba aberta — abre nova diretamente
+      console.log('[SW] Nenhuma aba aberta — abrindo nova janela');
       return clients.openWindow(targetUrl);
     })
   );
 });
 
-self.addEventListener("push", (event) => { // Remova o async daqui
+self.addEventListener("push", (event) => {
   let payload = { title: "GeoMatch", body: "Nova notificação!", data: { path: "/" } };
 
   if (event.data) {
     try {
-      // Use o método síncrono .json() para garantir compatibilidade na WebView
       payload = event.data.json();
     } catch (e) {
       payload.body = event.data.text();
     }
   }
 
-  // Envolva tudo em um waitUntil para o Service Worker não "dormir" antes de terminar
+  const path = (payload.data && payload.data.path) || "/";
+
   event.waitUntil((async () => {
-    // 1. Tenta a ponte nativa Android primeiro
+    // Ponte nativa Android (WebView)
     if (typeof Android !== 'undefined' && Android.mostrarNotificacao) {
-      Android.mostrarNotificacao(payload.title, payload.body, payload.data.path || "/");
-    } 
-    // 2. Se não for Android ou a ponte falhar, tenta as janelas abertas
-    else {
-      const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
-      
-      if (allClients.length > 0) {
-        allClients.forEach(client => {
-          client.postMessage({
-            type: 'PUSH_RECEIVED',
-            title: payload.title,
-            body: payload.body,
-            path: payload.data ? payload.data.path : "/"
-          });
-        });
-      } else {
-        // 3. Fallback para notificação padrão do navegador
-        const options = {
-          body: payload.body,
-          data: payload.data,
-          icon: '/assets/logo.png', // Verifique se este caminho existe
-          badge: '/assets/logo.png'
-        };
-        await self.registration.showNotification(payload.title, options);
-      }
+      Android.mostrarNotificacao(payload.title, payload.body, path);
+      return;
     }
+
+    // Sempre exibe a notificação do sistema — obrigatório para iOS em segundo plano.
+    // Mesmo com o app aberto, o banner deve aparecer; o postMessage atualiza a UI em paralelo.
+    await self.registration.showNotification(payload.title, {
+      body:      payload.body,
+      icon:      '/icon.png',
+      badge:     '/icon.png',
+      data:      { path },
+      tag:       payload.tag || `geomatch-${path}`,  // agrupa notificações do mesmo chat
+      renotify:  true,                               // vibra/toca mesmo substituindo a anterior
+    });
+
+    // Avisa abas abertas para atualizar a UI sem recarregar
+    const allClients = await clients.matchAll({ type: 'window', includeUncontrolled: true });
+    allClients.forEach(client => {
+      client.postMessage({ type: 'PUSH_RECEIVED', title: payload.title, body: payload.body, path });
+    });
   })());
 });
