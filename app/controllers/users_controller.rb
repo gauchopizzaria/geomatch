@@ -148,7 +148,7 @@ class UsersController < ApplicationController
   def nearby
     latitude = params[:latitude].to_f
     longitude = params[:longitude].to_f
-    range_km = params[:range].to_i.presence || 50 
+    range_km = params[:range].present? ? (params[:range].to_f / 1000.0) : 0.3
     gender_filter = params[:gender]&.downcase
 
     # FORÇA A ATUALIZAÇÃO: 

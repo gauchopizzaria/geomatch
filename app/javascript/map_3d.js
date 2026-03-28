@@ -18,6 +18,7 @@ let fixedUserLng = null;
 let currentRangeMeters = parseInt(localStorage.getItem(STORAGE_KEYS.RANGE)) || INITIAL_RANGE_METERS;
 let currentGenderFilter = localStorage.getItem(STORAGE_KEYS.GENDER_FILTER) || "all";
 let mapboxUserMarkers = {}; // Para gerenciar marcadores de usuários no Mapbox
+let mapboxMarkerDistances = {}; // { userId: distanceKm } — para filtragem client-side por raio
 let lastUserFetchTime = 0;
 let isUserInvisible = false;
 let rotationAnimId = null;
@@ -208,6 +209,26 @@ function updateRadarVisuals() {
   }
 }
 
+function filterMarkersByRange() {
+  const limitKm = currentRangeMeters / 1000;
+  let visibleCount = 0;
+
+  Object.entries(mapboxMarkerDistances).forEach(([userId, distKm]) => {
+    const marker = mapboxUserMarkers[userId];
+    if (!marker) return;
+    const visible = distKm <= limitKm;
+    marker.getElement().style.display = visible ? '' : 'none';
+    if (visible) visibleCount++;
+  });
+
+  const countEl = document.getElementById("nearby-count");
+  if (countEl) countEl.textContent = visibleCount;
+
+  document.querySelectorAll('#users-list .user-list-item[data-dist-km]').forEach(li => {
+    li.style.display = parseFloat(li.dataset.distKm) <= limitKm ? '' : 'none';
+  });
+}
+
 async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
   showLoadingAnimation();
   const usersList = document.getElementById("users-list");
@@ -226,6 +247,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
     // Limpa marcadores antigos
     Object.values(mapboxUserMarkers).forEach(m => m.remove());
     mapboxUserMarkers = {};
+    mapboxMarkerDistances = {};
     if (usersList) usersList.innerHTML = "";
 
     if (users.length === 0) {
@@ -261,6 +283,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
           .setLngLat([uLng, uLat])
           .addTo(map);
         mapboxUserMarkers[user.id] = marker;
+        mapboxMarkerDistances[user.id] = user.distance_km || 0;
         el.addEventListener('click', (e) => {
           e.stopPropagation();
           if (activeMarkerEl && activeMarkerEl !== el) activeMarkerEl.style.opacity = '1';
@@ -284,6 +307,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
         const isOnline = user.online;
         const li = document.createElement("li");
         li.className = "user-list-item";
+        li.dataset.distKm = user.distance_km || 0;
         li.innerHTML = `
           ${avatarHtml}
           <div class="user-list-info">
@@ -318,7 +342,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
       }
     });
 
-    if (usersCountElement) usersCountElement.textContent = users.length;
+    filterMarkersByRange();
     hideLoadingAnimation();
   } catch (error) {
     console.error("Erro ao carregar usuários próximos:", error);
@@ -531,6 +555,7 @@ document.addEventListener("turbo:load", () => {
       const val = parseInt(e.target.value, 10);
       currentRangeMeters = val;
       updateSliderVisuals(val);
+      filterMarkersByRange();
     });
     
     rangeSlider.addEventListener("change", () => {
