@@ -145,11 +145,8 @@
     <!-- JS principal -->
     <%= javascript_include_tag "application", type: "module", "data-turbo-track": "reload" %>
 
-    <!-- Leaflet JS (precisa estar antes do map.js) -->
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-
-    <!-- Script do mapa (carregado depois do Leaflet ) -->
-    <%= javascript_include_tag "map", type: "module" %>
+   
+   
     <%= javascript_include_tag "chat_logic", type: "module" %>
 
    <script>

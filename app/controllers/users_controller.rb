@@ -62,9 +62,7 @@ class UsersController < ApplicationController
   #  VIEWS PRINCIPAIS
   # ==========================================
 
-  def discover
-    # Apenas renderiza a view do mapa. A busca real é feita via AJAX no 'nearby'
-  end
+  
   
   def discover_3d
   # Esta ação renderizará a view app/views/users/discover-3d.html.erb
@@ -76,12 +74,12 @@ class UsersController < ApplicationController
 
     # SEGURANÇA: Verifica bloqueios antes de mostrar o perfil
     if current_user.excluded_user_ids.include?(@user.id)
-      redirect_to discover_path, alert: "Perfil indisponível."
+      redirect_to discover_3d_path, alert: "Perfil indisponível."
       return
     end
 
   rescue ActiveRecord::RecordNotFound
-    redirect_to discover_path, alert: "Usuário não encontrado."
+    redirect_to discover_3d_path, alert: "Usuário não encontrado."
   end
 
   def me_profile

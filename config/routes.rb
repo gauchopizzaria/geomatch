@@ -35,7 +35,6 @@ Rails.application.routes.draw do
   # =================================================================
   # 3. FUNCIONALIDADES DE DISCOVERY / LEAD
   # =================================================================
-  get "/discover", to: "users#discover", as: :discover
 
   get "/discover_3d", to: "users#discover_3d", as: :discover_3d
 
