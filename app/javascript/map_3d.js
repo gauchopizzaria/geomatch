@@ -2,6 +2,16 @@ import { toggleLiveTracking, isCurrentlyTracking } from "./live_location";
 // Turf.js é esperado estar disponível globalmente (ex: via CDN)
 // import * as turf from '@turf/turf'; // Removido para evitar erro de build se não instalado
 
+// ===== KILL-SWITCH GLOBAL: remove o loader após 4s não importa o que aconteça =====
+setTimeout(() => {
+  const l = document.getElementById('map-loader');
+  if (l) {
+    console.log('[GeoMatch] Kill-switch global: removendo loader após 4s');
+    l.remove();
+  }
+}, 4000);
+// ==================================================================================
+
 
 // --- Configurações e Estado Global ---
 const INITIAL_RANGE_METERS = 150;
@@ -485,26 +495,27 @@ function initializeMapAndLocation() {
   map.on('click', () => { if (isCinematicMode || cinematicPopup) closeCinematicPopup(); });
 
   map.once('load', () => {
+    window._mapIsReady = true;
+    if (typeof window._onMapLoaded === 'function') window._onMapLoaded();
     map.resize();
     setTimeout(() => map.resize(), 500);
     setTimeout(() => map.resize(), 900);
   });
 
-  // Revela o mapa quando os tiles terminam de carregar (sem tela cinza)
-  const revealMap = (() => {
+  // Revela o mapa — controlado apenas por tempo (sem dependência de eventos do Mapbox)
+  window._revealMap = (() => {
     let revealed = false;
     return () => {
+      console.log('[GeoMatch] Tentando remover loader...');
       if (revealed) return;
       revealed = true;
       const loader = document.getElementById('map-loader');
-      if (!loader) return;
+      if (!loader) { console.log('[GeoMatch] Loader já removido'); return; }
+      map.resize();
       loader.classList.add('fade-out');
-      setTimeout(() => loader.remove(), 850);
+      setTimeout(() => loader.remove(), 650);
     };
   })();
-
-  map.once('idle', revealMap);
-  setTimeout(revealMap, 4000); // segurança: força remoção após 4s
 
   // ResizeObserver: detecta mudança de tamanho do container e força redesenho do canvas
   if (mapResizeObserver) mapResizeObserver.disconnect();
@@ -598,9 +609,64 @@ document.addEventListener("turbo:render", () => {
 });
 
 document.addEventListener("turbo:load", () => {
-  initializeMapAndLocation();
-  // Forçar resize após montagem do DOM via Turbo (container pode ter mudado de tamanho)
-  requestAnimationFrame(() => { if (map) map.resize(); });
+  if (typeof Turbo !== 'undefined' && Turbo.cache) Turbo.cache.clear();
+
+  window._mapIsReady = false;
+  window._onMapLoaded = null;
+
+  const loader = document.getElementById('map-loader');
+  const mapContainer = document.getElementById('map-3d');
+
+  // Sem mapa nesta página: destrói loader imediatamente
+  if (!mapContainer) {
+    if (loader) loader.remove();
+    return;
+  }
+
+  // --- Reload único pós-login ---
+  // Na primeira visita vinda do login, a página recarrega silenciosamente por baixo do loader.
+  // O sessionStorage evita loop infinito: só recarrega UMA vez por sessão de login.
+  const fromLogin = document.referrer.includes('sign_in') ||
+                    document.referrer.includes('login')   ||
+                    document.referrer.includes('session');
+  const reloadDone = sessionStorage.getItem('geomatch_reload_done') === '1';
+
+  if (fromLogin && !reloadDone) {
+    console.log('[GeoMatch] Primeiro acesso pós-login — reload silencioso');
+    sessionStorage.setItem('geomatch_reload_done', '1');
+    window.location.reload();
+    return; // interrompe; a página reinicia com o loader já visível
+  }
+  // ------------------------------
+
+  console.log('[GeoMatch] Loader iniciado');
+
+  // GPS imediato — força popup de permissão no iPhone antes do Mapbox iniciar
+  if ('geolocation' in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      () => {}, () => {}, { maximumAge: 60000, timeout: 5000, enableHighAccuracy: false }
+    );
+  }
+
+  // Debounce 300ms para o Turbo finalizar a transição de DOM
+  setTimeout(() => {
+    initializeMapAndLocation();
+    requestAnimationFrame(() => { if (map) map.resize(); });
+
+    // Sincronização: revela apenas quando AMBOS forem verdadeiros —
+    // o mapa disparou 'load' E o timer de 2.5s terminou.
+    let timerFired = false;
+    let mapFired   = false;
+    const tryReveal = () => {
+      if (!timerFired || !mapFired) return;
+      console.log('[GeoMatch] Ambas condições OK — revelando mapa');
+      if (window._revealMap) window._revealMap();
+      sessionStorage.removeItem('geomatch_reload_done');
+    };
+
+    window._onMapLoaded = () => { mapFired = true; tryReveal(); };
+    setTimeout(() => { timerFired = true; tryReveal(); }, 2500);
+  }, 300);
 
   const rangeSlider = document.getElementById("radar-range");
   const rangeValueText = document.getElementById("range-value-text");
@@ -775,7 +841,7 @@ document.addEventListener("turbo:load", () => {
         if (now - lastUserFetchTime > FETCH_COOLDOWN_MS) {
           lastUserFetchTime = now;
           loadNearbyUsers(newLat, newLng, currentRangeMeters, currentGenderFilter);
-          if (!isUserInvisible) {
+          if (window._mapIsReady && !isUserInvisible) {
             fetch(`/users/update_location?latitude=${newLat}&longitude=${newLng}`, {
               method: 'POST',
               headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
@@ -949,7 +1015,7 @@ document.addEventListener("turbo:load", () => {
   }
 
   setInterval(() => {
-    if (fixedUserLat && fixedUserLng && !isUserInvisible) {
+    if (window._mapIsReady && fixedUserLat && fixedUserLng && !isUserInvisible) {
       fetch(`/users/update_location?latitude=${fixedUserLat}&longitude=${fixedUserLng}`, {
         method: 'POST',
         headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }

@@ -1,13 +1,24 @@
 /* ===================== MAP LOADING OVERLAY ===================== */
 #map-loader {
-  position: absolute;
+  position: fixed;
   inset: 0;
-  z-index: 500;
+  z-index: 9999;
   display: flex;
   align-items: center;
   justify-content: center;
   background: #0d0d0d;
-  transition: opacity 0.8s ease;
+  transition: opacity 0.6s ease;
+  pointer-events: all;
+  /* Garantia CSS: libera cliques após 3s mesmo que o JS trave */
+  animation: loader-unblock 0s 3s forwards;
+}
+
+@keyframes loader-unblock {
+  to { pointer-events: none; }
+}
+
+#map-loader.fade-out {
+  opacity: 0;
   pointer-events: none;
 }
 
@@ -26,9 +37,6 @@
   font-weight: 400;
 }
 
-#map-loader.fade-out {
-  opacity: 0;
-}
 
 .map-loader-spinner {
   width: 52px;
