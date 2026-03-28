@@ -13,6 +13,8 @@ const STORAGE_KEYS = {
 };
 
 let map;
+let mapResizeObserver = null;
+let mapResizeInterval = null;
 let fixedUserLat = null;
 let fixedUserLng = null;
 let currentRangeMeters = parseInt(localStorage.getItem(STORAGE_KEYS.RANGE)) || INITIAL_RANGE_METERS;
@@ -454,31 +456,41 @@ function initializeMapAndLocation() {
     zoom: 14,
     pitch: 0,
     bearing: 0,
-    antialias: true,
+    antialias: false, // Economiza GPU no mobile — principal causa de crash no Safari/iOS
     trackResize: true,
     fadeDuration: 0
   });
 
-  // Fechar popup cinematográfico ao clicar no mapa
   map.on('click', () => { if (isCinematicMode || cinematicPopup) closeCinematicPopup(); });
 
-  // Fade-in: usa 'load' (tiles prontos) em vez de 'style.load' para maior confiabilidade
-  // map.resize() garante que o Mapbox recalcula o canvas se o container mudou de tamanho/visibilidade
   map.once('load', () => {
     map.resize();
     const mapEl = document.getElementById('map-3d');
     if (mapEl) mapEl.classList.add('map-loaded');
-    // Segunda chamada após a transição CSS de opacity terminar (0.8s)
+    setTimeout(() => map.resize(), 500);
     setTimeout(() => map.resize(), 900);
   });
 
-  map.on('style.load', () => {
-    // Configurações do estilo "standard" — cores vivas, relevo e prédios 3D
-    map.setConfigProperty('basemap', 'lightPreset', 'day');
-    map.setConfigProperty('basemap', 'show3dObjects', true);
-    map.setConfigProperty('basemap', 'show3dTrees', true);
+  // ResizeObserver: detecta mudança de tamanho do container e força redesenho do canvas
+  if (mapResizeObserver) mapResizeObserver.disconnect();
+  mapResizeObserver = new ResizeObserver(() => { if (map) map.resize(); });
+  mapResizeObserver.observe(mapElement);
 
-    // Esconde labels de estabelecimentos (POIs) mantendo foco nos usuários
+  // Intervalo de segurança: acorda o canvas a cada 500ms pelos primeiros 3s
+  if (mapResizeInterval) clearInterval(mapResizeInterval);
+  mapResizeInterval = setInterval(() => { if (map) map.resize(); }, 500);
+  setTimeout(() => { clearInterval(mapResizeInterval); mapResizeInterval = null; }, 3000);
+
+  map.on('style.load', () => {
+    map.setConfigProperty('basemap', 'lightPreset', 'day');
+    // Prédios/árvores 3D apenas em zoom > 16 — poupa GPU no zoom padrão (14)
+    const update3D = () => {
+      const show = map.getZoom() > 16;
+      map.setConfigProperty('basemap', 'show3dObjects', show);
+      map.setConfigProperty('basemap', 'show3dTrees', show);
+    };
+    update3D();
+    map.on('zoom', update3D);
     map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
 
     if ("geolocation" in navigator) {
@@ -526,6 +538,24 @@ function initializeMapAndLocation() {
 }
 
 // --- Event Listeners e Inicialização ---
+
+// Libera toda memória de GPU/WebGL antes do Turbo cachear ou navegar — previne crash no iOS
+document.addEventListener("turbo:before-cache", () => {
+  stopRotation(); // Cancela cancelAnimationFrame antes de qualquer cleanup
+  if (mapResizeObserver) { mapResizeObserver.disconnect(); mapResizeObserver = null; }
+  if (mapResizeInterval) { clearInterval(mapResizeInterval); mapResizeInterval = null; }
+  if (map) {
+    map.remove(); // Destrói contexto WebGL e libera memória da GPU
+    map = null;
+    mapboxUserMarkers = {};
+    mapboxMarkerDistances = {};
+    fixedUserLat = null;
+    fixedUserLng = null;
+  }
+});
+
+// Fallback: corrige canvas ao retornar de outra aba
+window.addEventListener('focus', () => { if (map) map.resize(); });
 
 // Garante resize ao voltar para a página via Turbo Drive (cache restaurado)
 document.addEventListener("turbo:render", () => {
