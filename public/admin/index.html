@@ -4,95 +4,52 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>GeoMatch · Admin</title>
-
-  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Leaflet CSS -->
   <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
-
   <style>
-    /* ── Scrollbar ── */
-    ::-webkit-scrollbar { width: 5px; height: 5px; }
-    ::-webkit-scrollbar-track { background: #0f172a; }
-    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
-
-    /* ── Online pulse keyframe ── */
-    @keyframes pulse-ring {
-      0%   { box-shadow: 0 0 0 0   rgba(74, 222, 128, 0.75); }
-      70%  { box-shadow: 0 0 0 8px rgba(74, 222, 128, 0);    }
-      100% { box-shadow: 0 0 0 0   rgba(74, 222, 128, 0);    }
-    }
-    .pulse-online { animation: pulse-ring 1.7s ease-out infinite; }
-
-    /* ── Leaflet dark tiles (CartoDB Dark) ── */
-    .leaflet-popup-content-wrapper {
-      background: #1e293b !important;
-      border: 1px solid #334155 !important;
-      color: #e2e8f0 !important;
-      border-radius: 10px !important;
-      box-shadow: 0 8px 24px rgba(0,0,0,.6) !important;
-      font-family: system-ui, sans-serif;
-      font-size: 12px;
-      padding: 0 !important;
-    }
-    .leaflet-popup-content { margin: 10px 14px !important; }
-    .leaflet-popup-tip     { background: #334155 !important; }
-    .leaflet-control-zoom a {
-      background: #1e293b !important;
-      color: #94a3b8 !important;
-      border-color: #334155 !important;
-    }
-    .leaflet-control-zoom a:hover { background: #334155 !important; color: #fff !important; }
-    .leaflet-control-attribution {
-      background: rgba(15,23,42,.7) !important;
-      color: #475569 !important;
-      font-size: 10px !important;
-    }
-    .leaflet-control-attribution a { color: #64748b !important; }
+    ::-webkit-scrollbar{width:5px;height:5px}
+    ::-webkit-scrollbar-track{background:#0f172a}
+    ::-webkit-scrollbar-thumb{background:#334155;border-radius:4px}
+    @keyframes pulse-ring{0%{box-shadow:0 0 0 0 rgba(74,222,128,.75)}70%{box-shadow:0 0 0 8px rgba(74,222,128,0)}100%{box-shadow:0 0 0 0 rgba(74,222,128,0)}}
+    .pulse-online{animation:pulse-ring 1.7s ease-out infinite}
+    .leaflet-popup-content-wrapper{background:#1e293b!important;border:1px solid #334155!important;color:#e2e8f0!important;border-radius:10px!important;box-shadow:0 8px 24px rgba(0,0,0,.6)!important;padding:0!important}
+    .leaflet-popup-content{margin:10px 14px!important}
+    .leaflet-popup-tip{background:#334155!important}
+    .leaflet-control-zoom a{background:#1e293b!important;color:#94a3b8!important;border-color:#334155!important}
+    .leaflet-control-zoom a:hover{background:#334155!important;color:#fff!important}
+    .leaflet-control-attribution{background:rgba(15,23,42,.7)!important;color:#475569!important;font-size:10px!important}
+    .leaflet-control-attribution a{color:#64748b!important}
+    input[type="date"]::-webkit-calendar-picker-indicator{filter:invert(.5)}
   </style>
 </head>
+<body class="bg-slate-950 text-slate-100" style="font-family:system-ui,-apple-system,sans-serif;">
 
-<body class="bg-slate-950 text-slate-100" style="font-family: system-ui, -apple-system, sans-serif;">
-
-<!-- ================================================================
-     TELA DE LOGIN
-================================================================ -->
-<div id="login-screen" class="min-h-screen flex items-center justify-center bg-slate-950">
+<!-- ══════════════════════════════════════════
+     LOGIN
+══════════════════════════════════════════ -->
+<div id="login-screen" class="min-h-screen flex items-center justify-center">
   <div class="w-full max-w-sm px-4">
-
-    <!-- Brand -->
     <div class="text-center mb-10">
       <div class="inline-flex items-center gap-3 mb-2">
-        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-900 font-black text-lg"
-             style="background: linear-gradient(135deg, #f59e0b, #d97706);">G</div>
-        <span class="text-2xl font-bold">GeoMatch <span style="color:#f59e0b;">Admin</span></span>
+        <div class="w-10 h-10 rounded-xl flex items-center justify-center text-slate-900 font-black text-lg" style="background:linear-gradient(135deg,#f59e0b,#d97706)">G</div>
+        <span class="text-2xl font-bold">GeoMatch <span style="color:#f59e0b">Admin</span></span>
       </div>
       <p class="text-slate-500 text-sm">Área restrita — apenas administradores</p>
     </div>
-
-    <!-- Card -->
     <div class="bg-slate-900 border border-slate-800 rounded-2xl p-7 shadow-2xl">
-      <div id="login-error"
-           class="hidden mb-5 px-4 py-3 rounded-xl text-sm text-red-400 bg-red-500/10 border border-red-500/25 text-center">
-      </div>
-
+      <div id="login-error" class="hidden mb-4 px-4 py-3 rounded-xl text-sm text-red-400 bg-red-500/10 border border-red-500/25 text-center"></div>
       <form id="login-form" class="space-y-4">
         <div>
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1.5">E-mail</label>
-          <input id="login-email" type="email" required autocomplete="email"
-            placeholder="admin@geomatch.app"
+          <input id="login-email" type="email" required placeholder="admin@geomatch.app"
             class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors" />
         </div>
         <div>
           <label class="block text-xs font-semibold text-slate-400 uppercase tracking-widest mb-1.5">Senha</label>
-          <input id="login-password" type="password" required autocomplete="current-password"
-            placeholder="••••••••"
+          <input id="login-password" type="password" required placeholder="••••••••"
             class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors" />
         </div>
-        <button id="login-btn" type="submit"
-          class="w-full font-bold py-2.5 rounded-xl text-sm transition-colors text-slate-900 mt-1"
-          style="background:#f59e0b;">
+        <button id="login-btn" type="submit" class="w-full font-bold py-2.5 rounded-xl text-sm text-slate-900 mt-1 transition-opacity hover:opacity-90" style="background:#f59e0b">
           Entrar no Painel
         </button>
       </form>
@@ -100,93 +57,65 @@
   </div>
 </div>
 
-
-<!-- ================================================================
+<!-- ══════════════════════════════════════════
      DASHBOARD
-================================================================ -->
-<div id="dashboard" class="hidden" style="display:none;">
-<div class="flex min-h-screen">
+══════════════════════════════════════════ -->
+<div id="dashboard" class="hidden min-h-screen flex" style="display:none!important">
 
-  <!-- ── SIDEBAR ── -->
+  <!-- SIDEBAR -->
   <aside class="w-60 flex-shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col fixed top-0 left-0 h-full z-20">
-
-    <!-- Brand -->
     <div class="p-5 border-b border-slate-800 flex items-center gap-3">
-      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-900 font-black text-sm flex-shrink-0"
-           style="background:linear-gradient(135deg,#f59e0b,#d97706);">G</div>
-      <div class="leading-tight">
-        <div class="font-bold text-sm text-white">GeoMatch</div>
-        <div class="text-xs font-semibold" style="color:#f59e0b;">Admin Panel</div>
-      </div>
+      <div class="w-8 h-8 rounded-lg flex items-center justify-center text-slate-900 font-black text-sm flex-shrink-0" style="background:linear-gradient(135deg,#f59e0b,#d97706)">G</div>
+      <div><div class="font-bold text-sm">GeoMatch</div><div class="text-xs font-semibold" style="color:#f59e0b">Admin Panel</div></div>
     </div>
 
-    <!-- Nav -->
-    <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto">
-      <button onclick="gotoSection('overview',this)"
-        class="nav-btn active w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white bg-slate-800 text-left">
-        <svg class="w-4 h-4 flex-shrink-0" style="color:#f59e0b;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/>
-          <rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/>
-        </svg>
+    <nav class="flex-1 p-3 space-y-0.5 overflow-y-auto" id="sidebar-nav">
+      <button data-section="overview"    class="nav-btn active-nav w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white bg-slate-800 text-left">
+        <svg class="w-4 h-4 flex-shrink-0" style="color:#f59e0b" fill="none" stroke="currentColor" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="3" width="7" height="7" rx="1" stroke-width="2"/><rect x="3" y="14" width="7" height="7" rx="1" stroke-width="2"/><rect x="14" y="14" width="7" height="7" rx="1" stroke-width="2"/></svg>
         Visão Geral
       </button>
-
-      <button onclick="gotoSection('map',this)"
-        class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
-        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/>
-        </svg>
+      <button data-section="map" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064"/></svg>
         Mapa ao Vivo
       </button>
-
-      <button onclick="gotoSection('users',this)"
-        class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
-        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-        </svg>
+      <button data-section="analytics" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Analytics
+      </button>
+      <button data-section="users" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
         Usuários
       </button>
-
-      <button onclick="gotoSection('reports',this)"
-        class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
-        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-            d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-        </svg>
+      <button data-section="reports" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
         Denúncias
-        <span id="badge-reports"
-          class="ml-auto text-white text-xs font-bold rounded-full px-1.5 py-px hidden"
-          style="background:#ef4444; min-width:18px; text-align:center;">0</span>
+        <span id="badge-reports" class="ml-auto text-white text-xs font-bold rounded-full px-1.5 py-px hidden" style="background:#ef4444;min-width:18px;text-align:center">0</span>
+      </button>
+      <button data-section="performance" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        Performance
       </button>
     </nav>
 
-    <!-- Admin info + Logout -->
     <div class="p-3 border-t border-slate-800">
       <div class="flex items-center gap-3 px-2">
-        <div id="admin-avatar"
-          class="w-8 h-8 rounded-full flex items-center justify-center text-slate-900 font-bold text-xs flex-shrink-0"
-          style="background:#f59e0b;">A</div>
+        <div id="admin-avatar" class="w-8 h-8 rounded-full flex items-center justify-center text-slate-900 font-bold text-xs flex-shrink-0" style="background:#f59e0b">A</div>
         <div class="flex-1 min-w-0">
           <div id="admin-name" class="text-xs font-semibold text-white truncate">Admin</div>
           <div class="text-xs text-slate-500">Administrador</div>
         </div>
         <button onclick="logout()" title="Sair" class="text-slate-500 hover:text-red-400 transition-colors p-1">
-          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-              d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
-          </svg>
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
         </button>
       </div>
     </div>
   </aside>
 
-  <!-- ── MAIN ── -->
-  <main class="flex-1 min-h-screen flex flex-col" style="margin-left:240px;">
+  <!-- MAIN -->
+  <main class="flex-1 flex flex-col" style="margin-left:240px;min-height:100vh;">
 
     <!-- Top bar -->
-    <div class="sticky top-0 z-10 bg-slate-950/95 backdrop-blur border-b border-slate-800 px-7 py-3.5 flex items-center justify-between">
+    <div class="sticky top-0 z-10 bg-slate-950/95 backdrop-blur border-b border-slate-800 px-7 py-3 flex items-center justify-between">
       <div>
         <h1 id="section-title" class="font-bold text-base">Visão Geral</h1>
         <p class="text-xs text-slate-500 mt-0.5">Atualizado: <span id="last-updated">—</span></p>
@@ -196,165 +125,213 @@
           <span class="w-1.5 h-1.5 rounded-full bg-green-400 animate-pulse inline-block"></span>
           Ao vivo · <span id="countdown">30</span>s
         </div>
-        <button onclick="forceRefresh()"
-          class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">
-          ↺ Agora
-        </button>
+        <button onclick="forceRefresh()" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">↺ Agora</button>
       </div>
     </div>
 
-    <!-- Content -->
     <div class="p-7 space-y-7 flex-1">
 
-      <!-- ======================================================
-           SEÇÃO: VISÃO GERAL
-      ====================================================== -->
+      <!-- ══════════════ VISÃO GERAL ══════════════ -->
       <section id="section-overview">
-
-        <!-- Stats Cards -->
         <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-7">
-
-          <!-- Total de Usuários -->
+          <!-- Card Total -->
           <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
             <div class="flex items-start justify-between mb-4">
-              <div class="p-2 rounded-lg" style="background:rgba(59,130,246,.12);">
-                <svg class="w-5 h-5" style="color:#60a5fa;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
-                </svg>
-              </div>
+              <div class="p-2 rounded-lg" style="background:rgba(59,130,246,.12)"><svg class="w-5 h-5" style="color:#60a5fa" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg></div>
               <span class="text-xs text-slate-500 font-medium">TOTAL</span>
             </div>
             <div id="stat-total-users" class="text-3xl font-bold mb-1">—</div>
             <div class="text-xs text-slate-400">Usuários cadastrados</div>
-            <div class="text-xs mt-1.5" style="color:#4ade80;">
-              +<span id="stat-new-today">0</span> hoje
-            </div>
+            <div class="text-xs mt-1.5" style="color:#4ade80">+<span id="stat-new-today">0</span> hoje</div>
           </div>
-
-          <!-- Online Agora -->
+          <!-- Card Online -->
           <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
             <div class="flex items-start justify-between mb-4">
-              <div class="p-2 rounded-lg" style="background:rgba(74,222,128,.1);">
-                <svg class="w-5 h-5" style="color:#4ade80;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <circle cx="12" cy="12" r="3" stroke-width="2"/>
-                  <path stroke-linecap="round" stroke-width="2"
-                    d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
-                </svg>
-              </div>
-              <span class="flex items-center gap-1 text-xs font-medium" style="color:#4ade80;">
-                <span class="w-1.5 h-1.5 rounded-full inline-block animate-pulse" style="background:#4ade80;"></span>
-                AO VIVO
-              </span>
+              <div class="p-2 rounded-lg" style="background:rgba(74,222,128,.1)"><svg class="w-5 h-5" style="color:#4ade80" fill="none" stroke="currentColor" viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg></div>
+              <span class="flex items-center gap-1 text-xs font-medium" style="color:#4ade80"><span class="w-1.5 h-1.5 rounded-full inline-block animate-pulse" style="background:#4ade80"></span>AO VIVO</span>
             </div>
             <div id="stat-active-now" class="text-3xl font-bold mb-1">—</div>
             <div class="text-xs text-slate-400">Online agora</div>
-            <div class="text-xs text-slate-500 mt-1.5">Últimos 5 minutos</div>
+            <div class="text-xs text-slate-500 mt-1.5">Últimos 5 min</div>
           </div>
-
-          <!-- Total de Matches -->
+          <!-- Card Matches -->
           <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
             <div class="flex items-start justify-between mb-4">
-              <div class="p-2 rounded-lg" style="background:rgba(245,158,11,.1);">
-                <svg class="w-5 h-5" style="color:#fbbf24;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/>
-                </svg>
-              </div>
+              <div class="p-2 rounded-lg" style="background:rgba(245,158,11,.1)"><svg class="w-5 h-5" style="color:#fbbf24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z"/></svg></div>
               <span class="text-xs text-slate-500 font-medium">MATCHES</span>
             </div>
             <div id="stat-total-matches" class="text-3xl font-bold mb-1">—</div>
             <div class="text-xs text-slate-400">Conversas ativas</div>
-            <div class="text-xs text-slate-500 mt-1.5">
-              <span id="stat-messages-today">0</span> msgs hoje
-            </div>
+            <div class="text-xs text-slate-500 mt-1.5"><span id="stat-messages-today">0</span> msgs hoje</div>
           </div>
-
-          <!-- Denúncias -->
-          <div class="bg-slate-900 rounded-2xl p-5" style="border:1px solid rgba(239,68,68,.3);">
+          <!-- Card Denúncias -->
+          <div class="bg-slate-900 rounded-2xl p-5" style="border:1px solid rgba(239,68,68,.3)">
             <div class="flex items-start justify-between mb-4">
-              <div class="p-2 rounded-lg" style="background:rgba(239,68,68,.1);">
-                <svg class="w-5 h-5" style="color:#f87171;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                    d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
-                </svg>
-              </div>
-              <span class="text-xs font-medium" style="color:#f87171;">PENDENTE</span>
+              <div class="p-2 rounded-lg" style="background:rgba(239,68,68,.1)"><svg class="w-5 h-5" style="color:#f87171" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg></div>
+              <span class="text-xs font-medium" style="color:#f87171">PENDENTE</span>
             </div>
-            <div id="stat-pending-reports" class="text-3xl font-bold mb-1" style="color:#f87171;">—</div>
+            <div id="stat-pending-reports" class="text-3xl font-bold mb-1" style="color:#f87171">—</div>
             <div class="text-xs text-slate-400">Denúncias pendentes</div>
-            <div class="text-xs text-slate-500 mt-1.5">
-              <span id="stat-banned">0</span> usuários banidos
-            </div>
+            <div class="text-xs text-slate-500 mt-1.5"><span id="stat-banned">0</span> banidos</div>
           </div>
         </div>
-
-        <!-- Mapa (mini — overview) -->
+        <!-- Mini mapa -->
         <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
           <div class="px-6 py-3.5 border-b border-slate-800 flex items-center justify-between">
             <div>
               <span class="font-semibold text-sm">Mapa Global ao Vivo</span>
-              <span class="ml-3 text-xs text-slate-500">
-                <span id="mini-online">0</span> online ·
-                <span id="mini-total">0</span> com localização
-              </span>
+              <span class="ml-3 text-xs text-slate-500"><span id="mini-online">0</span> online · <span id="mini-total">0</span> com localização</span>
             </div>
-            <button onclick="gotoSection('map', document.querySelectorAll('.nav-btn')[1])"
-              class="text-xs font-medium transition-colors" style="color:#f59e0b;">
-              Ver mapa completo →
-            </button>
+            <button onclick="gotoSection('map')" class="text-xs font-medium hover:opacity-75 transition-opacity" style="color:#f59e0b">Ver completo →</button>
           </div>
-          <div id="map-mini" style="height:360px; background:#0f172a;"></div>
+          <div id="map-mini" style="height:340px;background:#0f172a"></div>
         </div>
       </section>
 
-      <!-- ======================================================
-           SEÇÃO: MAPA AO VIVO
-      ====================================================== -->
+      <!-- ══════════════ MAPA AO VIVO ══════════════ -->
       <section id="section-map" class="hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <div class="px-6 py-3.5 border-b border-slate-800 flex items-center justify-between">
+          <div class="px-6 py-3.5 border-b border-slate-800 flex items-center justify-between flex-wrap gap-3">
             <div>
-              <span class="font-semibold">Mapa Global ao Vivo</span>
-              <span class="ml-3 text-xs text-slate-500">
-                <span id="full-online">0</span> online ·
-                <span id="full-total">0</span> com localização
-              </span>
+              <span class="font-semibold">Mapa ao Vivo</span>
+              <span class="ml-3 text-xs text-slate-500"><span id="full-online">0</span> online · <span id="full-total">0</span> com localização</span>
             </div>
-            <div class="flex items-center gap-5 text-xs text-slate-400">
-              <span class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:#4ade80;"></span>Online
-              </span>
-              <span class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full inline-block" style="background:#475569;"></span>Offline
-              </span>
+            <div class="flex items-center gap-4">
+              <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
+                <input id="toggle-heatmap" type="checkbox" onchange="toggleHeatmap()" class="rounded" />
+                Mapa de Calor
+              </label>
+              <div class="flex items-center gap-3 text-xs text-slate-400">
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:#4ade80"></span>Online</span>
+                <span class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full inline-block" style="background:#475569"></span>Offline</span>
+              </div>
             </div>
           </div>
-          <div id="map-full" style="height:580px; background:#0f172a;"></div>
+          <div id="map-full" style="height:580px;background:#0f172a"></div>
         </div>
       </section>
 
-      <!-- ======================================================
-           SEÇÃO: USUÁRIOS
-      ====================================================== -->
+      <!-- ══════════════ ANALYTICS ══════════════ -->
+      <section id="section-analytics" class="hidden">
+
+        <!-- Filtro de datas -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6 flex items-center gap-4 flex-wrap">
+          <span class="text-sm font-medium text-slate-300">Período:</span>
+          <div class="flex items-center gap-3 flex-wrap">
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-slate-500">De</label>
+              <input id="date-from" type="date"
+                class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white outline-none focus:border-yellow-500 transition-colors" />
+            </div>
+            <div class="flex items-center gap-2">
+              <label class="text-xs text-slate-500">Até</label>
+              <input id="date-to" type="date"
+                class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-sm text-white outline-none focus:border-yellow-500 transition-colors" />
+            </div>
+          </div>
+          <div class="flex items-center gap-2">
+            <button onclick="setPreset(7)"  class="preset-btn px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">7d</button>
+            <button onclick="setPreset(30)" class="preset-btn px-3 py-1.5 bg-slate-700 rounded-lg text-xs font-bold transition-colors" style="color:#f59e0b">30d</button>
+            <button onclick="setPreset(90)" class="preset-btn px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">90d</button>
+          </div>
+          <button onclick="applyDateFilter()"
+            class="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-900 transition-opacity hover:opacity-90" style="background:#f59e0b">
+            Aplicar
+          </button>
+          <div id="analytics-loading" class="hidden text-xs text-slate-500 flex items-center gap-2">
+            <span class="w-3 h-3 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin inline-block"></span>
+            Carregando…
+          </div>
+        </div>
+
+        <!-- Retenção + Engajamento -->
+        <div class="grid grid-cols-2 lg:grid-cols-6 gap-4 mb-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+            <div class="text-xs text-slate-500 font-medium uppercase tracking-widest mb-2">Retenção D1</div>
+            <div id="ret-d1" class="text-2xl font-bold" style="color:#4ade80">—%</div>
+            <div id="ret-d1-base" class="text-xs text-slate-500 mt-1">base: —</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+            <div class="text-xs text-slate-500 font-medium uppercase tracking-widest mb-2">Retenção D7</div>
+            <div id="ret-d7" class="text-2xl font-bold" style="color:#fbbf24">—%</div>
+            <div id="ret-d7-base" class="text-xs text-slate-500 mt-1">base: —</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+            <div class="text-xs text-slate-500 font-medium uppercase tracking-widest mb-2">Retenção D30</div>
+            <div id="ret-d30" class="text-2xl font-bold" style="color:#f87171">—%</div>
+            <div id="ret-d30-base" class="text-xs text-slate-500 mt-1">base: —</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+            <div class="text-xs text-slate-500 font-medium uppercase tracking-widest mb-2">Matches no Período</div>
+            <div id="eng-matches" class="text-2xl font-bold">—</div>
+            <div class="text-xs text-slate-500 mt-1">conversas</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+            <div class="text-xs text-slate-500 font-medium uppercase tracking-widest mb-2">Mensagens</div>
+            <div id="eng-messages" class="text-2xl font-bold">—</div>
+            <div class="text-xs text-slate-500 mt-1">enviadas</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 text-center">
+            <div class="text-xs text-slate-500 font-medium uppercase tracking-widest mb-2">Msgs / Match</div>
+            <div id="eng-avg" class="text-2xl font-bold">—</div>
+            <div class="text-xs text-slate-500 mt-1">média</div>
+          </div>
+        </div>
+
+        <!-- Gráficos -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <!-- Gráfico de Crescimento -->
+          <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="flex items-center justify-between mb-4">
+              <h3 class="font-semibold text-sm">Crescimento de Usuários</h3>
+              <span id="growth-total" class="text-xs text-slate-500">— no período</span>
+            </div>
+            <div style="position:relative;height:220px">
+              <canvas id="growth-chart"></canvas>
+            </div>
+          </div>
+          <!-- Gráfico de Planos -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-semibold text-sm mb-4">Distribuição por Plano</h3>
+            <div style="position:relative;height:180px">
+              <canvas id="plan-chart"></canvas>
+            </div>
+            <div id="plan-legend" class="mt-4 space-y-1.5"></div>
+          </div>
+        </div>
+
+        <!-- Alertas de Bot -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+          <div class="px-6 py-3.5 border-b border-slate-800 flex items-center gap-3">
+            <svg class="w-4 h-4 flex-shrink-0" style="color:#f87171" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <h3 class="font-semibold text-sm">Alertas de Bot <span class="text-xs text-slate-500 font-normal">(>500 swipes/hora)</span></h3>
+            <span id="bot-count" class="ml-auto text-xs text-slate-500">0 suspeitos</span>
+          </div>
+          <div id="bot-table" class="px-6 py-4 text-sm text-slate-500">
+            Nenhum alerta de bot no momento.
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ USUÁRIOS ══════════════ -->
       <section id="section-users" class="hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-
-          <!-- Filtros -->
           <div class="px-6 py-4 border-b border-slate-800 flex items-center gap-4 flex-wrap">
             <h2 class="font-semibold text-sm flex-shrink-0">Gestão de Usuários</h2>
             <div class="flex items-center gap-3 ml-auto flex-wrap">
-              <input id="user-search" type="text" placeholder="Buscar por e-mail..."
+              <input id="user-search" type="text" placeholder="Buscar por e-mail…"
                 onkeyup="debounceSearch()"
-                class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-56" />
+                class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-52" />
               <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
-                <input id="filter-banned" type="checkbox" onchange="loadUsers(1)" class="rounded" />
-                Apenas banidos
+                <input id="filter-banned" type="checkbox" onchange="loadUsers(1)" class="rounded" />Apenas banidos
               </label>
+              <button onclick="exportCSV()"
+                class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">
+                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                Exportar CSV
+              </button>
             </div>
           </div>
-
-          <!-- Tabela -->
           <div class="overflow-x-auto">
             <table class="w-full text-sm">
               <thead>
@@ -368,16 +345,10 @@
                 </tr>
               </thead>
               <tbody id="users-tbody">
-                <tr>
-                  <td colspan="6" class="px-6 py-16 text-center text-slate-500 text-sm">
-                    Carregando usuários...
-                  </td>
-                </tr>
+                <tr><td colspan="6" class="px-6 py-16 text-center text-slate-500">Carregando…</td></tr>
               </tbody>
             </table>
           </div>
-
-          <!-- Paginação -->
           <div class="px-6 py-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
             <span id="pagination-info">—</span>
             <div id="pagination-btns" class="flex items-center gap-2"></div>
@@ -385,214 +356,310 @@
         </div>
       </section>
 
-      <!-- ======================================================
-           SEÇÃO: DENÚNCIAS
-      ====================================================== -->
+      <!-- ══════════════ DENÚNCIAS ══════════════ -->
       <section id="section-reports" class="hidden">
-        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-7">
-          <h2 class="font-semibold mb-2">Denúncias Pendentes</h2>
-          <p class="text-slate-400 text-sm">
-            Há <strong id="reports-count" class="text-red-400">—</strong> denúncias aguardando revisão.
-            O gerenciamento detalhado será adicionado em breve.
-          </p>
+        <!-- Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-4 mb-6">
+          <div class="bg-slate-900 rounded-2xl p-5" style="border:1px solid rgba(239,68,68,.3)">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Pendentes</div>
+            <div id="rpt-pending" class="text-3xl font-bold" style="color:#f87171">—</div>
+            <div class="text-xs text-slate-400 mt-1">aguardando revisão</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Resolvidas</div>
+            <div id="rpt-resolved" class="text-3xl font-bold text-white">—</div>
+            <div class="text-xs text-slate-400 mt-1">no total</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Usuários Banidos</div>
+            <div id="rpt-banned" class="text-3xl font-bold text-white">—</div>
+            <div class="text-xs text-slate-400 mt-1">contas suspensas</div>
+          </div>
+        </div>
+
+        <!-- Categories -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+          <h3 class="font-semibold text-sm mb-4">Por Categoria</h3>
+          <div id="report-categories" class="grid grid-cols-2 lg:grid-cols-4 gap-3">
+            <div class="text-slate-500 text-sm col-span-4">Carregando…</div>
+          </div>
+        </div>
+
+        <!-- Report list -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+          <div class="px-6 py-4 border-b border-slate-800 flex items-center gap-3 flex-wrap">
+            <h3 class="font-semibold text-sm flex-shrink-0">Denúncias Recentes</h3>
+            <div class="flex items-center gap-2 ml-auto flex-wrap">
+              <select id="rpt-filter-status" onchange="loadReports(1)"
+                class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-yellow-500 transition-colors">
+                <option value="">Todas</option>
+                <option value="pending">Pendentes</option>
+                <option value="resolved">Resolvidas</option>
+              </select>
+              <select id="rpt-filter-cat" onchange="loadReports(1)"
+                class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-yellow-500 transition-colors">
+                <option value="">Todas as categorias</option>
+                <option value="harassment">Assédio</option>
+                <option value="fake_profile">Perfil Falso</option>
+                <option value="spam">Spam</option>
+                <option value="inappropriate_content">Conteúdo Impróprio</option>
+                <option value="underage">Menor de Idade</option>
+                <option value="scam">Fraude</option>
+                <option value="other">Outros</option>
+              </select>
+            </div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-sm">
+              <thead>
+                <tr class="border-b border-slate-800 text-xs text-slate-500 uppercase tracking-wider">
+                  <th class="px-6 py-3 text-left font-semibold">#</th>
+                  <th class="px-6 py-3 text-left font-semibold">Denunciante</th>
+                  <th class="px-6 py-3 text-left font-semibold">Categoria</th>
+                  <th class="px-6 py-3 text-left font-semibold">Descrição</th>
+                  <th class="px-6 py-3 text-left font-semibold">Data</th>
+                  <th class="px-6 py-3 text-left font-semibold">Status</th>
+                  <th class="px-6 py-3 text-right font-semibold">Ação</th>
+                </tr>
+              </thead>
+              <tbody id="reports-tbody">
+                <tr><td colspan="7" class="px-6 py-16 text-center text-slate-500">Carregando…</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <div class="px-6 py-4 border-t border-slate-800 flex items-center justify-between text-xs text-slate-500">
+            <span id="rpt-pagination-info">—</span>
+            <div id="rpt-pagination-btns" class="flex items-center gap-2"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ══════════════ PERFORMANCE ══════════════ -->
+      <section id="section-performance" class="hidden">
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+
+          <!-- Banco de Dados -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h3 class="font-semibold mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4" style="color:#60a5fa" fill="none" stroke="currentColor" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3" stroke-width="2"/><path stroke-linecap="round" stroke-width="2" d="M21 12c0 1.657-4.03 3-9 3s-9-1.343-9-3"/><path stroke-linecap="round" stroke-width="2" d="M3 5v14c0 1.657 4.03 3 9 3s9-1.343 9-3V5"/></svg>
+              Banco de Dados
+            </h3>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center py-2 border-b border-slate-800">
+                <span class="text-sm text-slate-400">Status</span>
+                <span id="db-status" class="text-sm font-semibold" style="color:#4ade80">—</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-800">
+                <span class="text-sm text-slate-400">Latência</span>
+                <span id="db-latency" class="text-sm font-mono font-semibold text-white">— ms</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-800">
+                <span class="text-sm text-slate-400">Pool (tamanho)</span>
+                <span id="db-pool-size" class="text-sm font-mono text-white">—</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-800">
+                <span class="text-sm text-slate-400">Conexões ativas</span>
+                <span id="db-pool-busy" class="text-sm font-mono text-white">—</span>
+              </div>
+              <div class="flex justify-between items-center py-2">
+                <span class="text-sm text-slate-400">Cache</span>
+                <span id="db-cache" class="text-sm font-mono text-white">—</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Monetização -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6">
+            <h3 class="font-semibold mb-4 flex items-center gap-2">
+              <svg class="w-4 h-4" style="color:#fbbf24" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              Monetização
+            </h3>
+            <div class="space-y-3">
+              <div class="flex justify-between items-center py-2 border-b border-slate-800">
+                <span class="text-sm text-slate-400">Receita Total</span>
+                <span id="rev-total" class="text-sm font-bold" style="color:#fbbf24">R$ —</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-800">
+                <span class="text-sm text-slate-400">MRR Estimado</span>
+                <span id="rev-mrr" class="text-sm font-bold" style="color:#4ade80">R$ —</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-800">
+                <span class="text-sm text-slate-400">Pagamentos Confirmados</span>
+                <span id="rev-payments" class="text-sm font-mono text-white">—</span>
+              </div>
+              <div class="flex justify-between items-center py-2 border-b border-slate-800">
+                <span class="text-sm text-slate-400">Usuários Premium</span>
+                <span id="rev-premium" class="text-sm font-mono text-white">—</span>
+              </div>
+              <div class="flex justify-between items-center py-2">
+                <span class="text-sm text-slate-400">Taxa de Conversão</span>
+                <span id="rev-conversion" class="text-sm font-bold" style="color:#a78bfa">—%</span>
+              </div>
+            </div>
+          </div>
         </div>
       </section>
 
     </div><!-- /content -->
   </main>
-</div>
 </div><!-- /dashboard -->
 
-
-<!-- ================================================================
+<!-- ══════════════════════════════════════════
      SCRIPTS
-================================================================ -->
+══════════════════════════════════════════ -->
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script src="https://unpkg.com/leaflet.heat@0.2.0/dist/leaflet-heat.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
 <script>
 'use strict';
-
-// ──────────────────────────────────────────────
-//  CONFIG
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
 const API   = '/api/v1';
 const ADMIN = '/api/v1/admin';
 const TILE  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
-const TILE_OPTS = {
-  attribution: '&copy; <a href="https://www.openstreetmap.org/">OSM</a> &copy; <a href="https://carto.com/">CARTO</a>',
-  subdomains: 'abcd', maxZoom: 19
-};
+const TILE_OPTS = { attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19 };
 const REFRESH_SEC = 30;
+const SECTION_TITLES = { overview:'Visão Geral', map:'Mapa ao Vivo', analytics:'Analytics', users:'Usuários', reports:'Denúncias', performance:'Performance' };
 
-// ──────────────────────────────────────────────
-//  STATE
-// ──────────────────────────────────────────────
-let token        = null;
-let mapMini      = null;
-let mapFull      = null;
-let markersMini  = [];
-let markersFull  = [];
-let refreshTimer = null;
-let tickTimer    = null;
-let tick         = REFRESH_SEC;
+// State
+let token       = null;
+let mapMini     = null, mapFull = null;
+let markersMini = [], markersFull = [];
+let heatLayer   = null;
+let heatActive  = false;
+let growthChart = null, planChart = null;
+let refreshTimer = null, tickTimer = null, tick = REFRESH_SEC;
 let searchTimer  = null;
-let curPage      = 1;
+let lastUsersData = [];
 
-// ──────────────────────────────────────────────
-//  BOOT — verifica token salvo
-// ──────────────────────────────────────────────
+// Chart.js global dark config
+Chart.defaults.color          = '#64748b';
+Chart.defaults.borderColor    = 'rgba(30,41,59,.8)';
+Chart.defaults.font.family    = 'system-ui,-apple-system,sans-serif';
+Chart.defaults.font.size      = 11;
+
+// ─────────────────────────────────────────────
+//  BOOT
+// ─────────────────────────────────────────────
 window.addEventListener('DOMContentLoaded', () => {
   const saved = localStorage.getItem('gm_admin_token');
   const name  = localStorage.getItem('gm_admin_name');
+
+  // Init date pickers with defaults (last 30 days)
+  const today = new Date();
+  const ago30 = new Date(); ago30.setDate(today.getDate() - 30);
+  el('date-from').value = fmtISO(ago30);
+  el('date-to').value   = fmtISO(today);
+
   if (saved) { token = saved; bootDashboard(name || 'Admin'); }
+
+  // Sidebar click delegation
+  document.getElementById('sidebar-nav').addEventListener('click', e => {
+    const btn = e.target.closest('.nav-btn');
+    if (btn) gotoSection(btn.dataset.section, btn);
+  });
 });
 
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
 //  LOGIN
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
 document.getElementById('login-form').addEventListener('submit', async e => {
   e.preventDefault();
-
-  const btn  = document.getElementById('login-btn');
-  const err  = document.getElementById('login-error');
-  const email = document.getElementById('login-email').value;
-  const pass  = document.getElementById('login-password').value;
-
-  btn.textContent = 'Verificando…';
-  btn.disabled = true;
+  const btn = el('login-btn'), err = el('login-error');
+  btn.textContent = 'Verificando…'; btn.disabled = true;
   err.classList.add('hidden');
-
   try {
-    const res  = await fetch(`${API}/login`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email, password: pass })
-    });
+    const res  = await fetch(`${API}/login`, { method:'POST', headers:{ 'Content-Type':'application/json' }, body:JSON.stringify({ email: el('login-email').value, password: el('login-password').value }) });
     const data = await res.json();
-
-    if (!res.ok)        throw new Error(data.error || 'Erro ao autenticar.');
+    if (!res.ok)          throw new Error(data.error || 'Erro ao autenticar.');
     if (!data.user?.admin) throw new Error('Esta conta não tem permissão de administrador.');
-
     token = data.token;
     localStorage.setItem('gm_admin_token', token);
     localStorage.setItem('gm_admin_name',  data.user.name);
     bootDashboard(data.user.name);
-
-  } catch (ex) {
-    err.textContent = ex.message;
-    err.classList.remove('hidden');
+  } catch(ex) {
+    err.textContent = ex.message; err.classList.remove('hidden');
   } finally {
-    btn.textContent = 'Entrar no Painel';
-    btn.disabled = false;
+    btn.textContent = 'Entrar no Painel'; btn.disabled = false;
   }
 });
 
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
 //  BOOT DASHBOARD
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
 function bootDashboard(name) {
-  document.getElementById('login-screen').classList.add('hidden');
-  const dash = document.getElementById('dashboard');
+  el('login-screen').classList.add('hidden');
+  const dash = el('dashboard');
   dash.classList.remove('hidden');
-  dash.style.display = '';
-
+  dash.style.removeProperty('display');
   el('admin-name').textContent   = name;
   el('admin-avatar').textContent = name.charAt(0).toUpperCase();
-
-  // Inicializa mapas
   initMaps();
-
-  // Primeira carga
   forceRefresh();
-
-  // Auto-refresh a cada 30s
-  clearInterval(refreshTimer);
-  clearInterval(tickTimer);
+  clearInterval(refreshTimer); clearInterval(tickTimer);
   tick = REFRESH_SEC;
-
   refreshTimer = setInterval(forceRefresh, REFRESH_SEC * 1000);
-  tickTimer    = setInterval(() => {
-    tick = Math.max(0, tick - 1);
-    setText('countdown', tick);
-  }, 1000);
+  tickTimer    = setInterval(() => { tick = Math.max(0,tick-1); setText('countdown', tick); }, 1000);
 }
 
-// ──────────────────────────────────────────────
-//  LOGOUT
-// ──────────────────────────────────────────────
 function logout() {
   token = null;
   localStorage.removeItem('gm_admin_token');
   localStorage.removeItem('gm_admin_name');
-  clearInterval(refreshTimer);
-  clearInterval(tickTimer);
-  document.getElementById('dashboard').style.display = 'none';
-  document.getElementById('dashboard').classList.add('hidden');
-  document.getElementById('login-screen').classList.remove('hidden');
+  clearInterval(refreshTimer); clearInterval(tickTimer);
+  el('dashboard').style.display = 'none';
+  el('dashboard').classList.add('hidden');
+  el('login-screen').classList.remove('hidden');
 }
 
-// ──────────────────────────────────────────────
-//  NAVEGAÇÃO
-// ──────────────────────────────────────────────
-const SECTIONS = ['overview', 'map', 'users', 'reports'];
-const TITLES   = { overview:'Visão Geral', map:'Mapa ao Vivo', users:'Gestão de Usuários', reports:'Denúncias' };
-
-function gotoSection(name, btn) {
-  SECTIONS.forEach(s => {
-    const sec = document.getElementById(`section-${s}`);
-    if (sec) sec.classList.add('hidden');
+// ─────────────────────────────────────────────
+//  NAVIGATION
+// ─────────────────────────────────────────────
+let activeSection = 'overview';
+function gotoSection(name, clickedBtn) {
+  ['overview','map','analytics','users','reports','performance'].forEach(s => {
+    el(`section-${s}`)?.classList.add('hidden');
   });
-  document.getElementById(`section-${name}`)?.classList.remove('hidden');
-
+  el(`section-${name}`)?.classList.remove('hidden');
   document.querySelectorAll('.nav-btn').forEach(b => {
-    b.classList.remove('text-white','bg-slate-800');
+    b.classList.remove('text-white','bg-slate-800','active-nav');
     b.classList.add('text-slate-400');
   });
-  if (btn) {
-    btn.classList.add('text-white','bg-slate-800');
-    btn.classList.remove('text-slate-400');
-  }
-
-  setText('section-title', TITLES[name] || name);
-
-  if (name === 'users')   loadUsers(1);
-  if (name === 'map')     setTimeout(() => mapFull?.invalidateSize(), 80);
+  const btn = clickedBtn || document.querySelector(`.nav-btn[data-section="${name}"]`);
+  if (btn) { btn.classList.add('text-white','bg-slate-800'); btn.classList.remove('text-slate-400'); }
+  setText('section-title', SECTION_TITLES[name] || name);
+  activeSection = name;
+  if (name === 'map')         setTimeout(() => { mapFull?.invalidateSize(); loadHeatmapData(); }, 80);
+  if (name === 'users')       loadUsers(1);
+  if (name === 'analytics')   loadAnalytics();
+  if (name === 'performance') loadPerformance();
+  if (name === 'reports')     loadReports();
 }
 
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
 //  FETCH HELPER
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
 async function api(path, opts = {}) {
-  const res = await fetch(path, {
-    ...opts,
-    headers: {
-      'Content-Type': 'application/json',
-      'Authorization': `Bearer ${token}`,
-      ...(opts.headers || {})
-    }
-  });
+  const res = await fetch(path, { ...opts, headers: { 'Content-Type':'application/json', 'Authorization':`Bearer ${token}`, ...(opts.headers||{}) } });
   if (res.status === 401) { logout(); return null; }
   return res;
 }
 
-// ──────────────────────────────────────────────
-//  REFRESH FORÇADO
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
+//  AUTO-REFRESH
+// ─────────────────────────────────────────────
 function forceRefresh() {
-  tick = REFRESH_SEC;
-  setText('countdown', tick);
+  tick = REFRESH_SEC; setText('countdown', tick);
   setText('last-updated', new Date().toLocaleTimeString('pt-BR'));
   loadStats();
   loadLiveMap();
 }
 
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
 //  STATS
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
 async function loadStats() {
-  const res = await api(`${ADMIN}/stats`);
-  if (!res?.ok) return;
+  const res = await api(`${ADMIN}/stats`); if (!res?.ok) return;
   const d = await res.json();
-
   setText('stat-total-users',     fmt(d.users?.total));
   setText('stat-active-now',      fmt(d.users?.active_now));
   setText('stat-new-today',       fmt(d.users?.new_today));
@@ -600,103 +667,228 @@ async function loadStats() {
   setText('stat-messages-today',  fmt(d.engagement?.messages_today));
   setText('stat-pending-reports', fmt(d.moderation?.pending_reports));
   setText('stat-banned',          fmt(d.users?.banned));
-  setText('reports-count',        fmt(d.moderation?.pending_reports));
-
   const pending = d.moderation?.pending_reports || 0;
-  const badge   = el('badge-reports');
-  if (pending > 0) {
-    badge.textContent = pending > 99 ? '99+' : pending;
-    badge.classList.remove('hidden');
-  } else {
-    badge.classList.add('hidden');
-  }
+  const badge = el('badge-reports');
+  badge.textContent = pending > 99 ? '99+' : pending;
+  pending > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
 }
 
-// ──────────────────────────────────────────────
-//  INIT MAPAS
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
+//  MAPS
+// ─────────────────────────────────────────────
 function initMaps() {
   if (!mapMini) {
-    mapMini = L.map('map-mini', { zoomControl: true, scrollWheelZoom: false })
-      .setView([10, 15], 2);
+    mapMini = L.map('map-mini', { zoomControl:true, scrollWheelZoom:false }).setView([10,15],2);
     L.tileLayer(TILE, TILE_OPTS).addTo(mapMini);
   }
   if (!mapFull) {
-    mapFull = L.map('map-full', { zoomControl: true, scrollWheelZoom: true })
-      .setView([10, 15], 2);
+    mapFull = L.map('map-full', { zoomControl:true }).setView([10,15],2);
     L.tileLayer(TILE, TILE_OPTS).addTo(mapFull);
   }
 }
 
-// ──────────────────────────────────────────────
-//  LIVE MAP
-// ──────────────────────────────────────────────
 async function loadLiveMap() {
-  const res = await api(`${ADMIN}/live_map`);
-  if (!res?.ok) return;
+  const res = await api(`${ADMIN}/live_map`); if (!res?.ok) return;
   const { users = [] } = await res.json();
-
-  const onlineCount = users.filter(u => u.is_online).length;
-
-  setText('mini-online', fmt(onlineCount));
-  setText('mini-total',  fmt(users.length));
-  setText('full-online', fmt(onlineCount));
-  setText('full-total',  fmt(users.length));
-
+  const online = users.filter(u => u.is_online).length;
+  setText('mini-online', fmt(online)); setText('mini-total', fmt(users.length));
+  setText('full-online', fmt(online)); setText('full-total', fmt(users.length));
   renderMarkers(mapMini, markersMini, users, 9);
   renderMarkers(mapFull, markersFull, users, 12);
 }
 
 function renderMarkers(map, bucket, users, size) {
   if (!map) return;
-  bucket.forEach(m => m.remove());
-  bucket.length = 0;
-
+  bucket.forEach(m => m.remove()); bucket.length = 0;
   users.forEach(u => {
     if (!u.lat || !u.lng) return;
-
-    const online  = !!u.is_online;
-    const color   = online ? '#4ade80' : '#475569';
-    const border  = online ? '#16a34a' : '#334155';
-    const pulse   = online ? 'class="pulse-online"' : '';
-
+    const online = !!u.is_online;
+    const color  = online ? '#4ade80' : '#475569';
+    const border = online ? '#16a34a' : '#334155';
     const icon = L.divIcon({
       className: '',
-      html: `<div ${pulse} style="
-        width:${size}px; height:${size}px;
-        border-radius:50%;
-        background:${color};
-        border:2px solid ${border};
-      "></div>`,
-      iconSize:   [size, size],
-      iconAnchor: [size / 2, size / 2]
+      html:`<div class="${online?'pulse-online':''}" style="width:${size}px;height:${size}px;border-radius:50%;background:${color};border:2px solid ${border}"></div>`,
+      iconSize:[size,size], iconAnchor:[size/2,size/2]
     });
-
-    const popup = `
-      <div style="min-width:100px;">
-        <div style="font-weight:700; color:${color}; margin-bottom:3px;">
-          ${online ? '● Online' : '● Offline'}
-        </div>
-        <div style="color:#94a3b8;">ID: ${u.id}</div>
-        ${u.last_seen_at ? `<div style="color:#64748b; font-size:11px; margin-top:2px;">${fmtDate(u.last_seen_at)}</div>` : ''}
-      </div>`;
-
-    const marker = L.marker([u.lat, u.lng], { icon })
-      .bindPopup(popup, { closeButton: false, maxWidth: 160 })
+    const marker = L.marker([u.lat,u.lng],{icon})
+      .bindPopup(`<div style="min-width:100px"><div style="font-weight:700;color:${color};margin-bottom:3px">${online?'● Online':'● Offline'}</div><div style="color:#94a3b8">ID: ${u.id}</div>${u.last_seen_at?`<div style="color:#64748b;font-size:11px;margin-top:2px">${fmtDate(u.last_seen_at)}</div>`:''}</div>`, {closeButton:false,maxWidth:160})
       .addTo(map);
-
     bucket.push(marker);
   });
 }
 
-// ──────────────────────────────────────────────
-//  TABELA DE USUÁRIOS
-// ──────────────────────────────────────────────
-async function loadUsers(page = 1) {
-  curPage = page;
-  const q      = el('user-search')?.value?.trim() || '';
-  const banned = el('filter-banned')?.checked || false;
+// ─────────────────────────────────────────────
+//  HEATMAP
+// ─────────────────────────────────────────────
+let heatmapData = null;
+async function loadHeatmapData() {
+  if (!mapFull) return;
+  const res = await api(`${ADMIN}/heatmap?precision=2`); if (!res?.ok) return;
+  const data = await res.json();
+  heatmapData = data.clusters.map(c => [c.lat, c.lng, c.intensity]);
+  if (heatActive) renderHeatmap();
+}
 
+function toggleHeatmap() {
+  heatActive = el('toggle-heatmap').checked;
+  if (heatActive) {
+    markersFull.forEach(m => m.remove());
+    if (!heatmapData) { loadHeatmapData(); return; }
+    renderHeatmap();
+  } else {
+    heatLayer?.remove(); heatLayer = null;
+    loadLiveMap();
+  }
+}
+
+function renderHeatmap() {
+  if (!heatmapData || !mapFull) return;
+  heatLayer?.remove();
+  heatLayer = L.heatLayer(heatmapData, { radius:28, blur:18, maxZoom:12, gradient:{ 0.2:'#1e40af', 0.5:'#7c3aed', 0.8:'#dc2626', 1:'#fbbf24' } }).addTo(mapFull);
+}
+
+// ─────────────────────────────────────────────
+//  ANALYTICS
+// ─────────────────────────────────────────────
+async function loadAnalytics() {
+  const from = el('date-from').value;
+  const to   = el('date-to').value;
+  el('analytics-loading').classList.remove('hidden');
+  const res = await api(`${ADMIN}/analytics?from=${from}&to=${to}`);
+  el('analytics-loading').classList.add('hidden');
+  if (!res?.ok) return;
+  const d = await res.json();
+
+  // Retenção
+  setText('ret-d1',      d.retention?.d1?.rate  + '%');
+  setText('ret-d7',      d.retention?.d7?.rate  + '%');
+  setText('ret-d30',     d.retention?.d30?.rate + '%');
+  setText('ret-d1-base',  'base: ' + fmt(d.retention?.d1?.base));
+  setText('ret-d7-base',  'base: ' + fmt(d.retention?.d7?.base));
+  setText('ret-d30-base', 'base: ' + fmt(d.retention?.d30?.base));
+
+  // Engajamento
+  setText('eng-matches',  fmt(d.engagement?.matches));
+  setText('eng-messages', fmt(d.engagement?.messages));
+  setText('eng-avg',      d.engagement?.avg_messages_per_match);
+
+  // Gráfico de crescimento
+  setText('growth-total', fmt(d.growth?.total_period) + ' no período');
+  renderGrowthChart(d.growth?.daily || [], from, to);
+
+  // Gráfico de planos
+  renderPlanChart(d.demographics?.by_plan || {});
+
+  // Bot alerts
+  renderBotAlerts(d.bot_alerts || []);
+}
+
+function applyDateFilter() {
+  loadAnalytics();
+}
+
+function setPreset(days) {
+  const to  = new Date();
+  const from = new Date(); from.setDate(to.getDate() - days);
+  el('date-from').value = fmtISO(from);
+  el('date-to').value   = fmtISO(to);
+  loadAnalytics();
+}
+
+// ─────────────────────────────────────────────
+//  CHART.JS
+// ─────────────────────────────────────────────
+function renderGrowthChart(daily, from, to) {
+  // Preenche dias sem dados com 0
+  const filled = {};
+  const cur = new Date(from), end = new Date(to);
+  while (cur <= end) { filled[fmtISO(cur)] = 0; cur.setDate(cur.getDate()+1); }
+  daily.forEach(p => { filled[p.date] = p.count; });
+
+  const labels = Object.keys(filled);
+  const values = Object.values(filled);
+
+  if (growthChart) { growthChart.destroy(); growthChart = null; }
+  const ctx = document.getElementById('growth-chart');
+  if (!ctx) return;
+
+  growthChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets:[{
+        label: 'Novos usuários',
+        data: values,
+        borderColor: '#f59e0b',
+        backgroundColor: 'rgba(245,158,11,.08)',
+        borderWidth: 2,
+        pointRadius: labels.length > 60 ? 0 : 3,
+        pointHoverRadius: 5,
+        fill: true,
+        tension: 0.35
+      }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { mode:'index', intersect:false, backgroundColor:'#1e293b', borderColor:'#334155', borderWidth:1, titleColor:'#f1f5f9', bodyColor:'#94a3b8' } },
+      scales: {
+        x: { grid: { color:'rgba(30,41,59,.6)' }, ticks: { maxTicksLimit: 8, maxRotation: 0 } },
+        y: { grid: { color:'rgba(30,41,59,.6)' }, beginAtZero: true, ticks: { precision:0 } }
+      }
+    }
+  });
+}
+
+const PLAN_COLORS = { Free:'#64748b', Plus:'#f59e0b', Gold:'#ef4444', default:'#7c3aed' };
+
+function renderPlanChart(byPlan) {
+  if (planChart) { planChart.destroy(); planChart = null; }
+  const ctx = document.getElementById('plan-chart');
+  if (!ctx) return;
+
+  const labels = Object.keys(byPlan);
+  const values = Object.values(byPlan);
+  const colors = labels.map(l => PLAN_COLORS[l] || PLAN_COLORS.default);
+  const total  = values.reduce((a,b) => a+b, 0);
+
+  planChart = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels, datasets:[{ data:values, backgroundColor:colors, borderWidth:0, hoverOffset:4 }] },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      cutout: '68%',
+      plugins: {
+        legend: { display:false },
+        tooltip: { backgroundColor:'#1e293b', borderColor:'#334155', borderWidth:1, titleColor:'#f1f5f9', bodyColor:'#94a3b8' }
+      }
+    }
+  });
+
+  // Legend manual
+  el('plan-legend').innerHTML = labels.map((l,i) => `
+    <div class="flex items-center justify-between">
+      <span class="flex items-center gap-2 text-xs text-slate-400">
+        <span class="w-2.5 h-2.5 rounded-full inline-block flex-shrink-0" style="background:${colors[i]}"></span>${l}
+      </span>
+      <span class="text-xs font-medium text-white">${fmt(values[i])} <span class="text-slate-500">(${total > 0 ? (values[i]/total*100).toFixed(1) : 0}%)</span></span>
+    </div>`).join('');
+}
+
+function renderBotAlerts(alerts) {
+  setText('bot-count', alerts.length + ' suspeitos');
+  const div = el('bot-table');
+  if (!alerts.length) { div.innerHTML = '<p class="text-slate-500 text-sm py-2">Nenhum alerta de bot no momento. ✓</p>'; return; }
+  div.innerHTML = `<table class="w-full text-sm"><thead><tr class="text-xs text-slate-500 uppercase border-b border-slate-800"><th class="py-2 text-left">ID</th><th class="py-2 text-left">Usuário</th><th class="py-2 text-left">E-mail</th><th class="py-2 text-right" style="color:#f87171">Likes/Hora</th></tr></thead><tbody>${
+    alerts.map(a => `<tr class="border-b border-slate-800/50"><td class="py-2 text-slate-400">${a.user_id}</td><td class="py-2">${esc(a.name||'—')}</td><td class="py-2 text-slate-400">${esc(a.email||'—')}</td><td class="py-2 text-right font-bold" style="color:#f87171">${fmt(a.like_count_1h)}</td></tr>`).join('')
+  }</tbody></table>`;
+}
+
+// ─────────────────────────────────────────────
+//  USERS TABLE
+// ─────────────────────────────────────────────
+async function loadUsers(page = 1) {
+  const q = el('user-search')?.value?.trim() || '';
+  const banned = el('filter-banned')?.checked || false;
   let url = `${ADMIN}/users?page=${page}`;
   if (q)      url += `&q=${encodeURIComponent(q)}`;
   if (banned) url += `&banned=true`;
@@ -704,125 +896,227 @@ async function loadUsers(page = 1) {
   const tbody = el('users-tbody');
   tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-500">Carregando…</td></tr>`;
 
-  const res = await api(url);
-  if (!res?.ok) return;
+  const res = await api(url); if (!res?.ok) return;
   const data = await res.json();
+  lastUsersData = data.users || [];
 
-  if (!data.users?.length) {
+  if (!lastUsersData.length) {
     tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-500">Nenhum usuário encontrado.</td></tr>`;
-    setText('pagination-info', '0 usuários');
-    el('pagination-btns').innerHTML = '';
-    return;
+    setText('pagination-info','0 usuários'); el('pagination-btns').innerHTML = ''; return;
   }
 
-  tbody.innerHTML = data.users.map(u => `
+  tbody.innerHTML = lastUsersData.map(u => `
     <tr id="row-${u.id}" class="border-b border-slate-800/50 hover:bg-slate-800/25 transition-colors">
       <td class="px-6 py-3.5">
         <div class="font-medium text-white text-sm">${esc(u.name)}</div>
         <div class="text-slate-400 text-xs mt-0.5">${esc(u.email)}</div>
-        ${u.admin    ? '<span style="color:#fbbf24;font-size:10px;font-weight:700;background:rgba(245,158,11,.1);padding:1px 6px;border-radius:4px;margin-top:2px;display:inline-block;">ADMIN</span>' : ''}
-        ${u.verified ? '<span style="color:#60a5fa;font-size:10px;font-weight:700;background:rgba(59,130,246,.1);padding:1px 6px;border-radius:4px;margin-top:2px;display:inline-block;">✓ VERIFICADO</span>' : ''}
+        ${u.admin?'<span style="color:#fbbf24;font-size:10px;font-weight:700;background:rgba(245,158,11,.1);padding:1px 6px;border-radius:4px;display:inline-block;margin-top:2px">ADMIN</span>':''}
       </td>
-      <td class="px-6 py-3.5">
-        <span class="text-xs bg-slate-800 px-2 py-1 rounded-lg font-medium">${esc(u.plan || '—')}</span>
-      </td>
+      <td class="px-6 py-3.5"><span class="text-xs bg-slate-800 px-2 py-1 rounded-lg font-medium">${esc(u.plan||'—')}</span></td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${fmtDate(u.created_at)}</td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${u.last_seen_at ? fmtDate(u.last_seen_at) : '—'}</td>
       <td class="px-6 py-3.5">
-        <span id="status-${u.id}" class="text-xs px-2 py-1 rounded-full font-semibold border" style="${u.banned
-          ? 'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);'
-          : 'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);'}">
-          ${u.banned ? 'Banido' : 'Ativo'}
-        </span>
+        <span id="status-${u.id}" class="text-xs px-2 py-1 rounded-full font-semibold border" style="${u.banned?'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);':'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);'}">${u.banned?'Banido':'Ativo'}</span>
       </td>
       <td class="px-6 py-3.5 text-right">
         <div class="flex items-center justify-end gap-2">
-          <a href="/users/${u.id}" target="_blank"
-            class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg font-medium transition-colors">
-            Ver Perfil
-          </a>
-          ${!u.admin ? `
-          <button id="ban-btn-${u.id}" onclick="toggleBan(${u.id},${!!u.banned})"
-            class="px-3 py-1.5 text-xs rounded-lg font-semibold border transition-colors"
-            style="${u.banned
-              ? 'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);'
-              : 'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);'}">
-            ${u.banned ? 'Reativar' : 'Banir'}
-          </button>` : ''}
+          <a href="/users/${u.id}" target="_blank" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg font-medium transition-colors">Ver Perfil</a>
+          ${!u.admin?`<button id="ban-btn-${u.id}" onclick="toggleBan(${u.id},${!!u.banned})" class="px-3 py-1.5 text-xs rounded-lg font-semibold border transition-colors" style="${u.banned?'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);':'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);'}">${u.banned?'Reativar':'Banir'}</button>`:''}
         </div>
       </td>
-    </tr>
-  `).join('');
+    </tr>`).join('');
 
-  // Paginação
-  const { current_page: cp, total_pages: tp, total_count: tc } = data.pagination;
+  const { current_page:cp, total_pages:tp, total_count:tc } = data.pagination;
   setText('pagination-info', `${fmt(tc)} usuários · página ${cp} de ${tp}`);
-
-  const pEl = el('pagination-btns');
-  pEl.innerHTML = '';
+  const pEl = el('pagination-btns'); pEl.innerHTML = '';
   if (cp > 1)  pEl.innerHTML += `<button onclick="loadUsers(${cp-1})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs transition-colors">← Anterior</button>`;
   pEl.innerHTML += `<span class="px-3 py-1.5 bg-slate-700 rounded-lg text-xs font-bold">${cp}</span>`;
   if (cp < tp) pEl.innerHTML += `<button onclick="loadUsers(${cp+1})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs transition-colors">Próxima →</button>`;
 }
 
-// ──────────────────────────────────────────────
-//  BAN / UNBAN
-// ──────────────────────────────────────────────
 async function toggleBan(userId, isBanned) {
   const btn = el(`ban-btn-${userId}`);
   if (btn) { btn.disabled = true; btn.textContent = '…'; }
-
-  const res = await api(`${ADMIN}/users/${userId}/ban`, { method: 'PATCH' });
-  if (!res?.ok) {
-    if (btn) { btn.disabled = false; btn.textContent = isBanned ? 'Reativar' : 'Banir'; }
-    return;
-  }
+  const res = await api(`${ADMIN}/users/${userId}/ban`, { method:'PATCH' });
+  if (!res?.ok) { if (btn) { btn.disabled = false; btn.textContent = isBanned?'Reativar':'Banir'; } return; }
   const data = await res.json();
-  const nowBanned = data.banned;
-
-  // Atualiza badge de status na linha
+  const now = data.banned;
   const statusEl = el(`status-${userId}`);
-  if (statusEl) {
-    statusEl.textContent = nowBanned ? 'Banido' : 'Ativo';
-    statusEl.style.cssText = nowBanned
-      ? 'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);'
-      : 'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);';
+  if (statusEl) { statusEl.textContent = now?'Banido':'Ativo'; statusEl.style.cssText = now?'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);':'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);'; }
+  if (btn) { btn.disabled=false; btn.textContent=now?'Reativar':'Banir'; btn.style.cssText=now?'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);':'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);'; btn.onclick=()=>toggleBan(userId,now); }
+}
+
+// ─────────────────────────────────────────────
+//  CSV EXPORT
+// ─────────────────────────────────────────────
+function exportCSV() {
+  if (!lastUsersData.length) { alert('Carregue a lista de usuários primeiro.'); return; }
+  const headers = ['ID','Nome','Email','Plano','Status','Cadastro','Último Acesso'];
+  const rows = lastUsersData.map(u => [
+    u.id, `"${(u.name||'').replace(/"/g,'""')}"`, `"${(u.email||'').replace(/"/g,'""')}"`,
+    u.plan||'', u.banned?'Banido':'Ativo', fmtDate(u.created_at), u.last_seen_at ? fmtDate(u.last_seen_at) : ''
+  ]);
+  const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
+  const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href:url, download:`geomatch_usuarios_${fmtISO(new Date())}.csv` });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ─────────────────────────────────────────────
+//  REPORTS
+// ─────────────────────────────────────────────
+const RPT_CAT_LABELS = {
+  harassment:'Assédio', fake_profile:'Perfil Falso', spam:'Spam',
+  inappropriate_content:'Conteúdo Impróprio', underage:'Menor de Idade',
+  scam:'Fraude', other:'Outros'
+};
+const RPT_CAT_COLORS = {
+  harassment:'#ef4444', fake_profile:'#f97316', spam:'#eab308',
+  inappropriate_content:'#8b5cf6', underage:'#ec4899',
+  scam:'#f43f5e', other:'#64748b'
+};
+
+async function loadReports(page = 1) {
+  const status = el('rpt-filter-status')?.value || '';
+  const cat    = el('rpt-filter-cat')?.value    || '';
+  let url = `${ADMIN}/reports?page=${page}`;
+  if (status) url += `&status=${status}`;
+  if (cat)    url += `&category=${cat}`;
+
+  el('reports-tbody').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-500">Carregando…</td></tr>`;
+
+  const res = await api(url); if (!res?.ok) return;
+  const d   = await res.json();
+
+  // Stats
+  setText('rpt-pending',  fmt(d.stats?.pending));
+  setText('rpt-resolved', fmt(d.stats?.resolved));
+  setText('rpt-banned',   fmt(d.stats?.banned));
+
+  // Badge sync
+  const badge = el('badge-reports');
+  const pend  = d.stats?.pending || 0;
+  badge.textContent = pend > 99 ? '99+' : pend;
+  pend > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
+
+  // Categories
+  const bycat = d.by_category || {};
+  el('report-categories').innerHTML = Object.entries(RPT_CAT_LABELS).map(([k,v]) => {
+    const count = bycat[k] ?? 0;
+    const color = RPT_CAT_COLORS[k] || '#64748b';
+    return `<div class="bg-slate-800 rounded-xl p-3 cursor-pointer hover:bg-slate-700 transition-colors" onclick="filterByCategory('${k}')">
+      <div class="flex items-center gap-1.5 mb-2">
+        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${color}"></span>
+        <span class="text-xs text-slate-400">${v}</span>
+      </div>
+      <div class="text-xl font-bold text-white">${fmt(count)}</div>
+    </div>`;
+  }).join('');
+
+  // Table
+  const reports = d.reports || [];
+  if (!reports.length) {
+    el('reports-tbody').innerHTML = `<tr><td colspan="7" class="px-6 py-16 text-center text-slate-500">Nenhuma denúncia encontrada.</td></tr>`;
+    setText('rpt-pagination-info','0 denúncias'); el('rpt-pagination-btns').innerHTML = ''; return;
   }
 
-  // Atualiza botão
+  el('reports-tbody').innerHTML = reports.map(r => {
+    const catLabel = RPT_CAT_LABELS[r.category] || r.category || '—';
+    const catColor = RPT_CAT_COLORS[r.category] || '#64748b';
+    const resolved = r.resolved;
+    const desc     = esc(r.description || '').substring(0, 80) + (r.description?.length > 80 ? '…' : '');
+    const reporter = r.reporter ? `<div class="font-medium text-white text-xs">${esc(r.reporter.name)}</div><div class="text-slate-500 text-xs">${esc(r.reporter.email)}</div>` : '<span class="text-slate-500 text-xs">—</span>';
+    return `<tr id="rpt-row-${r.id}" class="border-b border-slate-800/50 hover:bg-slate-800/25 transition-colors">
+      <td class="px-6 py-3.5 text-slate-500 text-xs font-mono">#${r.id}</td>
+      <td class="px-6 py-3.5">${reporter}</td>
+      <td class="px-6 py-3.5">
+        <span class="text-xs px-2 py-1 rounded-full font-semibold" style="color:${catColor};background:${catColor}18">${catLabel}</span>
+      </td>
+      <td class="px-6 py-3.5 text-slate-400 text-xs max-w-xs" title="${esc(r.description || '')}">${desc}</td>
+      <td class="px-6 py-3.5 text-slate-400 text-xs">${fmtDate(r.created_at)}</td>
+      <td class="px-6 py-3.5">
+        <span id="rpt-status-${r.id}" class="text-xs px-2 py-1 rounded-full font-semibold border" style="${resolved?'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);':'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);'}">${resolved?'Resolvida':'Pendente'}</span>
+      </td>
+      <td class="px-6 py-3.5 text-right">
+        <button id="rpt-btn-${r.id}" onclick="resolveReport(${r.id},${resolved})" class="px-3 py-1.5 text-xs rounded-lg font-semibold border transition-colors" style="${resolved?'color:#94a3b8;background:rgba(148,163,184,.08);border-color:rgba(148,163,184,.2);':'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);'}">${resolved?'Reabrir':'Resolver'}</button>
+      </td>
+    </tr>`;
+  }).join('');
+
+  // Pagination
+  const { current_page:cp, total_pages:tp, total_count:tc } = d.pagination;
+  setText('rpt-pagination-info', `${fmt(tc)} denúncias · página ${cp} de ${tp}`);
+  const pEl = el('rpt-pagination-btns'); pEl.innerHTML = '';
+  if (cp > 1)  pEl.innerHTML += `<button onclick="loadReports(${cp-1})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs transition-colors">← Anterior</button>`;
+  pEl.innerHTML += `<span class="px-3 py-1.5 bg-slate-700 rounded-lg text-xs font-bold">${cp}</span>`;
+  if (cp < tp) pEl.innerHTML += `<button onclick="loadReports(${cp+1})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs transition-colors">Próxima →</button>`;
+}
+
+async function resolveReport(reportId, isResolved) {
+  const btn = el(`rpt-btn-${reportId}`);
+  if (btn) { btn.disabled = true; btn.textContent = '…'; }
+  const res = await api(`${ADMIN}/reports/${reportId}/resolve`, { method:'PATCH' });
+  if (!res?.ok) { if (btn) { btn.disabled = false; btn.textContent = isResolved?'Reabrir':'Resolver'; } return; }
+  const data     = await res.json();
+  const nowRes   = data.resolved;
+  const statusEl = el(`rpt-status-${reportId}`);
+  if (statusEl) {
+    statusEl.textContent = nowRes ? 'Resolvida' : 'Pendente';
+    statusEl.style.cssText = nowRes ? 'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);' : 'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);';
+  }
   if (btn) {
     btn.disabled = false;
-    btn.textContent = nowBanned ? 'Reativar' : 'Banir';
-    btn.style.cssText = nowBanned
-      ? 'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);'
-      : 'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);';
-    btn.onclick = () => toggleBan(userId, nowBanned);
+    btn.textContent  = nowRes ? 'Reabrir' : 'Resolver';
+    btn.style.cssText = nowRes ? 'color:#94a3b8;background:rgba(148,163,184,.08);border-color:rgba(148,163,184,.2);' : 'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);';
+    btn.onclick = () => resolveReport(reportId, nowRes);
   }
 }
 
-// ──────────────────────────────────────────────
+function filterByCategory(cat) {
+  el('rpt-filter-cat').value = cat;
+  loadReports(1);
+}
+
+// ─────────────────────────────────────────────
+//  PERFORMANCE
+// ─────────────────────────────────────────────
+async function loadPerformance() {
+  const res = await api(`${ADMIN}/performance`); if (!res?.ok) return;
+  const d = await res.json();
+  const dbOk = d.database?.status === 'ok';
+  el('db-status').textContent  = dbOk ? '● Online' : '● Offline';
+  el('db-status').style.color  = dbOk ? '#4ade80' : '#f87171';
+  setText('db-latency',    d.database?.latency_ms != null ? d.database.latency_ms + ' ms' : '—');
+  setText('db-pool-size',  d.database?.pool?.size  ?? '—');
+  setText('db-pool-busy',  d.database?.pool?.busy  ?? '—');
+  setText('db-cache',      d.database?.cache_adapter ?? '—');
+  setText('rev-total',     d.revenue?.total_brl    != null ? 'R$ ' + fmt2(d.revenue.total_brl)   : 'R$ —');
+  setText('rev-mrr',       d.revenue?.mrr_brl      != null ? 'R$ ' + fmt2(d.revenue.mrr_brl)     : 'R$ —');
+  setText('rev-payments',  fmt(d.revenue?.paid_payments));
+  setText('rev-premium',   fmt(d.revenue?.premium_users));
+  setText('rev-conversion',d.revenue?.conversion_rate != null ? d.revenue.conversion_rate + '%' : '—');
+}
+
+// ─────────────────────────────────────────────
 //  SEARCH DEBOUNCE
-// ──────────────────────────────────────────────
+// ─────────────────────────────────────────────
 function debounceSearch() {
   clearTimeout(searchTimer);
   searchTimer = setTimeout(() => loadUsers(1), 380);
 }
 
-// ──────────────────────────────────────────────
-//  UTILITÁRIOS
-// ──────────────────────────────────────────────
-function el(id)        { return document.getElementById(id); }
-function setText(id,v) { const e=el(id); if(e) e.textContent = v ?? '—'; }
-function fmt(n)        { return n == null ? '—' : Number(n).toLocaleString('pt-BR'); }
-function fmtDate(iso)  {
-  if (!iso) return '—';
-  return new Date(iso).toLocaleDateString('pt-BR', { day:'2-digit', month:'short', year:'numeric' });
-}
-function esc(s) {
-  if (!s) return '';
-  return String(s).replace(/[&<>'"]/g, c =>
-    ({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;' }[c]));
-}
+// ─────────────────────────────────────────────
+//  UTILITIES
+// ─────────────────────────────────────────────
+function el(id)       { return document.getElementById(id); }
+function setText(id,v){ const e=el(id); if(e) e.textContent = v ?? '—'; }
+function fmt(n)       { return n == null ? '—' : Number(n).toLocaleString('pt-BR'); }
+function fmt2(n)      { return Number(n).toLocaleString('pt-BR', { minimumFractionDigits:2, maximumFractionDigits:2 }); }
+function fmtDate(iso) { if(!iso) return '—'; return new Date(iso).toLocaleDateString('pt-BR',{ day:'2-digit', month:'short', year:'numeric' }); }
+function fmtISO(d)    { return d.toISOString().split('T')[0]; }
+function esc(s)       { if(!s) return ''; return String(s).replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 </script>
 </body>
 </html>

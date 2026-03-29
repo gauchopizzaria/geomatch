@@ -152,12 +152,21 @@ Rails.application.routes.draw do
       # Admin Dashboard — requer admin: true + JWT válido
       # -------------------------------------------------------
       namespace :admin do
-        get  :stats,    to: 'stats#show'
-        get  :live_map, to: 'live_map#index'
+        get :stats,       to: 'stats#show'
+        get :live_map,    to: 'live_map#index'
+        get :analytics,   to: 'analytics#show'
+        get :heatmap,     to: 'heatmap#index'
+        get :performance, to: 'performance#show'
 
         resources :users, only: [:index] do
           member do
             patch :ban
+          end
+        end
+
+        resources :reports, only: [:index] do
+          member do
+            patch :resolve
           end
         end
       end
