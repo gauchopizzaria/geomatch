@@ -21,7 +21,7 @@ module Api
         response.set_header('Authorization', "Bearer #{token}")
 
         render json: {
-          token:   token,
+          token:      token,
           expires_in: 30.days.to_i,
           user: {
             id:         user.id,
@@ -29,7 +29,8 @@ module Api
             email:      user.email,
             avatar_url: user.avatar_url,
             premium:    user.premium?,
-            verified:   user.verified?
+            verified:   user.verified?,
+            admin:      user.admin?
           }
         }, status: :ok
       end
