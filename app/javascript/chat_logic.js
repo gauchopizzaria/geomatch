@@ -277,17 +277,33 @@ if (clearBtn) {
   // =======================================================
   //   AJUSTE DE TECLADO (iOS)
   // =======================================================
+  // O iOS Safari desloca o document quando o teclado abre, mesmo dentro de
+  // position:fixed. Ajustamos o wrapper diretamente ao visualViewport para
+  // garantir que header + mensagens + input caibam na área visível real.
 
-  // visualViewport.resize dispara quando o teclado virtual sobe ou desce no iOS/Android.
-  // Sem isso, a última mensagem fica escondida atrás do teclado após o foco no input.
-  if (window.visualViewport) {
-    window.visualViewport.addEventListener('resize', () => {
-      requestAnimationFrame(scrollToBottom);
-    });
+  const chatWrapper = document.querySelector('.chat-screen-wrapper');
+
+  function adjustToViewport() {
+    if (!chatWrapper || !window.visualViewport) return;
+    const vv = window.visualViewport;
+    chatWrapper.style.height = vv.height + 'px';
+    chatWrapper.style.top    = vv.offsetTop + 'px';
+    requestAnimationFrame(scrollToBottom);
   }
 
-  // Fallback: foco no input com delay para cobrir a animação do teclado (~350ms no iOS)
-  messageInput.addEventListener('focus', () => {
-    setTimeout(scrollToBottom, 350);
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', adjustToViewport);
+    window.visualViewport.addEventListener('scroll', adjustToViewport);
+  }
+
+  // Fallback para dispositivos sem visualViewport (Safari antigo)
+  messageInput.addEventListener('focus', () => setTimeout(scrollToBottom, 380));
+
+  // Restaura dimensões originais ao fechar o teclado
+  messageInput.addEventListener('blur', () => {
+    if (chatWrapper) {
+      chatWrapper.style.height = '';
+      chatWrapper.style.top    = '';
+    }
   });
 });

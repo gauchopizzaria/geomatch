@@ -21,16 +21,16 @@
 
 /* --- 1. HEADER (Blindado contra cortes e alinhado à direita) --- */
 .chat-header-dark {
-  flex-shrink: 0; /* Impede o header de ser esmagado */
+  flex-shrink: 0; /* Impede o header de ser esmagado pelo flex */
   display: flex;
   align-items: center;
-  justify-content: space-between; 
+  justify-content: space-between;
   padding: 15px 20px;
-  padding-top: calc(15px + env(safe-area-inset-top)); 
+  padding-top: calc(15px + env(safe-area-inset-top));
   background-color: #0e0e10;
   border-bottom: 1px solid #222;
-  position: relative; 
-  z-index: 500; 
+  position: relative;
+  z-index: 600;    /* acima de qualquer overlay de teclado */
   overflow: visible !important;
 }
 
