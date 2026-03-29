@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_29_140000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_29_161000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -219,8 +219,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_140000) do
     t.datetime "created_at", null: false
     t.text "description"
     t.bigint "reporter_id"
+    t.datetime "resolved_at"
     t.datetime "updated_at", null: false
     t.index ["reporter_id"], name: "index_reports_on_reporter_id"
+    t.index ["resolved_at"], name: "index_reports_on_resolved_at"
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|
@@ -368,6 +370,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_140000) do
 
   create_table "users", force: :cascade do |t|
     t.string "address"
+    t.boolean "admin", default: false, null: false
+    t.datetime "banned_at"
     t.text "bio"
     t.date "birthdate"
     t.datetime "created_at", null: false
@@ -394,6 +398,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_140000) do
     t.datetime "updated_at", null: false
     t.string "username"
     t.boolean "verified", default: false
+    t.index ["admin"], name: "index_users_on_admin"
+    t.index ["banned_at"], name: "index_users_on_banned_at"
     t.index ["email"], name: "index_users_on_email", unique: true
     t.index ["latitude", "longitude"], name: "index_users_on_latitude_and_longitude"
     t.index ["plan_id"], name: "index_users_on_plan_id"

@@ -237,6 +237,27 @@ class User < ApplicationRecord
     premium_until.present? && premium_until > Time.current
   end
 
+  def banned?
+    banned_at.present?
+  end
+
+  def ban!
+    update!(banned_at: Time.current)
+  end
+
+  def unban!
+    update!(banned_at: nil)
+  end
+
+  # Impede login via Devise se o usuário estiver banido
+  def active_for_authentication?
+    super && !banned?
+  end
+
+  def inactive_message
+    banned? ? :banned : super
+  end
+
   # =========================================================
   # PERMISSÕES DE VISUALIZAÇÃO (NOTIFICAÇÕES)
   # =========================================================

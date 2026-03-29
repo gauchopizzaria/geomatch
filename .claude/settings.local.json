@@ -4,7 +4,11 @@
       "Bash(find '/c/Users/Felipe/Documents/DEV/GeoMatch/ruby on rails/geomatch' -name *.css -o -name *modal* -type f)",
       "Bash(bin/rails db:migrate)",
       "Bash(bin/rails routes:*)",
-      "Bash(findstr message:*)"
+      "Bash(findstr message:*)",
+      "Bash(bundle install:*)",
+      "Bash(findstr \"api/v1\")",
+      "Bash(bin/rails runner:*)",
+      "Bash(findstr \"admin\")"
     ]
   }
 }

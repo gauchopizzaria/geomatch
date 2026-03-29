@@ -14,6 +14,8 @@ gem "geocoder"
 gem "image_processing", "~> 1.2"
 gem "importmap-rails"
 gem "jbuilder"
+gem "jwt", "~> 2.8"
+gem "rack-cors"
 gem "jsbundling-rails"
 gem "kamal", require: false
 gem "kaminari"

@@ -139,6 +139,29 @@ Rails.application.routes.draw do
   # Rota exclusiva para receber a localização do app nativo Android
   namespace :api do
     post 'atualizar_localizacao', to: 'locations#update'
+
+    # =============================================================
+    # API REST v1 — Autenticação JWT
+    # =============================================================
+    namespace :v1 do
+      post   :login,    to: 'auth#login'
+      get    :matches,  to: 'matches#index'
+      get    :messages, to: 'messages#index'
+
+      # -------------------------------------------------------
+      # Admin Dashboard — requer admin: true + JWT válido
+      # -------------------------------------------------------
+      namespace :admin do
+        get  :stats,    to: 'stats#show'
+        get  :live_map, to: 'live_map#index'
+
+        resources :users, only: [:index] do
+          member do
+            patch :ban
+          end
+        end
+      end
+    end
   end
   
 end
