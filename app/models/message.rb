@@ -3,12 +3,13 @@ class Message < ApplicationRecord
 
   belongs_to :match
   belongs_to :sender, class_name: "User"
+  has_many   :reactions, dependent: :destroy
 
   validates :content, presence: true
 
-  # Callbacks para disparar ações após a criação da mensagem
-  after_create_commit :broadcast_message
-  after_create_commit :send_push_notification
+  after_create_commit  :broadcast_message
+  after_create_commit  :send_push_notification
+  after_destroy_commit :broadcast_deletion
 
   private
 
@@ -26,6 +27,10 @@ class Message < ApplicationRecord
     }
 
     MatchChannel.broadcast_to(match, payload)
+  end
+
+  def broadcast_deletion
+    MatchChannel.broadcast_to(match, { deleted_message_id: id })
   end
 
   # Envia a notificação push (para quem está com o celular bloqueado ou app fechado)

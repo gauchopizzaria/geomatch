@@ -53,7 +53,11 @@ Rails.application.routes.draw do
   # Aqui juntamos a exibição, as mensagens e a ação de limpar conversa
   resources :matches, only: [:index, :show] do
     # Rotas aninhadas (mensagens dentro do match)
-    resources :messages, only: [:index, :create]
+    resources :messages, only: [:index, :create, :destroy] do
+      member do
+        post :react
+      end
+    end
     
     # Ações de membro (agem sobre um match específico)
     member do

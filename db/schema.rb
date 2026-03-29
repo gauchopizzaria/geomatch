@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_29_120000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_29_140000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -202,6 +202,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_120000) do
     t.datetime "updated_at", null: false
     t.bigint "user_id", null: false
     t.index ["user_id"], name: "index_push_subscriptions_on_user_id"
+  end
+
+  create_table "reactions", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "emoji", null: false
+    t.bigint "message_id", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["message_id", "user_id"], name: "index_reactions_on_message_id_and_user_id", unique: true
+    t.index ["message_id"], name: "index_reactions_on_message_id"
+    t.index ["user_id"], name: "index_reactions_on_user_id"
   end
 
   create_table "reports", force: :cascade do |t|
@@ -425,6 +436,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_120000) do
   add_foreign_key "payments", "users"
   add_foreign_key "profiles", "users"
   add_foreign_key "push_subscriptions", "users"
+  add_foreign_key "reactions", "messages"
+  add_foreign_key "reactions", "users"
   add_foreign_key "reports", "users", column: "reporter_id"
   add_foreign_key "solid_queue_blocked_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_claimed_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade

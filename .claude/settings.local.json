@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(find '/c/Users/Felipe/Documents/DEV/GeoMatch/ruby on rails/geomatch' -name *.css -o -name *modal* -type f)",
+      "Bash(bin/rails db:migrate)",
+      "Bash(bin/rails routes:*)",
+      "Bash(findstr message:*)"
+    ]
+  }
+}

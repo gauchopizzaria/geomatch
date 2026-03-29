@@ -32,6 +32,43 @@ class MessagesController < ApplicationController
     end
   end
 
+  # DELETE /matches/:match_id/messages/:id
+  # Apenas o remetente pode apagar a própria mensagem
+  def destroy
+    @message = @match.messages.find(params[:id])
+
+    unless @message.sender_id == current_user.id
+      return head :forbidden
+    end
+
+    @message.destroy # after_destroy_commit broadcasts { deleted_message_id: id }
+    head :ok
+  end
+
+  # POST /matches/:match_id/messages/:id/react
+  # Toggle/Replace a reação do usuário nessa mensagem
+  def react
+    @message = @match.messages.find(params[:id])
+    emoji    = params[:emoji].to_s.strip
+
+    return head :unprocessable_entity if emoji.blank?
+
+    existing = @message.reactions.find_by(user: current_user)
+
+    if existing
+      existing.emoji == emoji ? existing.destroy : existing.update!(emoji: emoji)
+    else
+      @message.reactions.create!(user: current_user, emoji: emoji)
+    end
+
+    counts = @message.reactions.group(:emoji).count
+    MatchChannel.broadcast_to(@match, {
+      reaction: { message_id: @message.id, counts: counts }
+    })
+
+    render json: { counts: counts }
+  end
+
   private
 
   def set_match

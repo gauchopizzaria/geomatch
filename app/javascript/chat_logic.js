@@ -14,6 +14,15 @@ document.addEventListener('turbo:load', () => {
   const TYPING_TIMEOUT = 3000;
 
   // =======================================================
+  //   INJECT OVERLAYS (apenas uma vez por turbo:load)
+  // =======================================================
+  injectContextOverlay();
+  injectReportSheet();
+
+  // Configura long press nas mensagens já presentes no HTML
+  chatWindow.querySelectorAll('.message-row').forEach(setupLongPress);
+
+  // =======================================================
   //   SUBSCRIPTION
   // =======================================================
   const matchChannel = consumer.subscriptions.create(
@@ -21,7 +30,7 @@ document.addEventListener('turbo:load', () => {
     {
       connected() {
         console.log("Conectado ao match", matchId);
-        scrollToBottom(); // Rola para o fim ao conectar
+        scrollToBottom();
       },
 
       received(data) {
@@ -35,35 +44,41 @@ document.addEventListener('turbo:load', () => {
         }
 
         // -------------------------
-        //     MENSAGEM RECEBIDA
+        //     NOVA MENSAGEM
         // -------------------------
         if (data.message) {
-    appendMessageToDOM(data.message);
+          appendMessageToDOM(data.message);
 
-    // --- LÓGICA DE MOVER PARA O TOPO ---
-    // 1. Tenta encontrar a linha da conversa na lista lateral/index
-    const conversationList = document.getElementById('conversations-master-list');
-    // Você precisa adicionar id="match-row-<%= match.id %>" no seu index.html.erb
-    const conversationRow = document.getElementById(`match-row-${data.message.match_id}`);
+          const conversationList = document.getElementById('conversations-master-list');
+          const conversationRow = document.getElementById(`match-row-${data.message.match_id}`);
 
-    if (conversationList && conversationRow) {
-      // Move para o topo da lista
-      conversationList.prepend(conversationRow);
+          if (conversationList && conversationRow) {
+            conversationList.prepend(conversationRow);
+            const lastMsgText = conversationRow.querySelector('.conv-last-message');
+            if (lastMsgText) lastMsgText.innerText = data.message.content.substring(0, 30);
+            const prefix = conversationRow.querySelector('.msg-prefix');
+            if (prefix && data.message.sender_id !== currentUserId) prefix.remove();
+          }
+          return;
+        }
 
-      // Atualiza o texto da prévia da mensagem na lista
-      const lastMsgText = conversationRow.querySelector('.conv-last-message');
-      if (lastMsgText) {
-        lastMsgText.innerText = data.message.content.substring(0, 30);
-      }
-      
-      // Remove o prefixo "Você:" se a mensagem for de outra pessoa
-      const prefix = conversationRow.querySelector('.msg-prefix');
-      if (prefix && data.message.sender_id !== currentUserId) {
-        prefix.remove();
-      }
-    }
-  }
-},
+        // -------------------------
+        //   MENSAGEM APAGADA
+        // -------------------------
+        if (data.deleted_message_id) {
+          const el = document.getElementById(`msg-${data.deleted_message_id}`);
+          if (el) el.remove();
+          return;
+        }
+
+        // -------------------------
+        //   REAÇÃO ATUALIZADA
+        // -------------------------
+        if (data.reaction) {
+          updateReactionDisplay(data.reaction);
+          return;
+        }
+      },
 
       sendTypingStatus(isTyping) {
         this.perform("receive", { typing: isTyping });
@@ -71,81 +86,68 @@ document.addEventListener('turbo:load', () => {
     }
   );
 
-  // --- LÓGICA DE LIMPAR CONVERSA (AJUSTADA) ---
-const clearBtn = document.getElementById('clear-chat-btn');
-if (clearBtn) {
-  // O button_to cria um formulário, então pegamos o form mais próximo
-  const clearForm = clearBtn.closest('form'); 
-  
-  clearForm.addEventListener('submit', (e) => {
-    e.preventDefault(); 
+  // =======================================================
+  //   LIMPAR CONVERSA
+  // =======================================================
+  const clearBtn = document.getElementById('clear-chat-btn');
+  if (clearBtn) {
+    const clearForm = clearBtn.closest('form');
 
-    fetch(clearForm.action, {
-      method: "DELETE",
-      headers: {
-        "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content,
-        "Accept": "application/json"
-      }
-    })
-    .then(response => {
-      if (response.ok) {
-        // 1. Remove as mensagens e os divisores de data visualmente
-        const itemsToRemove = chatWindow.querySelectorAll('.message-row, .date-separator');
-        itemsToRemove.forEach(m => m.remove());
-        
-        // 2. Fecha o menu dropdown
-        const menu = document.getElementById('chat-options-menu');
-        if (menu) menu.classList.add('hidden');
-        
-        console.log("Conversa limpa com sucesso!");
-      }
-    })
-    .catch(err => console.error("Erro ao limpar:", err));
-  });
-}
+    clearForm.addEventListener('submit', (e) => {
+      e.preventDefault();
 
-// =======================================================
-  //   LÓGICA DO MENU DROPDOWN (CORRIGIDA E BLINDADA)
+      fetch(clearForm.action, {
+        method: "DELETE",
+        headers: {
+          "X-CSRF-Token": document.querySelector('meta[name="csrf-token"]').content,
+          "Accept": "application/json"
+        }
+      })
+      .then(response => {
+        if (response.ok) {
+          const itemsToRemove = chatWindow.querySelectorAll('.message-row, .date-separator');
+          itemsToRemove.forEach(m => m.remove());
+          const menu = document.getElementById('chat-options-menu');
+          if (menu) menu.classList.add('hidden');
+        }
+      })
+      .catch(err => console.error("Erro ao limpar:", err));
+    });
+  }
+
+  // =======================================================
+  //   DROPDOWN MENU
   // =======================================================
   const menuBtn = document.getElementById('chat-options-btn');
   const menuDropdown = document.getElementById('chat-options-menu');
 
   if (menuBtn && menuDropdown) {
-    // 1. CLONE NODE: Isso remove qualquer listener antigo que o Turbo tenha deixado
-    //    Evita o bug de "abrir e fechar imediatamente"
     const newBtn = menuBtn.cloneNode(true);
     menuBtn.parentNode.replaceChild(newBtn, menuBtn);
 
-    // 2. Adiciona o evento no NOVO botão limpo
     newBtn.addEventListener('click', (e) => {
-      e.preventDefault();  // Impede submit se estiver dentro de form
-      e.stopPropagation(); // Impede que o clique suba para o document
-      
+      e.preventDefault();
+      e.stopPropagation();
       menuDropdown.classList.toggle('hidden');
-      console.log("Botão clicado -> Menu alternado");
     });
 
-    // 3. Fechar ao clicar fora
-    // Nota: Usamos 'newBtn' aqui porque 'menuBtn' não existe mais no DOM
     document.addEventListener('click', (e) => {
       const clickedInsideMenu = menuDropdown.contains(e.target);
       const clickedOnBtn = newBtn.contains(e.target);
-
       if (!clickedInsideMenu && !clickedOnBtn) {
-        // Só fecha se estiver aberto
         if (!menuDropdown.classList.contains('hidden')) {
-           menuDropdown.classList.add('hidden');
+          menuDropdown.classList.add('hidden');
         }
       }
     });
   }
 
   // =======================================================
-  //   ATUALIZA TYPING INDICATOR
+  //   INDICADOR DE DIGITAÇÃO
   // =======================================================
   function updateTypingIndicator(data) {
     const typing = document.getElementById("typing-indicator");
-    if (!typing) return; // Segurança caso o elemento não exista
+    if (!typing) return;
 
     if (data.typing === true) {
       typing.innerHTML = `
@@ -177,15 +179,6 @@ if (clearBtn) {
   //   SUBMIT DA MENSAGEM
   // =======================================================
   newMessageForm.addEventListener("submit", (e) => {
-    // Nota: Se você usa data-remote="true" no Rails form, 
-    // o Rails já lida com o envio via AJAX (ujs/turbo).
-    // Aqui estamos apenas limpando o input visualmente para UX rápida.
-    
-    // Se você quiser controlar o fetch manualmente, mantenha o e.preventDefault().
-    // Se quiser deixar o Rails controlar, remova o e.preventDefault() e o fetch abaixo,
-    // mas garanta que o controller responda com head :ok ou JS.
-    
-    // Vamos manter o padrão manual para garantir compatibilidade com o código anterior:
     e.preventDefault();
 
     const content = messageInput.value.trim();
@@ -204,17 +197,13 @@ if (clearBtn) {
       body: JSON.stringify({ message: { content } }),
     })
     .then(async (response) => {
-      if (!response.ok) {
-        console.error("Erro ao enviar mensagem");
-      }
-      // O ActionCable vai devolver a mensagem via broadcast, 
-      // então não precisamos adicioná-la aqui manualmente para evitar duplicatas.
+      if (!response.ok) console.error("Erro ao enviar mensagem");
     })
     .catch((error) => console.error(error));
   });
 
- // =======================================================
-  //   APPEND NO DOM (DESIGN NOVO CORRIGIDO)
+  // =======================================================
+  //   APPEND NO DOM
   // =======================================================
   function appendMessageToDOM(message) {
     if (document.getElementById(`msg-${message.id}`)) return;
@@ -222,51 +211,313 @@ if (clearBtn) {
     const isSender = message.sender_id === currentUserId;
     const el = document.createElement("div");
 
-    // 1. Mantém a estrutura de classes idêntica ao HTML.erb
-    el.className = `message-row ${isSender ? "sent" : "received"}`;
+    el.className = `message message-row ${isSender ? "sent" : "received"}`;
     el.id = `msg-${message.id}`;
+    el.dataset.content = message.content || '';
 
-    // 2. Monta o HTML do Avatar (apenas para recebidas)
     let avatarHtml = "";
     if (!isSender) {
-        const avatarSrc = message.avatar_url; 
-        const displayName = message.user_name || "?";
-        
-        avatarHtml = `<div class="msg-avatar-container">`;
-        if (avatarSrc) {
-            avatarHtml += `<img class="msg-avatar" src="${avatarSrc}">`;
-        } else {
-            avatarHtml += `<div class="msg-avatar-placeholder">${displayName.charAt(0).toUpperCase()}</div>`;
-        }
-        avatarHtml += `</div>`;
+      const avatarSrc = message.avatar_url;
+      const displayName = message.user_name || "?";
+
+      avatarHtml = `<div class="msg-avatar-container">`;
+      if (avatarSrc) {
+        avatarHtml += `<img class="msg-avatar" src="${avatarSrc}">`;
+      } else {
+        avatarHtml += `<div class="msg-avatar-placeholder">${displayName.charAt(0).toUpperCase()}</div>`;
+      }
+      avatarHtml += `</div>`;
     }
 
-    // 3. Monta o HTML do Balão (message-bubble)
-    // REMOVIDO: qualquer tag extra (como <p>) que possa vir do broadcast
-    // GARANTIDO: o conteúdo é injetado diretamente como no seu HTML.erb
-    const bubbleHtml = `
-      <div class="message-bubble">${escapeHtml(message.content)}</div>
-    `;
+    const bubbleHtml = `<div class="message-bubble">${escapeHtml(message.content)}</div>`;
 
-    // 4. Junta tudo e insere no chat
     el.innerHTML = avatarHtml + bubbleHtml;
-
     chatWindow.appendChild(el);
+
+    // Configura long press na nova mensagem
+    setupLongPress(el);
+
     scrollToBottom();
   }
 
-  
   // =======================================================
-  //   FUNÇÕES ÚTEIS
+  //   LONG PRESS — DETECTAR PRESSIONAR E SEGURAR
+  // =======================================================
+  let longPressTimer = null;
+
+  function setupLongPress(row) {
+    // Evita dupla configuração
+    if (row.dataset.lpSetup) return;
+    row.dataset.lpSetup = "1";
+
+    let startX, startY;
+
+    row.addEventListener('touchstart', (e) => {
+      const touch = e.touches[0];
+      startX = touch.clientX;
+      startY = touch.clientY;
+      longPressTimer = setTimeout(() => openContextMenu(row), 500);
+    }, { passive: true });
+
+    row.addEventListener('touchmove', (e) => {
+      const touch = e.touches[0];
+      const dx = Math.abs(touch.clientX - startX);
+      const dy = Math.abs(touch.clientY - startY);
+      if (dx > 10 || dy > 10) clearTimeout(longPressTimer);
+    }, { passive: true });
+
+    row.addEventListener('touchend',   () => clearTimeout(longPressTimer));
+    row.addEventListener('touchcancel', () => clearTimeout(longPressTimer));
+  }
+
+  // =======================================================
+  //   ABRIR MENU DE CONTEXTO
+  // =======================================================
+  function openContextMenu(row) {
+    if (navigator.vibrate) navigator.vibrate(35);
+
+    const overlay = document.getElementById('msg-context-overlay');
+    const menu    = document.getElementById('msg-context-menu');
+    if (!overlay || !menu) return;
+
+    const msgId  = row.id.replace('msg-', '');
+    const isSent = row.classList.contains('sent');
+    const content = row.dataset.content || '';
+
+    let html = '';
+
+    // ----- MENSAGENS RECEBIDAS: barra de emojis -----
+    if (!isSent) {
+      html += `<div class="emoji-reaction-bar">`;
+      ['👍', '❤️', '😂', '😮', '😢', '🙏'].forEach(emoji => {
+        html += `<button class="emoji-btn" data-emoji="${emoji}" data-msg-id="${msgId}">${emoji}</button>`;
+      });
+      html += `</div>`;
+    }
+
+    // ----- MENSAGENS ENVIADAS: apagar -----
+    if (isSent) {
+      html += `
+        <button class="context-action danger" id="ctx-delete-btn" data-msg-id="${msgId}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="3 6 5 6 21 6"></polyline>
+            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+          </svg>
+          Apagar Mensagem
+        </button>
+      `;
+    }
+
+    // ----- MENSAGENS RECEBIDAS: denunciar -----
+    if (!isSent) {
+      const safeContent = content.replace(/"/g, '&quot;');
+      html += `
+        <button class="context-action warn" id="ctx-report-btn" data-msg-id="${msgId}" data-content="${safeContent}">
+          <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"></path>
+            <line x1="4" y1="22" x2="4" y2="15"></line>
+          </svg>
+          Denunciar Mensagem
+        </button>
+      `;
+    }
+
+    menu.innerHTML = html;
+    overlay.classList.remove('hidden');
+
+    // Emoji buttons
+    menu.querySelectorAll('.emoji-btn').forEach(btn => {
+      btn.addEventListener('click', () => {
+        sendReaction(btn.dataset.msgId, btn.dataset.emoji);
+        closeContextMenu();
+      });
+    });
+
+    // Botão apagar
+    const deleteBtn = menu.querySelector('#ctx-delete-btn');
+    if (deleteBtn) {
+      deleteBtn.addEventListener('click', () => {
+        deleteMessage(deleteBtn.dataset.msgId);
+        closeContextMenu();
+      });
+    }
+
+    // Botão denunciar
+    const reportBtn = menu.querySelector('#ctx-report-btn');
+    if (reportBtn) {
+      reportBtn.addEventListener('click', () => {
+        closeContextMenu();
+        openReportSheet(reportBtn.dataset.msgId, reportBtn.dataset.content);
+      });
+    }
+
+    // Fechar ao clicar no backdrop
+    document.getElementById('msg-context-backdrop').onclick = closeContextMenu;
+  }
+
+  function closeContextMenu() {
+    const overlay = document.getElementById('msg-context-overlay');
+    if (overlay) overlay.classList.add('hidden');
+  }
+
+  // =======================================================
+  //   APAGAR MENSAGEM
+  // =======================================================
+  function deleteMessage(msgId) {
+    fetch(`/matches/${matchId}/messages/${msgId}`, {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      }
+    })
+    .then(res => {
+      if (res.ok) {
+        // Remove localmente (o ActionCable vai remover para os outros via broadcast)
+        const el = document.getElementById(`msg-${msgId}`);
+        if (el) el.remove();
+      }
+    })
+    .catch(err => console.error('Erro ao apagar mensagem:', err));
+  }
+
+  // =======================================================
+  //   ENVIAR REAÇÃO
+  // =======================================================
+  function sendReaction(msgId, emoji) {
+    fetch(`/matches/${matchId}/messages/${msgId}/react`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ emoji })
+    })
+    .catch(err => console.error('Erro ao enviar reação:', err));
+  }
+
+  // =======================================================
+  //   EXIBIR REAÇÕES NO BALÃO
+  // =======================================================
+  function updateReactionDisplay(reaction) {
+    const row = document.getElementById(`msg-${reaction.message_id}`);
+    if (!row) return;
+
+    let reactionBar = row.querySelector('.reaction-bar');
+
+    const counts  = reaction.counts || {};
+    const entries = Object.entries(counts);
+
+    if (entries.length === 0) {
+      if (reactionBar) reactionBar.remove();
+      return;
+    }
+
+    const html = entries.map(([emoji, count]) =>
+      `<span class="reaction-badge">${emoji}${count > 1 ? ` ${count}` : ''}</span>`
+    ).join('');
+
+    if (!reactionBar) {
+      reactionBar = document.createElement('div');
+      reactionBar.className = 'reaction-bar';
+      row.appendChild(reactionBar);
+    }
+
+    reactionBar.innerHTML = html;
+  }
+
+  // =======================================================
+  //   INJETAR OVERLAY DE CONTEXTO
+  // =======================================================
+  function injectContextOverlay() {
+    if (document.getElementById('msg-context-overlay')) return;
+    const el = document.createElement('div');
+    el.id = 'msg-context-overlay';
+    el.className = 'msg-context-overlay hidden';
+    el.innerHTML = `
+      <div id="msg-context-backdrop" class="msg-context-backdrop"></div>
+      <div id="msg-context-menu" class="msg-context-menu"></div>
+    `;
+    document.body.appendChild(el);
+  }
+
+  // =======================================================
+  //   INJETAR BOTTOM SHEET DE DENÚNCIA
+  // =======================================================
+  function injectReportSheet() {
+    if (document.getElementById('msg-report-sheet')) return;
+    const el = document.createElement('div');
+    el.id = 'msg-report-sheet';
+    el.className = 'msg-report-sheet hidden';
+    el.innerHTML = `
+      <div class="msg-report-backdrop" id="msg-report-backdrop"></div>
+      <div class="msg-report-body">
+        <h3>Denunciar Mensagem</h3>
+        <p class="msg-report-preview"></p>
+        <textarea id="msg-report-textarea" placeholder="Descreva o motivo da denúncia (opcional)..."></textarea>
+        <div class="msg-report-actions">
+          <button class="btn-cancel-report" id="msg-report-cancel">Cancelar</button>
+          <button class="btn-submit-report" id="msg-report-submit">Denunciar</button>
+        </div>
+      </div>
+    `;
+    document.body.appendChild(el);
+
+    document.getElementById('msg-report-backdrop').onclick = closeReportSheet;
+    document.getElementById('msg-report-cancel').onclick   = closeReportSheet;
+    document.getElementById('msg-report-submit').onclick   = submitReport;
+  }
+
+  function openReportSheet(msgId, content) {
+    const sheet    = document.getElementById('msg-report-sheet');
+    const preview  = sheet?.querySelector('.msg-report-preview');
+    const textarea = document.getElementById('msg-report-textarea');
+    if (!sheet) return;
+
+    if (preview)  preview.textContent = content || '';
+    if (textarea) textarea.value = '';
+    sheet.dataset.msgId   = msgId;
+    sheet.dataset.content = content || '';
+    sheet.classList.remove('hidden');
+  }
+
+  function closeReportSheet() {
+    const sheet = document.getElementById('msg-report-sheet');
+    if (sheet) sheet.classList.add('hidden');
+  }
+
+  function submitReport() {
+    const sheet    = document.getElementById('msg-report-sheet');
+    const textarea = document.getElementById('msg-report-textarea');
+    const msgId    = sheet?.dataset.msgId || '';
+    const content  = sheet?.dataset.content || '';
+    const extra    = textarea?.value.trim() || '';
+
+    const description = `[Msg #${msgId}] "${content}"${extra ? ' — ' + extra : ''}`;
+
+    fetch('/reports', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content
+      },
+      body: JSON.stringify({ description })
+    })
+    .then(res => {
+      if (res.ok || res.status === 201 || res.status === 204) {
+        closeReportSheet();
+      }
+    })
+    .catch(err => console.error('Erro ao denunciar:', err));
+  }
+
+  // =======================================================
+  //   FUNÇÕES UTILITÁRIAS
   // =======================================================
   function escapeHtml(str) {
     if (!str) return "";
     return str.replace(/[&<>'"]/g, (c) => ({
-      "&": "&amp;",
-      "<": "&lt;",
-      ">": "&gt;",
-      '"': "&quot;",
-      "'": "&#39;",
+      "&": "&amp;", "<": "&lt;", ">": "&gt;",
+      '"': "&quot;", "'": "&#39;"
     }[c]));
   }
 
@@ -277,10 +528,6 @@ if (clearBtn) {
   // =======================================================
   //   AJUSTE DE TECLADO (iOS)
   // =======================================================
-  // O iOS Safari desloca o document quando o teclado abre, mesmo dentro de
-  // position:fixed. Ajustamos o wrapper diretamente ao visualViewport para
-  // garantir que header + mensagens + input caibam na área visível real.
-
   const chatWrapper = document.querySelector('.chat-screen-wrapper');
 
   function adjustToViewport() {
@@ -296,14 +543,11 @@ if (clearBtn) {
     window.visualViewport.addEventListener('scroll', adjustToViewport);
   }
 
-  // Dispara imediatamente ao abrir a página — sem esperar o teclado
   adjustToViewport();
   requestAnimationFrame(() => { adjustToViewport(); scrollToBottom(); });
 
-  // Fallback para dispositivos sem visualViewport (Safari antigo)
   messageInput.addEventListener('focus', () => setTimeout(scrollToBottom, 380));
 
-  // Restaura dimensões originais ao fechar o teclado
   messageInput.addEventListener('blur', () => {
     if (chatWrapper) {
       chatWrapper.style.height = '';
