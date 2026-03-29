@@ -2,9 +2,15 @@ class ReportsController < ApplicationController
   def create
     @report = Report.new(report_params)
     if @report.save
-      redirect_to safety_center_path, notice: "Denúncia enviada com sucesso!"
+      respond_to do |format|
+        format.json { head :created }
+        format.html { redirect_to safety_center_path, notice: "Denúncia enviada com sucesso!" }
+      end
     else
-      render :new, alert: "Erro ao enviar denúncia."
+      respond_to do |format|
+        format.json { render json: { error: @report.errors.full_messages }, status: :unprocessable_entity }
+        format.html { render :new, alert: "Erro ao enviar denúncia." }
+      end
     end
   end
 

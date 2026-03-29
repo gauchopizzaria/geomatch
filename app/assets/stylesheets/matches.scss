@@ -190,11 +190,63 @@
   padding: 0 20px;
 }
 
+/* ── Swipe-to-action ────────────────────────────────────── */
+.swipe-container {
+  position: relative;
+  overflow: hidden;
+  border-radius: 14px;
+}
+
+.swipe-actions {
+  position: absolute;
+  right: 0;
+  top: 0;
+  bottom: 0;
+  display: flex;
+  width: 148px;
+  z-index: 1;
+}
+
+.swipe-btn {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.03em;
+  color: #fff;
+  padding: 0;
+}
+
+.swipe-btn-clear { background: #e53935; }
+.swipe-btn-block { background: #37474f; border-radius: 0 14px 14px 0; }
+
+.swipe-content {
+  position: relative;
+  z-index: 2;
+  width: 100%;
+  transform: translateX(0);
+  transition: transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+  background-color: #0e0e10; /* mesmo fundo da página — tampa os botões por baixo */
+}
+
+.swipe-content.is-swiped {
+  transform: translateX(-148px);
+}
+/* ─────────────────────────────────────────────────────── */
+
 .conversation-row {
   display: flex;
   align-items: center;
   gap: 15px;
   text-decoration: none;
+  width: 100%;
 }
 
 .conv-avatar-container {

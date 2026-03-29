@@ -75,7 +75,25 @@
       <div class="conversations-list" id="conversations-master-list">
         <% @matches_initiated.each do |match| %>
           <% other = match.other_user(current_user) %>
-          <%= link_to match_path(match), class: "conversation-row", id: "match-row-#{match.id}" do %>
+          <div class="swipe-container" id="match-row-<%= match.id %>"
+               data-match-id="<%= match.id %>"
+               data-other-user-id="<%= other.id %>">
+            <div class="swipe-actions">
+              <button class="swipe-btn swipe-btn-clear" type="button" aria-label="Limpar conversa">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14H6L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/><path d="M9 6V4h6v2"/>
+                </svg>
+                <span>Limpar</span>
+              </button>
+              <button class="swipe-btn swipe-btn-block" type="button" aria-label="Bloquear usuário">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                  <circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/>
+                </svg>
+                <span>Bloquear</span>
+              </button>
+            </div>
+            <div class="swipe-content">
+          <%= link_to match_path(match), class: "conversation-row" do %>
             
             <div class="conv-avatar-container">
               <% if other.avatar.attached? %>
@@ -112,6 +130,8 @@
             </div>
 
           <% end %>
+            </div><!-- .swipe-content -->
+          </div><!-- .swipe-container -->
         <% end %>
       </div>
     <% else %>
