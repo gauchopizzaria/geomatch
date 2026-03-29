@@ -43,8 +43,8 @@ class Message < ApplicationRecord
           message: {
             title: sender.display_name,
             body:  content.truncate(80),
-            data:  { path: "/matches/#{match.id}" },
-            tag:   "match-#{match.id}"
+            data:  { path: "/matches/#{match.id}", app: "GeoMatch" },
+            tag:   "chat-#{match.id}"
           }.to_json,
           endpoint: subscription.endpoint,
           p256dh: subscription.p256dh,

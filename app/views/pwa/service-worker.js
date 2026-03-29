@@ -57,10 +57,11 @@ self.addEventListener("push", (event) => {
     await self.registration.showNotification(payload.title, {
       body:      payload.body,
       icon:      '/icon.png',
-      badge:     '/icon.png',
-      data:      { path },
-      tag:       payload.tag || `geomatch-${path}`,  // agrupa notificações do mesmo chat
-      renotify:  true,                               // vibra/toca mesmo substituindo a anterior
+      badge:     '/icon.png',  // ícone monocromático na barra de status do Android/iOS
+      data:      { path, app: (payload.data && payload.data.app) || 'GeoMatch' },
+      tag:       payload.tag || `chat-${path}`,
+      renotify:  true,
+      silent:    false,
     });
 
     // Avisa abas abertas para atualizar a UI sem recarregar
