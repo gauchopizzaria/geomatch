@@ -296,6 +296,10 @@ if (clearBtn) {
     window.visualViewport.addEventListener('scroll', adjustToViewport);
   }
 
+  // Dispara imediatamente ao abrir a página — sem esperar o teclado
+  adjustToViewport();
+  requestAnimationFrame(() => { adjustToViewport(); scrollToBottom(); });
+
   // Fallback para dispositivos sem visualViewport (Safari antigo)
   messageInput.addEventListener('focus', () => setTimeout(scrollToBottom, 380));
 
@@ -305,5 +309,6 @@ if (clearBtn) {
       chatWrapper.style.height = '';
       chatWrapper.style.top    = '';
     }
+    requestAnimationFrame(scrollToBottom);
   });
 });
