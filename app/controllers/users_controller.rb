@@ -8,23 +8,38 @@ class UsersController < ApplicationController
   # Ação para bloquear usuário (Via POST)
   def block
     @user_to_block = User.find(params[:id])
-    
-    # 1. Cria o bloqueio no banco
-    current_user.blocks_sent.create!(blocked: @user_to_block)
-    
-    # 2. Destrói qualquer Match e Chat existente
-    Match.where(user: current_user, matched_user: @user_to_block)
-          .or(Match.where(user: @user_to_block, matched_user: current_user))
-          .destroy_all
 
-    # 3. Limpa Likes
+    current_user.blocks_sent.create!(blocked: @user_to_block)
+
+    Match.where(user: current_user, matched_user: @user_to_block)
+         .or(Match.where(user: @user_to_block, matched_user: current_user))
+         .destroy_all
+
     Like.where(liker: current_user, liked: @user_to_block).destroy_all
     Like.where(liker: @user_to_block, liked: current_user).destroy_all
 
-    # Redireciona de volta para o Lead (Discovery) para continuar vendo outros perfis
-    redirect_to lead_path, notice: "Usuário bloqueado. Você não verá mais este perfil."
+    respond_to do |format|
+      format.html { redirect_to lead_path, notice: "Usuário bloqueado." }
+      format.json { head :ok }
+    end
   rescue ActiveRecord::RecordInvalid
-    redirect_to lead_path, alert: "Erro ao bloquear usuário."
+    respond_to do |format|
+      format.html { redirect_to lead_path, alert: "Erro ao bloquear usuário." }
+      format.json { head :unprocessable_entity }
+    end
+  end
+
+  # Ação para desbloquear usuário (Via DELETE /users/:id/unblock)
+  def unblock
+    @user_to_unblock = User.find(params[:id])
+    current_user.blocks_sent.find_by(blocked: @user_to_unblock)&.destroy
+    redirect_to safety_history_path, notice: "#{@user_to_unblock.display_name} foi desbloqueado."
+  end
+
+  # Histórico: bloqueados + denúncias enviadas
+  def safety_history
+    @blocked_users = current_user.blocked_users.includes(:avatar_attachment)
+    @my_reports    = current_user.reports_sent.order(created_at: :desc)
   end
 
  # Ação para o botão de "Modo Invisível" no Mapa

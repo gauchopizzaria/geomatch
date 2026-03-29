@@ -81,6 +81,27 @@
 </button>
 
     </div>
+
+    <%# --- BOTÃO: HISTÓRICO (Bloqueados + Denúncias) --- %>
+    <%= link_to safety_history_path, class: "safety-history-btn" do %>
+      <div class="sh-btn-inner">
+        <div class="sh-btn-left">
+          <div class="sh-btn-icon-wrap">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            </svg>
+          </div>
+          <div class="sh-btn-text">
+            <strong>Bloqueados &amp; Denúncias</strong>
+            <span>Gerencie perfis bloqueados e veja seu histórico</span>
+          </div>
+        </div>
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#666" stroke-width="2">
+          <path d="M9 18l6-6-6-6"/>
+        </svg>
+      </div>
+    <% end %>
+
   </div>
 
   <%# --- 3. INSTRUÇÕES DE EMERGÊNCIA (RODAPÉ) --- %>

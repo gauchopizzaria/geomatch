@@ -30,9 +30,11 @@ class User < ApplicationRecord
   
   has_many :blocks_sent, class_name: 'Block', foreign_key: 'blocker_id', dependent: :destroy
   has_many :blocked_users, through: :blocks_sent, source: :blocked
-  
+
   has_many :blocks_received, class_name: 'Block', foreign_key: 'blocked_id', dependent: :destroy
   has_many :blocked_by_users, through: :blocks_received, source: :blocker
+
+  has_many :reports_sent, class_name: 'Report', foreign_key: :reporter_id, dependent: :destroy
 
   # Active Storage
   has_one_attached :avatar

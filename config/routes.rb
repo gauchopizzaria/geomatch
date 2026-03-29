@@ -72,7 +72,8 @@ Rails.application.routes.draw do
   resources :users, only: [:show, :update] do
     # Ações de membro (agem sobre um ID específico: /users/:id/block)
     member do
-      post :block
+      post   :block
+      delete :unblock
     end
 
     # Ações de coleção (agem sobre a lista ou contexto geral: /users/update_location)
@@ -83,8 +84,9 @@ Rails.application.routes.draw do
   end
 
   # Funcionalidades extras de usuário
-  get "/safety_center",   to: "users#safety_center",   as: :safety_center
-  get "/report_incident", to: "users#report_incident", as: :report_incident
+  get "/safety_center",         to: "users#safety_center",   as: :safety_center
+  get "/safety_center/history", to: "users#safety_history",  as: :safety_history
+  get "/report_incident",       to: "users#report_incident", as: :report_incident
   get "/meu-perfil",      to: "users#me_profile",      as: :my_profile
   get '/verificacao', to: 'users#verification', as: :verification
   patch '/verificacao', to: 'users#send_verification', as: :send_verification

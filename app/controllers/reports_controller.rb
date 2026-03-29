@@ -1,6 +1,9 @@
 class ReportsController < ApplicationController
+  before_action :authenticate_user!
+
   def create
     @report = Report.new(report_params)
+    @report.reporter = current_user
     if @report.save
       respond_to do |format|
         format.json { head :created }

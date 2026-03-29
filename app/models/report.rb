@@ -1,7 +1,7 @@
 class Report < ApplicationRecord
+  belongs_to :reporter, class_name: 'User', optional: true
 
-    # Permite anexar várias fotos à denúncia
   has_many_attached :photos
-  
+
   validates :description, presence: true
 end
