@@ -273,4 +273,21 @@ if (clearBtn) {
   function scrollToBottom() {
     chatWindow.scrollTop = chatWindow.scrollHeight;
   }
+
+  // =======================================================
+  //   AJUSTE DE TECLADO (iOS)
+  // =======================================================
+
+  // visualViewport.resize dispara quando o teclado virtual sobe ou desce no iOS/Android.
+  // Sem isso, a última mensagem fica escondida atrás do teclado após o foco no input.
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      requestAnimationFrame(scrollToBottom);
+    });
+  }
+
+  // Fallback: foco no input com delay para cobrir a animação do teclado (~350ms no iOS)
+  messageInput.addEventListener('focus', () => {
+    setTimeout(scrollToBottom, 350);
+  });
 });
