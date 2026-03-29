@@ -145,17 +145,22 @@
 
 /* --- BALÕES ESTILO WHATSAPP (PROPORCIONAL À FRASE) --- */
 .message-bubble {
- padding: 6px 12px;
+  padding: 6px 12px;
   font-size: 0.95rem;
   line-height: 1.45;
   position: relative;
   word-wrap: break-word;
   box-shadow: 0 1px 1px rgba(0,0,0,0.15);
-  
+
   /* --- O SEGREDO PARA FICAR PROPORCIONAL --- */
-  display: block;        // Ou inline-block
- width: fit-content;    // Ajusta ao texto
-  max-width: 100%;       // Respeita o limite do container pai (que tem o margin 20%)
+  display: block;
+  width: fit-content;
+  max-width: 100%;
+
+  /* --- BLOQUEIA MENU NATIVO DO iOS --- */
+  -webkit-touch-callout: none;
+  -webkit-user-select: none;
+  user-select: none;
 }
 
 /* Ajuste na Linha da Mensagem */

@@ -253,11 +253,13 @@ document.addEventListener('turbo:load', () => {
     let startX, startY;
 
     row.addEventListener('touchstart', (e) => {
+      e.preventDefault();
+      e.stopPropagation();
       const touch = e.touches[0];
       startX = touch.clientX;
       startY = touch.clientY;
       longPressTimer = setTimeout(() => openContextMenu(row), 500);
-    }, { passive: true });
+    }, { passive: false });
 
     row.addEventListener('touchmove', (e) => {
       const touch = e.touches[0];
