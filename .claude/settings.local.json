@@ -8,7 +8,8 @@
       "Bash(bundle install:*)",
       "Bash(findstr \"api/v1\")",
       "Bash(bin/rails runner:*)",
-      "Bash(findstr \"admin\")"
+      "Bash(findstr \"admin\")",
+      "Bash(bin/rails db:migrate:status)"
     ]
   }
 }

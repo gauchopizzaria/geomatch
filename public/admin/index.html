@@ -95,6 +95,10 @@
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
         Performance
       </button>
+      <button data-section="insights" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
+        Insights BI
+      </button>
     </nav>
 
     <div class="p-3 border-t border-slate-800">
@@ -190,6 +194,39 @@
 
       <!-- ══════════════ MAPA AO VIVO ══════════════ -->
       <section id="section-map" class="hidden">
+        <!-- Filtros demográficos do mapa -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-4 flex items-center gap-3 flex-wrap">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex-shrink-0">Filtrar Mapa:</span>
+          <input id="map-filter-city" type="text" placeholder="Cidade…"
+            class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-32" />
+          <input id="map-filter-state" type="text" placeholder="Estado / UF…"
+            class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-32" />
+          <select id="map-filter-gender"
+            class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-yellow-500 transition-colors">
+            <option value="">Todos gêneros</option>
+            <option value="male">Masculino</option>
+            <option value="female">Feminino</option>
+            <option value="non_binary">Não-binário</option>
+          </select>
+          <select id="map-filter-age"
+            class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white outline-none focus:border-yellow-500 transition-colors">
+            <option value="">Todas as idades</option>
+            <option value="18-25">18 – 25</option>
+            <option value="26-35">26 – 35</option>
+            <option value="36-45">36 – 45</option>
+            <option value="46+">46+</option>
+          </select>
+          <button onclick="applyMapFilter()"
+            class="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-900 transition-opacity hover:opacity-90 flex-shrink-0" style="background:#f59e0b">
+            Aplicar
+          </button>
+          <button onclick="clearMapFilter()"
+            class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors flex-shrink-0">
+            Limpar
+          </button>
+          <span id="map-filter-badge" class="hidden text-xs font-semibold px-2 py-1 rounded-lg" style="background:rgba(245,158,11,.15);color:#f59e0b">Filtro ativo</span>
+        </div>
+
         <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
           <div class="px-6 py-3.5 border-b border-slate-800 flex items-center justify-between flex-wrap gap-3">
             <div>
@@ -207,7 +244,7 @@
               </div>
             </div>
           </div>
-          <div id="map-full" style="height:580px;background:#0f172a"></div>
+          <div id="map-full" style="height:540px;background:#0f172a"></div>
         </div>
       </section>
 
@@ -316,19 +353,37 @@
       <!-- ══════════════ USUÁRIOS ══════════════ -->
       <section id="section-users" class="hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <div class="px-6 py-4 border-b border-slate-800 flex items-center gap-4 flex-wrap">
+          <div class="px-6 py-4 border-b border-slate-800 flex items-center gap-3 flex-wrap">
             <h2 class="font-semibold text-sm flex-shrink-0">Gestão de Usuários</h2>
-            <div class="flex items-center gap-3 ml-auto flex-wrap">
+            <div class="flex items-center gap-2 ml-auto flex-wrap">
               <input id="user-search" type="text" placeholder="Buscar por e-mail…"
                 onkeyup="debounceSearch()"
-                class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-52" />
-              <label class="flex items-center gap-2 text-xs text-slate-400 cursor-pointer select-none">
-                <input id="filter-banned" type="checkbox" onchange="loadUsers(1)" class="rounded" />Apenas banidos
+                class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-44" />
+              <input id="user-filter-city" type="text" placeholder="Cidade…"
+                onkeyup="debounceSearch()"
+                class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-28" />
+              <select id="user-filter-gender" onchange="loadUsers(1)"
+                class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-yellow-500 transition-colors">
+                <option value="">Gênero</option>
+                <option value="male">Masc.</option>
+                <option value="female">Fem.</option>
+                <option value="non_binary">NB</option>
+              </select>
+              <select id="user-filter-age" onchange="loadUsers(1)"
+                class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-yellow-500 transition-colors">
+                <option value="">Idade</option>
+                <option value="18-25">18-25</option>
+                <option value="26-35">26-35</option>
+                <option value="36-45">36-45</option>
+                <option value="46+">46+</option>
+              </select>
+              <label class="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer select-none">
+                <input id="filter-banned" type="checkbox" onchange="loadUsers(1)" class="rounded" />Banidos
               </label>
               <button onclick="exportCSV()"
                 class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">
                 <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                Exportar CSV
+                CSV
               </button>
             </div>
           </div>
@@ -500,6 +555,99 @@
         </div>
       </section>
 
+      <!-- ══════════════ INSIGHTS BI ══════════════ -->
+      <section id="section-insights" class="hidden">
+
+        <!-- Ação de exportação BI -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="font-bold text-base">Inteligência de Negócio</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Dados demográficos agregados e anonimizados</p>
+          </div>
+          <a id="bi-export-link" href="#" onclick="downloadBiExport(event)"
+            class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-900 transition-opacity hover:opacity-90" style="background:#f59e0b">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Exportar BI (CSV)
+          </a>
+        </div>
+
+        <!-- Gráficos de pizza -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
+          <!-- Escolaridade -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-semibold text-sm mb-4">Escolaridade</h3>
+            <div style="position:relative;height:180px">
+              <canvas id="education-chart"></canvas>
+            </div>
+            <div id="education-legend" class="mt-4 space-y-1.5"></div>
+          </div>
+
+          <!-- Interesses Políticos/Sociais -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-semibold text-sm mb-4">Interesses Declarados</h3>
+            <div style="position:relative;height:180px">
+              <canvas id="interests-chart"></canvas>
+            </div>
+            <div id="interests-legend" class="mt-4 space-y-1.5"></div>
+          </div>
+
+          <!-- Faixa Etária -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-semibold text-sm mb-4">Faixa Etária</h3>
+            <div style="position:relative;height:180px">
+              <canvas id="age-chart"></canvas>
+            </div>
+            <div id="age-legend" class="mt-4 space-y-1.5"></div>
+          </div>
+        </div>
+
+        <!-- Top Cidades + Ocupações -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-semibold text-sm mb-4">Top Cidades</h3>
+            <div id="top-cities-list" class="space-y-2">
+              <div class="text-slate-500 text-xs">Carregando…</div>
+            </div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-semibold text-sm mb-4">Top Ocupações</h3>
+            <div id="top-occupations-list" class="space-y-2">
+              <div class="text-slate-500 text-xs">Carregando…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Trending Topics / Word Cloud -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <div class="flex items-center justify-between mb-4 flex-wrap gap-3">
+            <div>
+              <h3 class="font-semibold text-sm">Trending Topics</h3>
+              <p class="text-xs text-slate-500 mt-0.5">Top 10 palavras nas mensagens · stop words removidas</p>
+            </div>
+            <div class="flex items-center gap-2">
+              <input id="wc-region" type="text" placeholder="Filtrar por cidade…"
+                class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-36" />
+              <button onclick="loadWordCloud()"
+                class="px-3 py-1.5 rounded-lg text-xs font-bold text-slate-900" style="background:#f59e0b">
+                Atualizar
+              </button>
+            </div>
+          </div>
+
+          <!-- Alertas de blacklist -->
+          <div id="wc-blacklist-alert" class="hidden mb-4 px-4 py-3 rounded-xl text-sm border" style="background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.3);color:#f87171">
+            <strong>Alerta:</strong> <span id="wc-blacklist-text"></span>
+          </div>
+
+          <!-- Trending words -->
+          <div id="trending-words" class="flex flex-wrap gap-2">
+            <div class="text-slate-500 text-xs py-4">Carregando…</div>
+          </div>
+
+          <p class="text-xs text-slate-600 mt-4" id="wc-total-msgs"></p>
+        </div>
+      </section>
+
     </div><!-- /content -->
   </main>
 </div><!-- /dashboard -->
@@ -518,7 +666,7 @@ const ADMIN = '/api/v1/admin';
 const TILE  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const TILE_OPTS = { attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19 };
 const REFRESH_SEC = 30;
-const SECTION_TITLES = { overview:'Visão Geral', map:'Mapa ao Vivo', analytics:'Analytics', users:'Usuários', reports:'Denúncias', performance:'Performance' };
+const SECTION_TITLES = { overview:'Visão Geral', map:'Mapa ao Vivo', analytics:'Analytics', users:'Usuários', reports:'Denúncias', performance:'Performance', insights:'Insights BI' };
 
 // State
 let token       = null;
@@ -527,6 +675,7 @@ let markersMini = [], markersFull = [];
 let heatLayer   = null;
 let heatActive  = false;
 let growthChart = null, planChart = null;
+let educationChart = null, interestsChart = null, ageChart = null;
 let refreshTimer = null, tickTimer = null, tick = REFRESH_SEC;
 let searchTimer  = null;
 let lastUsersData = [];
@@ -616,7 +765,7 @@ function logout() {
 // ─────────────────────────────────────────────
 let activeSection = 'overview';
 function gotoSection(name, clickedBtn) {
-  ['overview','map','analytics','users','reports','performance'].forEach(s => {
+  ['overview','map','analytics','users','reports','performance','insights'].forEach(s => {
     el(`section-${s}`)?.classList.add('hidden');
   });
   el(`section-${name}`)?.classList.remove('hidden');
@@ -633,6 +782,7 @@ function gotoSection(name, clickedBtn) {
   if (name === 'analytics')   loadAnalytics();
   if (name === 'performance') loadPerformance();
   if (name === 'reports')     loadReports();
+  if (name === 'insights')    { loadInsights(); loadWordCloud(); }
 }
 
 // ─────────────────────────────────────────────
@@ -687,14 +837,51 @@ function initMaps() {
   }
 }
 
-async function loadLiveMap() {
-  const res = await api(`${ADMIN}/live_map`); if (!res?.ok) return;
+// mapFilterParams: object with active filter values (city, state, gender, age_range)
+let mapFilterParams = {};
+
+async function loadLiveMap(extraParams = mapFilterParams) {
+  let url = `${ADMIN}/live_map`;
+  const qs = buildQS(extraParams);
+  if (qs) url += `?${qs}`;
+  const res = await api(url); if (!res?.ok) return;
   const { users = [] } = await res.json();
   const online = users.filter(u => u.is_online).length;
   setText('mini-online', fmt(online)); setText('mini-total', fmt(users.length));
   setText('full-online', fmt(online)); setText('full-total', fmt(users.length));
   renderMarkers(mapMini, markersMini, users, 9);
   renderMarkers(mapFull, markersFull, users, 12);
+}
+
+function applyMapFilter() {
+  mapFilterParams = {};
+  const city    = el('map-filter-city')?.value?.trim();
+  const state   = el('map-filter-state')?.value?.trim();
+  const gender  = el('map-filter-gender')?.value;
+  const ageRange= el('map-filter-age')?.value;
+  if (city)     mapFilterParams.city      = city;
+  if (state)    mapFilterParams.state     = state;
+  if (gender)   mapFilterParams.gender    = gender;
+  if (ageRange) mapFilterParams.age_range = ageRange;
+  const hasFilter = Object.keys(mapFilterParams).length > 0;
+  el('map-filter-badge')?.classList.toggle('hidden', !hasFilter);
+  loadLiveMap(mapFilterParams);
+  if (heatActive) loadHeatmapData();
+}
+
+function clearMapFilter() {
+  mapFilterParams = {};
+  ['map-filter-city','map-filter-state'].forEach(id => { const e = el(id); if(e) e.value = ''; });
+  ['map-filter-gender','map-filter-age'].forEach(id => { const e = el(id); if(e) e.value = ''; });
+  el('map-filter-badge')?.classList.add('hidden');
+  loadLiveMap({});
+}
+
+function buildQS(obj) {
+  return Object.entries(obj)
+    .filter(([,v]) => v)
+    .map(([k,v]) => `${encodeURIComponent(k)}=${encodeURIComponent(v)}`)
+    .join('&');
 }
 
 function renderMarkers(map, bucket, users, size) {
@@ -887,11 +1074,17 @@ function renderBotAlerts(alerts) {
 //  USERS TABLE
 // ─────────────────────────────────────────────
 async function loadUsers(page = 1) {
-  const q = el('user-search')?.value?.trim() || '';
-  const banned = el('filter-banned')?.checked || false;
+  const q       = el('user-search')?.value?.trim()    || '';
+  const banned  = el('filter-banned')?.checked        || false;
+  const city    = el('user-filter-city')?.value?.trim()|| '';
+  const gender  = el('user-filter-gender')?.value     || '';
+  const ageRange= el('user-filter-age')?.value        || '';
   let url = `${ADMIN}/users?page=${page}`;
-  if (q)      url += `&q=${encodeURIComponent(q)}`;
-  if (banned) url += `&banned=true`;
+  if (q)        url += `&q=${encodeURIComponent(q)}`;
+  if (banned)   url += `&banned=true`;
+  if (city)     url += `&city=${encodeURIComponent(city)}`;
+  if (gender)   url += `&gender=${encodeURIComponent(gender)}`;
+  if (ageRange) url += `&age_range=${encodeURIComponent(ageRange)}`;
 
   const tbody = el('users-tbody');
   tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-500">Carregando…</td></tr>`;
@@ -1097,6 +1290,158 @@ async function loadPerformance() {
   setText('rev-payments',  fmt(d.revenue?.paid_payments));
   setText('rev-premium',   fmt(d.revenue?.premium_users));
   setText('rev-conversion',d.revenue?.conversion_rate != null ? d.revenue.conversion_rate + '%' : '—');
+}
+
+// ─────────────────────────────────────────────
+//  INSIGHTS BI
+// ─────────────────────────────────────────────
+const EDU_LABELS = {
+  fundamental_incompleto:'Fund. Incompleto', fundamental_completo:'Fund. Completo',
+  medio_incompleto:'Médio Incompleto',       medio_completo:'Médio Completo',
+  superior_incompleto:'Superior Incompleto', superior_completo:'Superior Completo',
+  pos_graduacao:'Pós-Graduação',             mestrado:'Mestrado', doutorado:'Doutorado'
+};
+const CHART_PALETTE = ['#f59e0b','#3b82f6','#8b5cf6','#ec4899','#10b981','#ef4444','#f97316','#06b6d4','#84cc16','#a78bfa'];
+
+async function loadInsights() {
+  const res = await api(`${ADMIN}/insights`); if (!res?.ok) return;
+  const d   = await res.json();
+
+  renderPieInsight('education-chart', 'education-legend',
+    d.by_education  || {},
+    k => EDU_LABELS[k] || k);
+
+  renderPieInsight('interests-chart', 'interests-legend',
+    d.by_interest || {},
+    k => k);
+
+  renderPieInsight('age-chart', 'age-legend',
+    d.by_age_range || {},
+    k => k);
+
+  renderBarList('top-cities-list',       d.top_cities      || {});
+  renderBarList('top-occupations-list',  d.top_occupations || {});
+}
+
+function renderPieInsight(canvasId, legendId, dataObj, labelFn) {
+  const labels = Object.keys(dataObj);
+  const values = Object.values(dataObj);
+  if (!labels.length) {
+    const c = el(canvasId); if(c) { const p = c.parentElement; p.innerHTML = '<p class="text-slate-500 text-xs py-12 text-center">Sem dados</p>'; }
+    el(legendId) && (el(legendId).innerHTML = ''); return;
+  }
+  const colors = labels.map((_, i) => CHART_PALETTE[i % CHART_PALETTE.length]);
+  const total  = values.reduce((a,b) => a+b, 0);
+
+  // Destroy previous chart stored in global
+  const storeKey = canvasId.replace('-chart','') + 'Chart';
+  if (window[storeKey]) { window[storeKey].destroy(); window[storeKey] = null; }
+
+  const ctx = el(canvasId); if (!ctx) return;
+  window[storeKey] = new Chart(ctx, {
+    type: 'doughnut',
+    data: { labels: labels.map(labelFn), datasets:[{ data:values, backgroundColor:colors, borderWidth:0, hoverOffset:4 }] },
+    options: {
+      responsive:true, maintainAspectRatio:false, cutout:'65%',
+      plugins: {
+        legend: { display:false },
+        tooltip: { backgroundColor:'#1e293b', borderColor:'#334155', borderWidth:1, titleColor:'#f1f5f9', bodyColor:'#94a3b8' }
+      }
+    }
+  });
+
+  el(legendId).innerHTML = labels.map((k, i) => `
+    <div class="flex items-center justify-between">
+      <span class="flex items-center gap-2 text-xs text-slate-400">
+        <span class="w-2 h-2 rounded-full flex-shrink-0" style="background:${colors[i]}"></span>${esc(labelFn(k))}
+      </span>
+      <span class="text-xs font-medium text-white">${fmt(values[i])} <span class="text-slate-600">(${total?((values[i]/total)*100).toFixed(1):0}%)</span></span>
+    </div>`).join('');
+}
+
+function renderBarList(containerId, dataObj) {
+  const entries = Object.entries(dataObj).sort((a,b) => b[1]-a[1]).slice(0,10);
+  const maxVal  = entries[0]?.[1] || 1;
+  const div = el(containerId); if (!div) return;
+  if (!entries.length) { div.innerHTML = '<p class="text-slate-500 text-xs">Sem dados</p>'; return; }
+  div.innerHTML = entries.map(([k,v]) => `
+    <div class="flex items-center gap-3">
+      <span class="text-xs text-slate-300 w-28 truncate flex-shrink-0" title="${esc(k)}">${esc(k)}</span>
+      <div class="flex-1 bg-slate-800 rounded-full h-1.5">
+        <div class="h-1.5 rounded-full" style="width:${(v/maxVal*100).toFixed(1)}%;background:#f59e0b"></div>
+      </div>
+      <span class="text-xs text-slate-400 w-8 text-right flex-shrink-0">${fmt(v)}</span>
+    </div>`).join('');
+}
+
+// ─────────────────────────────────────────────
+//  WORD CLOUD / TRENDING TOPICS
+// ─────────────────────────────────────────────
+async function loadWordCloud() {
+  const region = el('wc-region')?.value?.trim() || '';
+  let url = `${ADMIN}/word_cloud`;
+  if (region) url += `?region=${encodeURIComponent(region)}`;
+
+  const res = await api(url); if (!res?.ok) return;
+  const d   = await res.json();
+
+  // Trending words
+  const container = el('trending-words');
+  const words = d.top_words || [];
+  if (!words.length) {
+    container.innerHTML = '<p class="text-slate-500 text-xs py-4">Nenhuma palavra encontrada no período.</p>';
+  } else {
+    const maxCount = words[0]?.count || 1;
+    container.innerHTML = words.map((w, i) => {
+      const scale = 0.75 + (w.count / maxCount) * 0.85; // 0.75rem → 1.6rem
+      const opacity = 0.5 + (w.count / maxCount) * 0.5;
+      const color = CHART_PALETTE[i % CHART_PALETTE.length];
+      return `<span class="px-3 py-1.5 rounded-full font-bold cursor-default transition-transform hover:scale-110"
+        title="${fmt(w.count)} ocorrências"
+        style="font-size:${scale.toFixed(2)}rem;color:${color};opacity:${opacity.toFixed(2)};background:${color}18;border:1px solid ${color}30">
+        ${esc(w.word)}
+      </span>`;
+    }).join('');
+  }
+
+  // Total
+  el('wc-total-msgs') && (el('wc-total-msgs').textContent = `${fmt(d.total_messages)} mensagens analisadas · ${d.period_from} → ${d.period_to}`);
+
+  // Blacklist alerts
+  const alerts = d.blacklist_alerts || [];
+  const alertDiv = el('wc-blacklist-alert');
+  if (alerts.length) {
+    el('wc-blacklist-text').textContent = alerts.map(a => `"${a.word}" (${fmt(a.count)}×)`).join(' · ');
+    alertDiv.classList.remove('hidden');
+  } else {
+    alertDiv.classList.add('hidden');
+  }
+}
+
+// ─────────────────────────────────────────────
+//  BI EXPORT
+// ─────────────────────────────────────────────
+async function downloadBiExport(e) {
+  e.preventDefault();
+  const btn = e.currentTarget;
+  btn.textContent = 'Gerando…'; btn.style.opacity = '0.7';
+  try {
+    const res = await fetch(`${ADMIN}/bi_export`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+    if (!res.ok) { alert('Erro ao gerar exportação BI.'); return; }
+    const blob = await res.blob();
+    const url  = URL.createObjectURL(blob);
+    const a    = Object.assign(document.createElement('a'), {
+      href: url,
+      download: `geomatch_bi_${new Date().toISOString().split('T')[0]}.csv`
+    });
+    document.body.appendChild(a); a.click(); document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  } finally {
+    btn.innerHTML = '<svg class="w-4 h-4 inline mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>Exportar BI (CSV)';
+    btn.style.opacity = '';
+  }
 }
 
 // ─────────────────────────────────────────────

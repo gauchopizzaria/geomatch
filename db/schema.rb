@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_29_170000) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_30_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -377,6 +377,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_170000) do
     t.text "bio"
     t.date "birthdate"
     t.datetime "created_at", null: false
+    t.string "education_level"
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "gender"
@@ -390,8 +391,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_29_170000) do
     t.integer "likes_count", default: 0
     t.decimal "longitude", precision: 10, scale: 6
     t.integer "messages_count", default: 0
+    t.string "occupation"
     t.string "phone"
     t.bigint "plan_id"
+    t.jsonb "political_interests", default: []
     t.datetime "premium_until"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"

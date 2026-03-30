@@ -157,6 +157,9 @@ Rails.application.routes.draw do
         get :analytics,   to: 'analytics#show'
         get :heatmap,     to: 'heatmap#index'
         get :performance, to: 'performance#show'
+        get :word_cloud,  to: 'word_cloud#index'
+        get :insights,    to: 'insights#show'
+        get :bi_export,   to: 'bi_export#show'
 
         resources :users, only: [:index] do
           member do
@@ -170,6 +173,8 @@ Rails.application.routes.draw do
           end
         end
       end
+
+      patch 'profile/survey', to: 'profiles#update_survey'
     end
   end
   
