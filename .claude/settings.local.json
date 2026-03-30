@@ -11,7 +11,11 @@
       "Bash(findstr \"admin\")",
       "Bash(bin/rails db:migrate:status)",
       "Bash(ruby -c app/controllers/api/v1/admin/engagement_controller.rb)",
-      "Bash(ruby -c app/views/api/v1/admin/engagement/show.json.jbuilder)"
+      "Bash(ruby -c app/views/api/v1/admin/engagement/show.json.jbuilder)",
+      "Bash(ruby -c app/services/sentiment_analyzer.rb)",
+      "Bash(ruby -c app/controllers/api/v1/admin/political_intelligence_controller.rb)",
+      "Bash(ruby -c app/views/api/v1/admin/political_intelligence/show.json.jbuilder)",
+      "Bash(bin/rails runner \":*)"
     ]
   }
 }
