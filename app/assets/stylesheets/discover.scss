@@ -808,13 +808,13 @@
   background-color: #b6a87a; /* Cor dourada do seu tema */
   color: #1a1a1a; /* Cor escura para contrastar */
   border: 2px solid #fff;
-  animation: pulse-tracking 1.5s infinite;
+  animation: pulse-tracking 0.85s ease-out infinite;
 }
 
 @keyframes pulse-tracking {
-  0% { box-shadow: 0 0 0 0 rgba(136, 119, 62, 0.7); }
-  70% { box-shadow: 0 0 0 10px rgba(212, 175, 55, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0); }
+  0%   { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0.9), 0 0 10px rgba(212, 175, 55, 0.6); }
+  60%  { box-shadow: 0 0 0 14px rgba(212, 175, 55, 0), 0 0 10px rgba(212, 175, 55, 0.15); }
+  100% { box-shadow: 0 0 0 0 rgba(212, 175, 55, 0),  0 0 0 rgba(212, 175, 55, 0); }
 }
 
 /* Estilo do Popup de Aviso de Rastreamento */

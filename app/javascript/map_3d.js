@@ -356,10 +356,17 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
         `;
         li.addEventListener("click", () => {
           if (!isNaN(uLat) && !isNaN(uLng)) {
-            const markerEl = mapboxUserMarkers[user.id]?.getElement()?.querySelector('.premium-marker');
+            // Colapsa a gaveta para liberar a visão do mapa
+            const sheet = document.querySelector('.users-bottom-sheet');
+            if (sheet) sheet.style.height = '25vh';
+
+            // Corrige referência: getElement() já retorna a .premium-marker div
+            const markerEl = mapboxUserMarkers[user.id]?.getElement();
             if (activeMarkerEl && activeMarkerEl !== markerEl) activeMarkerEl.style.opacity = '1';
             if (markerEl) { activeMarkerEl = markerEl; markerEl.style.opacity = '0'; }
+
             isCinematicMode = true;
+            document.body.classList.add('cinematic-mode');
             stopRotation();
             map.flyTo({ center: [uLng, uLat], zoom: 18, pitch: 60, duration: 2000, essential: true });
             openCinematicPopup(user);
@@ -1050,8 +1057,8 @@ document.addEventListener("turbo:load", () => {
   style.textContent = `
     .user-location-marker { position: relative; width: 40px; height: 40px; }
     .user-location-dot { width: 12px; height: 12px; background: #ccc099; border-radius: 50%; border: 2px solid #fff; position: relative; z-index: 10; top: 14px; left: 14px; }
-    .user-location-pulse { position: absolute; width: 40px; height: 40px; border-radius: 50%; border: 2px solid rgba(212, 175, 55, 0.5); animation: pulse 2s infinite; }
-    @keyframes pulse { 0% { transform: scale(0.5); opacity: 1; } 100% { transform: scale(1.5); opacity: 0; } }
+    .user-location-pulse { position: absolute; width: 40px; height: 40px; border-radius: 50%; border: 3px solid rgba(212, 175, 55, 0.85); animation: pulse 0.9s ease-out infinite; }
+    @keyframes pulse { 0% { transform: scale(0.6); opacity: 1; } 100% { transform: scale(1.35); opacity: 0; } }
     .loading-skeleton { display: flex; gap: 10px; padding: 10px; background: #252527; border-radius: 8px; margin-bottom: 5px; }
     .skeleton-avatar { width: 40px; height: 40px; background: #444; border-radius: 50%; }
     .skeleton-text { flex: 1; display: flex; flex-direction: column; gap: 5px; justify-content: center; }
