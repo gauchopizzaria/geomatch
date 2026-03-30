@@ -22,7 +22,7 @@ json.reports @reports do |r|
   if r.reporter
     json.reporter do
       json.id    r.reporter.id
-      json.name  r.reporter.name
+      json.name  r.reporter.display_name
       json.email r.reporter.email
     end
   else

@@ -32,6 +32,12 @@ module Api
           }
 
           @by_category = Report::CATEGORIES.index_with { |cat| Report.where(category: cat).count }
+        rescue => e
+          render json: {
+            error:     e.class.to_s,
+            message:   e.message,
+            backtrace: e.backtrace&.first(5)
+          }, status: :internal_server_error
         end
 
         def resolve
