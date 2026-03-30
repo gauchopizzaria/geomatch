@@ -160,6 +160,7 @@ Rails.application.routes.draw do
         get :word_cloud,  to: 'word_cloud#index'
         get :insights,    to: 'insights#show'
         get :bi_export,   to: 'bi_export#show'
+        get :engagement,  to: 'engagement#show'
 
         resources :users, only: [:index] do
           member do

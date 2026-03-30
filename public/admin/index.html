@@ -99,6 +99,10 @@
         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z"/></svg>
         Insights BI
       </button>
+      <button data-section="engagement" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        Engajamento
+      </button>
     </nav>
 
     <div class="p-3 border-t border-slate-800">
@@ -555,6 +559,134 @@
         </div>
       </section>
 
+      <!-- ══════════════ ENGAJAMENTO ══════════════ -->
+      <section id="section-engagement" class="hidden">
+
+        <!-- Filtros de Engajamento -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6 flex items-center gap-3 flex-wrap">
+          <span class="text-xs font-semibold text-slate-400 uppercase tracking-wider flex-shrink-0">Período e Filtro:</span>
+          <div class="flex items-center gap-1.5">
+            <button onclick="setEngPeriod(7)"  id="eng-btn-7"  class="eng-period-btn px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">7d</button>
+            <button onclick="setEngPeriod(15)" id="eng-btn-15" class="eng-period-btn px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">15d</button>
+            <button onclick="setEngPeriod(30)" id="eng-btn-30" class="eng-period-btn px-3 py-1.5 rounded-lg text-xs font-bold transition-colors" style="background:rgba(245,158,11,.2);color:#f59e0b">30d</button>
+          </div>
+          <input id="eng-filter-city"  type="text" placeholder="Cidade…"
+            class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-32" />
+          <input id="eng-filter-state" type="text" placeholder="Estado / UF…"
+            class="bg-slate-800 border border-slate-700 rounded-lg px-3 py-1.5 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-32" />
+          <button onclick="loadEngagement()"
+            class="px-4 py-1.5 rounded-lg text-xs font-bold text-slate-900" style="background:#f59e0b">Aplicar</button>
+          <div id="eng-loading" class="hidden text-xs text-slate-500 flex items-center gap-2">
+            <span class="w-3 h-3 border-2 border-yellow-500 border-t-transparent rounded-full animate-spin inline-block"></span>Carregando…
+          </div>
+          <button onclick="exportEngagementCSV()"
+            class="ml-auto flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+            Exportar CSV
+          </button>
+        </div>
+
+        <!-- KPI Cards -->
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Usuários Ativos</div>
+            <div id="eng-active-users" class="text-3xl font-bold text-white">—</div>
+            <div class="text-xs text-slate-400 mt-1">no período</div>
+          </div>
+          <div class="bg-slate-900 rounded-2xl p-5" style="border:1px solid rgba(245,158,11,.3)">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Match Rate Global</div>
+            <div id="eng-match-rate" class="text-3xl font-bold" style="color:#f59e0b">—%</div>
+            <div class="text-xs text-slate-400 mt-1">curtidas → matches</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Mensagens Trocadas</div>
+            <div id="eng-total-msgs" class="text-3xl font-bold text-white">—</div>
+            <div class="text-xs text-slate-400 mt-1">no período</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Total de Likes</div>
+            <div id="eng-total-likes" class="text-3xl font-bold text-white">—</div>
+            <div class="text-xs text-slate-400 mt-1">no período</div>
+          </div>
+        </div>
+
+        <!-- Gráficos comparativos por Gênero -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-semibold text-sm mb-4">Mensagens Enviadas por Gênero</h3>
+            <div style="position:relative;height:220px"><canvas id="eng-msgs-chart"></canvas></div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-semibold text-sm mb-4">Likes Dados por Gênero</h3>
+            <div style="position:relative;height:220px"><canvas id="eng-likes-chart"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Match Rate + Velocidade de Resposta por Gênero -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-semibold text-sm mb-4">Taxa de Match por Gênero</h3>
+            <div id="eng-match-gender" class="space-y-3">
+              <div class="text-slate-500 text-xs">Carregando…</div>
+            </div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <h3 class="font-semibold text-sm mb-4">
+              Velocidade de Resposta
+              <span class="text-slate-500 text-xs font-normal ml-1">(média em minutos)</span>
+            </h3>
+            <div id="eng-response-time" class="space-y-3">
+              <div class="text-slate-500 text-xs">Carregando…</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Uso por Turno -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+          <h3 class="font-semibold text-sm mb-4">Uso por Turno do Dia (horário de Brasília)</h3>
+          <div style="position:relative;height:200px"><canvas id="eng-shift-chart"></canvas></div>
+        </div>
+
+        <!-- Rankings -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <!-- Top Engajados -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-slate-800">
+              <h3 class="font-semibold text-sm">Top 10 — Mais Engajados</h3>
+              <p class="text-xs text-slate-500 mt-0.5">mensagens + likes no período</p>
+            </div>
+            <div id="rank-engaged" class="p-4"><div class="text-slate-500 text-xs">Carregando…</div></div>
+          </div>
+
+          <!-- Top Curtidos -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-slate-800">
+              <h3 class="font-semibold text-sm">Top 10 — Mais Curtidos</h3>
+              <p class="text-xs text-slate-500 mt-0.5">likes recebidos</p>
+            </div>
+            <div id="rank-liked" class="p-4"><div class="text-slate-500 text-xs">Carregando…</div></div>
+          </div>
+
+          <!-- Top Curtidores -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-slate-800">
+              <h3 class="font-semibold text-sm">Top 10 — Mais Curtidores</h3>
+              <p class="text-xs text-slate-500 mt-0.5">likes dados</p>
+            </div>
+            <div id="rank-liking" class="p-4"><div class="text-slate-500 text-xs">Carregando…</div></div>
+          </div>
+
+          <!-- Resposta Rápida -->
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+            <div class="px-5 py-3.5 border-b border-slate-800">
+              <h3 class="font-semibold text-sm">Top 10 — Resposta Mais Rápida</h3>
+              <p class="text-xs text-slate-500 mt-0.5">mín. 3 respostas para entrar no ranking</p>
+            </div>
+            <div id="rank-responders" class="p-4"><div class="text-slate-500 text-xs">Carregando…</div></div>
+          </div>
+        </div>
+      </section>
+
       <!-- ══════════════ INSIGHTS BI ══════════════ -->
       <section id="section-insights" class="hidden">
 
@@ -666,7 +798,7 @@ const ADMIN = '/api/v1/admin';
 const TILE  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const TILE_OPTS = { attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19 };
 const REFRESH_SEC = 30;
-const SECTION_TITLES = { overview:'Visão Geral', map:'Mapa ao Vivo', analytics:'Analytics', users:'Usuários', reports:'Denúncias', performance:'Performance', insights:'Insights BI' };
+const SECTION_TITLES = { overview:'Visão Geral', map:'Mapa ao Vivo', analytics:'Analytics', users:'Usuários', reports:'Denúncias', performance:'Performance', insights:'Insights BI', engagement:'Engajamento & Comportamento' };
 
 // State
 let token       = null;
@@ -676,6 +808,8 @@ let heatLayer   = null;
 let heatActive  = false;
 let growthChart = null, planChart = null;
 let educationChart = null, interestsChart = null, ageChart = null;
+let engMsgsChart = null, engLikesChart = null, engShiftChart = null;
+let engPeriodDays = 30, lastEngData = null;
 let refreshTimer = null, tickTimer = null, tick = REFRESH_SEC;
 let searchTimer  = null;
 let lastUsersData = [];
@@ -765,7 +899,7 @@ function logout() {
 // ─────────────────────────────────────────────
 let activeSection = 'overview';
 function gotoSection(name, clickedBtn) {
-  ['overview','map','analytics','users','reports','performance','insights'].forEach(s => {
+  ['overview','map','analytics','users','reports','performance','insights','engagement'].forEach(s => {
     el(`section-${s}`)?.classList.add('hidden');
   });
   el(`section-${name}`)?.classList.remove('hidden');
@@ -783,6 +917,7 @@ function gotoSection(name, clickedBtn) {
   if (name === 'performance') loadPerformance();
   if (name === 'reports')     loadReports();
   if (name === 'insights')    { loadInsights(); loadWordCloud(); }
+  if (name === 'engagement')  loadEngagement();
 }
 
 // ─────────────────────────────────────────────
@@ -1290,6 +1425,206 @@ async function loadPerformance() {
   setText('rev-payments',  fmt(d.revenue?.paid_payments));
   setText('rev-premium',   fmt(d.revenue?.premium_users));
   setText('rev-conversion',d.revenue?.conversion_rate != null ? d.revenue.conversion_rate + '%' : '—');
+}
+
+// ─────────────────────────────────────────────
+//  ENGAJAMENTO & COMPORTAMENTO
+// ─────────────────────────────────────────────
+const GENDER_COLORS = { male:'#3b82f6', female:'#ec4899', 'Não informado':'#64748b', '?':'#64748b' };
+const GENDER_LABELS = { male:'Masculino', female:'Feminino', 'Não informado':'Outros', '?':'Outros', non_binary:'Não-binário' };
+const SHIFT_COLORS  = { 'Manhã':'#f59e0b', 'Tarde':'#3b82f6', 'Noite':'#8b5cf6', 'Madrugada':'#475569' };
+
+function setEngPeriod(days) {
+  engPeriodDays = days;
+  document.querySelectorAll('.eng-period-btn').forEach(b => {
+    const active = b.id === `eng-btn-${days}`;
+    b.style.background = active ? 'rgba(245,158,11,.2)' : '';
+    b.style.color      = active ? '#f59e0b' : '';
+    b.style.fontWeight = active ? 'bold' : '';
+  });
+  loadEngagement();
+}
+
+async function loadEngagement() {
+  el('eng-loading')?.classList.remove('hidden');
+  const city  = el('eng-filter-city')?.value?.trim()  || '';
+  const state = el('eng-filter-state')?.value?.trim() || '';
+  let url = `${ADMIN}/engagement?days=${engPeriodDays}`;
+  if (city)  url += `&city=${encodeURIComponent(city)}`;
+  if (state) url += `&state=${encodeURIComponent(state)}`;
+
+  const res = await api(url);
+  el('eng-loading')?.classList.add('hidden');
+  if (!res?.ok) return;
+  const d = await res.json();
+  lastEngData = d;
+
+  // KPIs
+  setText('eng-active-users', fmt(d.kpis?.active_users));
+  el('eng-match-rate').textContent  = (d.kpis?.match_rate ?? '—') + '%';
+  setText('eng-total-msgs',  fmt(d.kpis?.total_messages));
+  setText('eng-total-likes', fmt(d.kpis?.total_likes));
+
+  // Charts
+  renderEngBarChart('eng-msgs-chart',  'engMsgsChart',  d.by_gender || [], 'messages_sent', 'Mensagens');
+  renderEngBarChart('eng-likes-chart', 'engLikesChart', d.by_gender || [], 'likes_given',   'Likes');
+  renderShiftChart(d.by_shift || []);
+
+  // Match rate por gênero
+  renderEngGenderCards('eng-match-gender', d.swipe_stats || [], s => ({
+    label: (GENDER_LABELS[s.gender] || s.gender),
+    value: s.match_rate + '%',
+    sub:   `${fmt(s.matches)} matches de ${fmt(s.likes_given)} likes`,
+    color: GENDER_COLORS[s.gender] || '#64748b'
+  }));
+
+  // Velocidade de resposta
+  renderEngGenderCards('eng-response-time', d.response_time || [], r => ({
+    label: (GENDER_LABELS[r.gender] || r.gender),
+    value: r.avg_formatted || '—',
+    sub:   `${fmt(r.response_count)} respostas medidas`,
+    color: GENDER_COLORS[r.gender] || '#64748b'
+  }));
+
+  // Rankings
+  renderRanking('rank-engaged',    d.top_rankings?.top_engaged    || [], u => `${fmt(u.score)} pts`);
+  renderRanking('rank-liked',      d.top_rankings?.top_liked      || [], u => `${fmt(u.score)} likes`);
+  renderRanking('rank-liking',     d.top_rankings?.top_liking     || [], u => `${fmt(u.score)} likes`);
+  renderRanking('rank-responders', d.top_rankings?.top_responders || [], u => `${u.avg_minutes ? u.avg_minutes.toFixed(1) : '—'} min`);
+}
+
+function renderEngBarChart(canvasId, storeKey, byGender, field, label) {
+  if (window[storeKey]) { window[storeKey].destroy(); window[storeKey] = null; }
+  const ctx = el(canvasId); if (!ctx) return;
+  const labels = byGender.map(g => GENDER_LABELS[g.gender] || g.gender);
+  const values = byGender.map(g => g[field] || 0);
+  const colors = byGender.map(g => GENDER_COLORS[g.gender] || '#64748b');
+  window[storeKey] = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels,
+      datasets: [{ label, data: values, backgroundColor: colors.map(c => c + 'cc'), borderColor: colors, borderWidth: 2, borderRadius: 6 }]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: { backgroundColor:'#1e293b', borderColor:'#334155', borderWidth:1, titleColor:'#f1f5f9', bodyColor:'#94a3b8' } },
+      scales: {
+        x: { grid: { color:'rgba(30,41,59,.6)' } },
+        y: { grid: { color:'rgba(30,41,59,.6)' }, beginAtZero: true, ticks: { precision:0 } }
+      }
+    }
+  });
+}
+
+function renderShiftChart(byShift) {
+  if (engShiftChart) { engShiftChart.destroy(); engShiftChart = null; }
+  const ctx = el('eng-shift-chart'); if (!ctx) return;
+  const order = ['Manhã','Tarde','Noite','Madrugada'];
+  const sorted = order.map(s => byShift.find(r => r.shift === s) || { shift:s, messages:0, active_users:0 });
+  engShiftChart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: sorted.map(r => r.shift),
+      datasets: [
+        { label: 'Mensagens', data: sorted.map(r => r.messages),     backgroundColor: sorted.map(r => (SHIFT_COLORS[r.shift] || '#475569') + 'cc'), borderColor: sorted.map(r => SHIFT_COLORS[r.shift] || '#475569'), borderWidth:2, borderRadius:6 },
+        { label: 'Usuários',  data: sorted.map(r => r.active_users), backgroundColor: 'rgba(148,163,184,.15)',                                        borderColor: '#475569', borderWidth:1, borderRadius:6, type:'bar' }
+      ]
+    },
+    options: {
+      responsive: true, maintainAspectRatio: false,
+      plugins: { legend: { labels: { color:'#64748b', boxWidth:12 } }, tooltip: { backgroundColor:'#1e293b', borderColor:'#334155', borderWidth:1, titleColor:'#f1f5f9', bodyColor:'#94a3b8' } },
+      scales: {
+        x: { grid: { color:'rgba(30,41,59,.6)' } },
+        y: { grid: { color:'rgba(30,41,59,.6)' }, beginAtZero: true, ticks: { precision:0 } }
+      }
+    }
+  });
+}
+
+function renderEngGenderCards(containerId, data, mapFn) {
+  const div = el(containerId); if (!div) return;
+  if (!data.length) { div.innerHTML = '<p class="text-slate-500 text-xs">Sem dados no período.</p>'; return; }
+  div.innerHTML = data.map(item => {
+    const { label, value, sub, color } = mapFn(item);
+    return `<div class="flex items-center justify-between py-2.5 border-b border-slate-800/60 last:border-0">
+      <div class="flex items-center gap-2">
+        <span class="w-2.5 h-2.5 rounded-full flex-shrink-0" style="background:${color}"></span>
+        <span class="text-sm text-slate-300">${esc(label)}</span>
+      </div>
+      <div class="text-right">
+        <div class="text-sm font-bold text-white">${esc(value)}</div>
+        <div class="text-xs text-slate-500">${esc(sub)}</div>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderRanking(containerId, data, scoreFn) {
+  const div = el(containerId); if (!div) return;
+  if (!data.length) { div.innerHTML = '<p class="text-slate-500 text-xs">Sem dados no período.</p>'; return; }
+  div.innerHTML = data.map((u, i) => {
+    const medal = i === 0 ? '🥇' : i === 1 ? '🥈' : i === 2 ? '🥉' : `${i+1}.`;
+    const gc = GENDER_COLORS[u.gender] || '#64748b';
+    return `<div class="flex items-center gap-3 py-2 border-b border-slate-800/50 last:border-0">
+      <span class="text-sm w-7 text-center flex-shrink-0 font-bold ${i < 3 ? '' : 'text-slate-500'}">${medal}</span>
+      <a href="/users/${u.id}" target="_blank" class="flex-1 min-w-0 hover:opacity-75 transition-opacity">
+        <div class="text-xs font-semibold text-white truncate">${esc(u.username || 'Usuário')}</div>
+        <div class="flex items-center gap-1.5 mt-0.5">
+          <span class="text-xs" style="color:${gc}">${esc(GENDER_LABELS[u.gender] || u.gender || '?')}</span>
+          <span class="text-slate-600 text-xs">·</span>
+          <span class="text-xs text-slate-500">${esc(u.plan || '—')}</span>
+        </div>
+      </a>
+      <span class="text-xs font-bold text-slate-300 flex-shrink-0">${esc(scoreFn(u))}</span>
+    </div>`;
+  }).join('');
+}
+
+function exportEngagementCSV() {
+  if (!lastEngData) { alert('Carregue os dados primeiro.'); return; }
+  const d = lastEngData;
+  const lines = ['\uFEFF'];
+
+  lines.push('## KPIs Globais');
+  lines.push('Métrica,Valor');
+  lines.push(`Usuários Ativos,${d.kpis?.active_users ?? ''}`);
+  lines.push(`Match Rate (%),${d.kpis?.match_rate ?? ''}`);
+  lines.push(`Total Mensagens,${d.kpis?.total_messages ?? ''}`);
+  lines.push(`Total Likes,${d.kpis?.total_likes ?? ''}`);
+  lines.push('');
+
+  lines.push('## Engajamento por Gênero');
+  lines.push('Gênero,Usuários Ativos,% Participação,Mensagens,Likes');
+  (d.by_gender || []).forEach(g => {
+    lines.push(`"${g.gender}",${g.active_users},${g.share_pct},${g.messages_sent},${g.likes_given}`);
+  });
+  lines.push('');
+
+  lines.push('## Match Rate por Gênero');
+  lines.push('Gênero,Likes Dados,Likes Recebidos,Matches,Taxa (%)');
+  (d.swipe_stats || []).forEach(s => {
+    lines.push(`"${s.gender}",${s.likes_given},${s.likes_received},${s.matches},${s.match_rate}`);
+  });
+  lines.push('');
+
+  lines.push('## Velocidade de Resposta por Gênero');
+  lines.push('Gênero,Média (min),Amostras');
+  (d.response_time || []).forEach(r => {
+    lines.push(`"${r.gender}",${r.avg_minutes},${r.response_count}`);
+  });
+  lines.push('');
+
+  lines.push('## Uso por Turno');
+  lines.push('Turno,Mensagens,Usuários Únicos');
+  (d.by_shift || []).forEach(s => {
+    lines.push(`"${s.shift}",${s.messages},${s.active_users}`);
+  });
+
+  const blob = new Blob([lines.join('\n')], { type:'text/csv;charset=utf-8;' });
+  const url  = URL.createObjectURL(blob);
+  const a    = Object.assign(document.createElement('a'), { href:url, download:`geomatch_engagement_${fmtISO(new Date())}.csv` });
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
 }
 
 // ─────────────────────────────────────────────

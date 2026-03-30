@@ -9,7 +9,9 @@
       "Bash(findstr \"api/v1\")",
       "Bash(bin/rails runner:*)",
       "Bash(findstr \"admin\")",
-      "Bash(bin/rails db:migrate:status)"
+      "Bash(bin/rails db:migrate:status)",
+      "Bash(ruby -c app/controllers/api/v1/admin/engagement_controller.rb)",
+      "Bash(ruby -c app/views/api/v1/admin/engagement/show.json.jbuilder)"
     ]
   }
 }
