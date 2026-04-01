@@ -9,23 +9,24 @@ class Plan < ApplicationRecord
   validates :price_cents, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
   validates :price_currency, presence: true
   validates :duration_days, presence: true, numericality: { only_integer: true, greater_than: 0 }
+  validates :duration_months, presence: true, numericality: { only_integer: true, greater_than: 0 }
+  validates :max_likes_per_day, presence: true, numericality: { only_integer: true, greater_than_or_equal_to: 0 }
 
-  validates :features, presence: true
-  validate :features_must_be_a_hash
+  # Scopes para facilitar consultas
+  scope :active, -> { where(active: true) }
+  scope :inactive, -> { where(active: false) }
+  scope :recommended, -> { where(is_recommended: true) }
 
-  def feature_enabled?(key)
-    features[key.to_s] == true
+  # Soft delete - desativa o plano em vez de deletar
+  def soft_delete
+    update(active: false)
   end
 
-  def feature_value(key, default: nil)
-    features.fetch(key.to_s, default)
+  # Reativa um plano desativado
+  def reactivate
+    update(active: true)
   end
 
-  private
-
-  def features_must_be_a_hash
-    errors.add(:features, "must be a JSON object") unless features.is_a?(Hash)
-  end
 end
 
 

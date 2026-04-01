@@ -108,6 +108,16 @@
         Inteligência Política
         <span class="ml-auto text-xs font-bold px-1.5 py-px rounded-full text-slate-900" style="background:#f59e0b;font-size:9px">BI</span>
       </button>
+      <button data-section="plans" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        Planos de Assinatura
+        <span class="ml-auto text-xs font-bold px-1.5 py-px rounded-full text-slate-900" style="background:#22c55e;font-size:9px">SaaS</span>
+      </button>
+      <button data-section="moderation" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+        Moderação de Fotos
+        <span id="badge-moderation" class="ml-auto hidden text-xs font-bold px-1.5 py-px rounded-full text-slate-900" style="background:#f59e0b;font-size:9px">0</span>
+      </button>
     </nav>
 
     <div class="p-3 border-t border-slate-800">
@@ -785,6 +795,155 @@
         </div>
       </section>
 
+      <!-- ══════════════ PLANOS DE ASSINATURA ══════════════ -->
+      <section id="section-plans" class="hidden">
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="font-bold text-base">Gestão de Planos SaaS</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Configure planos, preços e benefícios do sistema</p>
+          </div>
+          <button onclick="openPlanModal()" class="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold text-slate-900 transition-opacity hover:opacity-90" style="background:#22c55e">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+            Novo Plano
+          </button>
+        </div>
+
+        <!-- Stats -->
+        <div class="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6" id="plans-stats">
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Planos Ativos</div>
+            <div class="text-3xl font-bold text-white" id="plans-count-active">—</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Inativos</div>
+            <div class="text-3xl font-bold text-slate-400" id="plans-count-inactive">—</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">Assinaturas</div>
+            <div class="text-3xl font-bold" style="color:#f59e0b" id="plans-total-subs">—</div>
+          </div>
+          <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+            <div class="text-xs text-slate-500 uppercase tracking-widest mb-2">MRR Estimado</div>
+            <div class="text-3xl font-bold" style="color:#22c55e" id="plans-mrr">—</div>
+          </div>
+        </div>
+
+        <!-- Cards de Preço -->
+        <div id="plans-cards-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div class="text-slate-500 text-sm py-8 text-center col-span-full">Carregando planos…</div>
+        </div>
+
+        <!-- Modal de Edição/Criação -->
+        <div id="plan-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center">
+          <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-lg mx-4 p-6">
+            <div class="flex items-center justify-between mb-6">
+              <h3 class="font-bold text-lg" id="plan-modal-title">Novo Plano</h3>
+              <button onclick="closePlanModal()" class="text-slate-400 hover:text-white transition-colors">✕</button>
+            </div>
+            <form id="plan-form" class="space-y-4">
+              <input type="hidden" id="plan-id" />
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Código do Plano</label>
+                <input type="text" id="plan-code" required placeholder="ex: plus, gold, premium"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-green-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Nome do Plano</label>
+                <input type="text" id="plan-name" required placeholder="ex: GeoMatch Plus"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-green-500 transition-colors" />
+              </div>
+              <div>
+                <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Descrição</label>
+                <textarea id="plan-description" rows="2" placeholder="Descreva os benefícios do plano…"
+                  class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-green-500 transition-colors resize-none"
+                ></textarea>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Preço (centavos)</label>
+                  <input type="number" id="plan-price-cents" required min="0" placeholder="990"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-green-500 transition-colors" />
+                  <p class="text-xs text-slate-500 mt-1">Ex: 990 = R$ 9,90</p>
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Moeda</label>
+                  <select id="plan-currency"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-green-500 transition-colors">
+                    <option value="BRL">BRL (R$)</option>
+                    <option value="USD">USD ($)</option>
+                  </select>
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Duração (dias)</label>
+                  <input type="number" id="plan-duration-days" required min="1" value="30"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-green-500 transition-colors" />
+                </div>
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Duração (meses)</label>
+                  <input type="number" id="plan-duration-months" required min="1" value="1"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 outline-none focus:border-green-500 transition-colors" />
+                </div>
+              </div>
+              <div class="grid grid-cols-3 gap-4">
+                <div>
+                  <label class="block text-xs font-semibold text-slate-400 uppercase tracking-wider mb-1.5">Max Likes/Dia</label>
+                  <input type="number" id="plan-max-likes" required min="0" value="50"
+                    class="w-full bg-slate-800 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white outline-none focus:border-green-500 transition-colors" />
+                </div>
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Boost</label>
+                  <input type="checkbox" id="plan-has-boost" class="w-5 h-5 rounded border-slate-700 bg-slate-800 text-green-500 focus:ring-green-500" />
+                </div>
+                <div class="flex flex-col items-center justify-center gap-2">
+                  <label class="text-xs font-semibold text-slate-400 uppercase tracking-wider">Incógnito</label>
+                  <input type="checkbox" id="plan-has-incognito" class="w-5 h-5 rounded border-slate-700 bg-slate-800 text-green-500 focus:ring-green-500" />
+                </div>
+              </div>
+              <div class="flex items-center justify-between pt-4 border-t border-slate-800">
+                <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                  <input type="checkbox" id="plan-active" checked class="w-4 h-4 rounded border-slate-700 bg-slate-800 text-green-500 focus:ring-green-500" />
+                  Plano Ativo
+                </label>
+                <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
+                  <input type="checkbox" id="plan-recommended" class="w-4 h-4 rounded border-slate-700 bg-slate-800 text-yellow-500 focus:ring-yellow-500" />
+                  Recomendado
+                </label>
+              </div>
+              <div class="flex gap-3 pt-2">
+                <button type="button" onclick="closePlanModal()" class="flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                  Cancelar
+                </button>
+                <button type="submit" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-slate-900 transition-opacity hover:opacity-90" style="background:#22c55e">
+                  Salvar Plano
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <!-- Modal de Confirmação de Desativação -->
+        <div id="plan-delete-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 hidden items-center justify-center">
+          <div class="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-sm mx-4 p-6 text-center">
+            <div class="w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-4" style="background:rgba(239,68,68,.1)">
+              <svg class="w-6 h-6" style="color:#ef4444" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            </div>
+            <h3 class="font-bold text-lg mb-2">Desativar Plano?</h3>
+            <p class="text-sm text-slate-400 mb-6">O plano será desativado (soft delete). Assinaturas existentes continuarão válidas.</p>
+            <div class="flex gap-3">
+              <button onclick="closePlanDeleteModal()" class="flex-1 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+                Cancelar
+              </button>
+              <button onclick="confirmPlanDelete()" class="flex-1 py-2.5 rounded-xl text-sm font-bold text-white bg-red-500 hover:bg-red-600 transition-colors">
+                Sim, Desativar
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
+
       <!-- ══════════════ INTELIGÊNCIA POLÍTICA ══════════════ -->
       <section id="section-political" class="hidden">
 
@@ -893,6 +1052,31 @@
 
       </section>
 
+      <!-- ══════════════ MODERAÇÃO DE FOTOS ══════════════ -->
+      <section id="section-moderation" class="hidden">
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="font-bold text-base">Moderação de Fotos</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Verificação de identidade</p>
+          </div>
+          <span id="mod-pending-badge" class="text-xs px-3 py-1 rounded-full font-semibold border" style="color:#f59e0b;background:rgba(245,158,11,.08);border-color:rgba(245,158,11,.25)">0 pendentes</span>
+        </div>
+        <div class="flex gap-2 mb-5">
+          <button id="mod-tab-pending" data-tab="pending" onclick="switchModTab('pending')" class="text-xs font-semibold px-4 py-1.5 rounded-full border transition-colors" style="color:#f59e0b;background:rgba(245,158,11,.12);border-color:rgba(245,158,11,.35)">Pendentes</button>
+          <button id="mod-tab-verified" data-tab="verified" onclick="switchModTab('verified')" class="text-xs font-semibold px-4 py-1.5 rounded-full border transition-colors" style="color:#64748b;background:transparent;border-color:#1e293b">Verificados</button>
+        </div>
+
+        <div id="mod-list" class="space-y-5"></div>
+
+        <div id="mod-empty" class="hidden text-center py-20 text-slate-500">
+          <svg class="w-12 h-12 mx-auto mb-3 opacity-30" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+          <p class="text-sm font-medium">Nenhuma verificação pendente</p>
+          <p class="text-xs mt-1 text-slate-600">Todos os envios foram revisados.</p>
+        </div>
+
+        <div id="mod-loading" class="text-center py-20 text-slate-500 text-sm">Carregando…</div>
+      </section>
+
     </div><!-- /content -->
   </main>
 </div><!-- /dashboard -->
@@ -911,7 +1095,7 @@ const ADMIN = '/api/v1/admin';
 const TILE  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const TILE_OPTS = { attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19 };
 const REFRESH_SEC = 30;
-const SECTION_TITLES = { overview:'Visão Geral', map:'Mapa ao Vivo', analytics:'Analytics', users:'Usuários', reports:'Denúncias', performance:'Performance', insights:'Insights BI', engagement:'Engajamento & Comportamento', political:'Inteligência Política' };
+const SECTION_TITLES = { overview:'Visão Geral', map:'Mapa ao Vivo', analytics:'Analytics', users:'Usuários', reports:'Denúncias', performance:'Performance', insights:'Insights BI', engagement:'Engajamento & Comportamento', political:'Inteligência Política', plans:'Planos de Assinatura', moderation:'Moderação de Fotos' };
 
 // State
 let token       = null;
@@ -1014,7 +1198,7 @@ function logout() {
 // ─────────────────────────────────────────────
 let activeSection = 'overview';
 function gotoSection(name, clickedBtn) {
-  ['overview','map','analytics','users','reports','performance','insights','engagement','political'].forEach(s => {
+  ['overview','map','analytics','users','reports','performance','insights','engagement','political','plans','moderation'].forEach(s => {
     el(`section-${s}`)?.classList.add('hidden');
   });
   el(`section-${name}`)?.classList.remove('hidden');
@@ -1034,6 +1218,8 @@ function gotoSection(name, clickedBtn) {
   if (name === 'insights')    { loadInsights(); loadWordCloud(); }
   if (name === 'engagement')  loadEngagement();
   if (name === 'political')   { loadPolitical(); setTimeout(initPolHeatMap, 120); }
+  if (name === 'plans')        loadPlans();
+  if (name === 'moderation')   loadModeration();
 }
 
 // ─────────────────────────────────────────────
@@ -1068,6 +1254,9 @@ async function loadStats() {
   setText('stat-messages-today',  fmt(d.engagement?.messages_today));
   setText('stat-pending-reports', fmt(d.moderation?.pending_reports));
   setText('stat-banned',          fmt(d.users?.banned));
+  // Assinaturas e MRR reais (apenas planos pagos)
+  if (d.revenue?.subscriptions_count != null) setText('plans-total-subs', fmt(d.revenue.subscriptions_count));
+  if (d.revenue?.mrr_brl            != null) setText('plans-mrr', 'R$ ' + fmt2(d.revenue.mrr_brl));
   const pending = d.moderation?.pending_reports || 0;
   const badge = el('badge-reports');
   badge.textContent = pending > 99 ? '99+' : pending;
@@ -1365,6 +1554,7 @@ async function loadUsers(page = 1) {
       <td class="px-6 py-3.5 text-right">
         <div class="flex items-center justify-end gap-2">
           <a href="/users/${u.id}" target="_blank" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg font-medium transition-colors">Ver Perfil</a>
+          <button onclick="openUserPlanModal(${u.id})" class="px-3 py-1.5 bg-indigo-900/60 hover:bg-indigo-800/60 text-indigo-300 text-xs rounded-lg font-medium transition-colors border border-indigo-700/40">Plano</button>
           ${!u.admin?`<button id="ban-btn-${u.id}" onclick="toggleBan(${u.id},${!!u.banned})" class="px-3 py-1.5 text-xs rounded-lg font-semibold border transition-colors" style="${u.banned?'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);':'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);'}">${u.banned?'Reativar':'Banir'}</button>`:''}
         </div>
       </td>
@@ -1388,6 +1578,202 @@ async function toggleBan(userId, isBanned) {
   const statusEl = el(`status-${userId}`);
   if (statusEl) { statusEl.textContent = now?'Banido':'Ativo'; statusEl.style.cssText = now?'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);':'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);'; }
   if (btn) { btn.disabled=false; btn.textContent=now?'Reativar':'Banir'; btn.style.cssText=now?'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);':'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);'; btn.onclick=()=>toggleBan(userId,now); }
+}
+
+// ─────────────────────────────────────────────
+//  ATRIBUIÇÃO MANUAL DE PLANO
+// ─────────────────────────────────────────────
+let _userPlanTargetId = null;
+
+async function openUserPlanModal(userId) {
+  const user = (lastUsersData || []).find(u => u.id === userId);
+  _userPlanTargetId = userId;
+  el('user-plan-modal-name').textContent = user ? user.name : `Usuário #${userId}`;
+
+  const select = el('user-plan-select');
+  select.innerHTML = '<option value="">Carregando…</option>';
+
+  el('user-plan-modal').style.display = 'flex';
+
+  const res = await api(`${ADMIN}/plans`);
+  if (!res?.ok) { select.innerHTML = '<option value="">Erro ao carregar planos</option>'; return; }
+  const data = await res.json();
+  const plans = (data.plans || data).filter(p => p.active !== false);
+  const currentPlan = user ? user.plan : '';
+  select.innerHTML = plans.map(p =>
+    `<option value="${p.id}" ${p.name === currentPlan ? 'selected' : ''}>${esc(p.name)}</option>`
+  ).join('');
+}
+
+function closeUserPlanModal() {
+  el('user-plan-modal').style.display = 'none';
+  _userPlanTargetId = null;
+}
+
+async function saveUserSubscription() {
+  const planId = el('user-plan-select').value;
+  if (!planId || !_userPlanTargetId) return;
+
+  const btn = el('user-plan-modal').querySelector('button[onclick="saveUserSubscription()"]');
+  if (btn) { btn.disabled = true; btn.textContent = 'Salvando…'; }
+
+  const res = await api(`${ADMIN}/users/${_userPlanTargetId}/update_subscription`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ plan_id: planId })
+  });
+
+  if (btn) { btn.disabled = false; btn.textContent = 'Salvar'; }
+  if (!res?.ok) return;
+  const data = await res.json();
+
+  // Atualiza o badge de plano na linha da tabela sem recarregar
+  const row = el(`row-${_userPlanTargetId}`);
+  if (row) {
+    const badge = row.querySelector('td:nth-child(2) span');
+    if (badge) badge.textContent = data.plan_name;
+  }
+  closeUserPlanModal();
+}
+
+// ─────────────────────────────────────────────
+//  MODERAÇÃO DE FOTOS
+// ─────────────────────────────────────────────
+const ADMIN_MOD = `${ADMIN}/moderation`;
+
+let _modData = { pending: [], verified: [] };
+
+function switchModTab(tab) {
+  ['pending','verified'].forEach(t => {
+    const btn = el(`mod-tab-${t}`);
+    if (t === tab) {
+      btn.style.color = '#f59e0b'; btn.style.background = 'rgba(245,158,11,.12)'; btn.style.borderColor = 'rgba(245,158,11,.35)';
+    } else {
+      btn.style.color = '#64748b'; btn.style.background = 'transparent'; btn.style.borderColor = '#1e293b';
+    }
+  });
+  el('mod-empty').classList.add('hidden');
+  const list = _modData[tab] || [];
+  if (!list.length) { el('mod-empty').classList.remove('hidden'); el('mod-list').innerHTML = ''; return; }
+  el('mod-list').innerHTML = list.map(u => renderModerationCard(u, tab)).join('');
+}
+
+async function loadModeration() {
+  el('mod-loading').classList.remove('hidden');
+  el('mod-list').innerHTML = '';
+  el('mod-empty').classList.add('hidden');
+
+  const res = await api(ADMIN_MOD);
+  el('mod-loading').classList.add('hidden');
+  if (!res?.ok) return;
+
+  const data = await res.json();
+  _modData.pending  = data.pending  || [];
+  _modData.verified = data.verified || [];
+
+  const count = data.pagination?.total_count ?? _modData.pending.length;
+  const badge = el('badge-moderation');
+  if (badge) {
+    badge.textContent = count > 99 ? '99+' : count;
+    count > 0 ? badge.classList.remove('hidden') : badge.classList.add('hidden');
+  }
+  setText('mod-pending-badge', `${fmt(count)} pendente${count !== 1 ? 's' : ''}`);
+
+  switchModTab('pending');
+}
+
+function renderModerationCard(u, tab = 'pending') {
+  const avatarSrc = u.avatar_url             ? esc(u.avatar_url)             : '';
+  const verifSrc  = u.verification_photo_url ? esc(u.verification_photo_url) : '';
+  const avatarImg = avatarSrc
+    ? `<img src="${avatarSrc}" alt="Avatar" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:.75rem;background:#1e293b">`
+    : `<div style="width:100%;aspect-ratio:1;border-radius:.75rem;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#475569;font-size:.75rem">Sem foto</div>`;
+  const verifImg  = verifSrc
+    ? `<img src="${verifSrc}" alt="Verificação" style="width:100%;aspect-ratio:1;object-fit:cover;border-radius:.75rem;background:#1e293b">`
+    : `<div style="width:100%;aspect-ratio:1;border-radius:.75rem;background:#1e293b;display:flex;align-items:center;justify-content:center;color:#475569;font-size:.75rem">Sem envio</div>`;
+
+  const statusBadge = tab === 'verified'
+    ? `<span style="font-size:.6875rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;color:#22c55e;background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.25)">Verificado</span>`
+    : `<span style="font-size:.6875rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;color:#f59e0b;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25)">Pendente</span>`;
+
+  const actions = tab === 'verified'
+    ? `<div style="display:flex;gap:.625rem">
+        <button onclick="banFromModeration(${u.id})" style="flex:1;padding:.5rem;border-radius:.75rem;font-size:.8125rem;font-weight:600;color:#f87171;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);cursor:pointer">Banir</button>
+       </div>`
+    : `<div style="display:flex;gap:.625rem">
+        <button onclick="approveVerification(${u.id})" style="flex:1;padding:.5rem;border-radius:.75rem;font-size:.8125rem;font-weight:700;color:#fff;background:#16a34a;border:none;cursor:pointer">✓ Aprovar</button>
+        <button onclick="rejectVerificationPhoto(${u.id})" style="flex:1;padding:.5rem;border-radius:.75rem;font-size:.8125rem;font-weight:600;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);cursor:pointer">⚠ Recusar Foto</button>
+        <button onclick="banFromModeration(${u.id})" style="flex:1;padding:.5rem;border-radius:.75rem;font-size:.8125rem;font-weight:600;color:#f87171;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);cursor:pointer">🚫 Banir</button>
+       </div>`;
+
+  const photos = tab === 'verified'
+    ? `<div style="display:grid;grid-template-columns:1fr;gap:1rem;margin-bottom:1.25rem;max-width:180px">
+        <div>
+          <div style="font-size:.6875rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Foto de Perfil</div>
+          ${avatarImg}
+        </div>
+       </div>`
+    : `<div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1.25rem">
+        <div>
+          <div style="font-size:.6875rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Foto de Perfil</div>
+          ${avatarImg}
+        </div>
+        <div>
+          <div style="font-size:.6875rem;color:#64748b;text-transform:uppercase;letter-spacing:.05em;margin-bottom:.5rem">Foto Enviada para Verificação</div>
+          ${verifImg}
+        </div>
+       </div>`;
+
+  return `
+<div id="mod-card-${u.id}" style="background:#0f172a;border:1px solid #1e293b;border-radius:1rem;padding:1.25rem">
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
+    <div>
+      <div style="font-weight:600;font-size:.9375rem;color:#f1f5f9">${esc(u.name)}</div>
+      <div style="font-size:.75rem;color:#64748b;margin-top:.125rem">${esc(u.email)} · ${fmtDate(u.created_at)}</div>
+    </div>
+    ${statusBadge}
+  </div>
+  ${photos}
+  ${actions}
+</div>`;
+}
+
+function removeModerationCard(userId) {
+  // Remove da lista visual
+  const card = el(`mod-card-${userId}`);
+  if (card) card.remove();
+  // Remove do cache em memória (ambas as listas por segurança)
+  _modData.pending  = _modData.pending.filter(u => u.id !== userId);
+  _modData.verified = _modData.verified.filter(u => u.id !== userId);
+  if (!el('mod-list').children.length) {
+    el('mod-empty').classList.remove('hidden');
+    setText('mod-pending-badge', '0 pendentes');
+    const badge = el('badge-moderation');
+    if (badge) badge.classList.add('hidden');
+  }
+}
+
+async function approveVerification(userId) {
+  const res = await api(`${ADMIN_MOD}/${userId}/verify_user`, { method: 'PATCH' });
+  if (!res?.ok) return;
+  removeModerationCard(userId);
+}
+
+async function rejectVerificationPhoto(userId) {
+  const reason = prompt('Motivo da recusa (opcional):') ?? '';
+  const res = await api(`${ADMIN_MOD}/${userId}/reject_photo`, {
+    method: 'PATCH',
+    body: JSON.stringify({ reason })
+  });
+  if (!res?.ok) return;
+  removeModerationCard(userId);
+}
+
+async function banFromModeration(userId) {
+  if (!confirm('Banir esta conta? Esta ação suspende o acesso do usuário.')) return;
+  const res = await api(`${ADMIN_MOD}/${userId}/ban_user`, { method: 'PATCH' });
+  if (!res?.ok) return;
+  removeModerationCard(userId);
 }
 
 // ─────────────────────────────────────────────
@@ -2189,6 +2575,295 @@ async function exportPoliticalReport(e) {
 }
 
 // ─────────────────────────────────────────────
+//  PLANOS DE ASSINATURA (SaaS)
+// ─────────────────────────────────────────────
+let lastPlansData = [];
+let currentPlanId = null;
+let planToDelete = null;
+
+async function loadPlans() {
+  const container = el('plans-cards-container');
+  if (container) container.innerHTML = '<div class="text-slate-500 text-sm py-8 text-center col-span-full">Carregando planos…</div>';
+  
+  const res = await api(`${ADMIN}/plans`);
+  if (!res?.ok) {
+    if (container) container.innerHTML = '<div class="text-red-400 text-sm py-8 text-center col-span-full">Erro ao carregar planos.</div>';
+    return;
+  }
+  
+  const data = await res.json();
+  lastPlansData = data.plans || [];
+  const meta = data.meta || {};
+  
+  // Atualizar stats
+  setText('plans-count-active', meta.active || 0);
+  setText('plans-count-inactive', meta.inactive || 0);
+  // Assinaturas: apenas planos pagos (price_cents > 0)
+  const paidSubs = lastPlansData.filter(p => (p.price_cents || 0) > 0)
+    .reduce((acc, p) => acc + (p.active_subscriptions || 0), 0);
+  setText('plans-total-subs', fmt(paidSubs));
+
+  // MRR real: soma (price/100 × assinantes) apenas de planos pagos e ativos
+  const mrr = lastPlansData.reduce((acc, p) => {
+    if (p.active && (p.price_cents || 0) > 0) {
+      return acc + ((p.price_cents || 0) / 100) * (p.active_subscriptions || 0);
+    }
+    return acc;
+  }, 0);
+  setText('plans-mrr', 'R$ ' + fmt2(mrr));
+  
+  // Renderizar cards
+  if (container) {
+    if (!lastPlansData.length) {
+      container.innerHTML = '<div class="text-slate-500 text-sm py-8 text-center col-span-full">Nenhum plano cadastrado.</div>';
+      return;
+    }
+    
+    container.innerHTML = lastPlansData.map(plan => {
+      // Campos diretos da tabela plans — coerção estrita para boolean
+      const maxLikesPerDay = parseInt(plan.max_likes_per_day) || 0;
+      const hasBoost = plan.has_boost === true;
+      const hasIncognito = plan.has_incognito === true;
+      const durationDays = plan.duration_days ?? 30;
+      const durationMonths = Math.round((plan.duration_days ?? 30) / 30) || 1;
+      
+      // Formatar preço corretamente (price_cents / 100)
+      const priceCents = parseInt(plan.price_cents) || 0;
+      let priceFormatted;
+      
+      if (priceCents === 0) {
+        priceFormatted = 'Grátis';
+      } else {
+        const priceInReais = priceCents / 100;
+        try {
+          priceFormatted = new Intl.NumberFormat('pt-BR', { 
+            style: 'currency', 
+            currency: plan.price_currency || 'BRL',
+            minimumFractionDigits: 2
+          }).format(priceInReais);
+        } catch (e) {
+          // Fallback se Intl não estiver disponível
+          priceFormatted = `R$ ${priceInReais.toFixed(2).replace('.', ',')}`;
+        }
+      }
+      
+      const isActive = plan.active;
+      const isRecommended = plan.is_recommended;
+      
+      // Classes CSS baseadas no estado
+      const statusClass = isActive 
+        ? 'text-green-400 bg-green-500/10 border-green-500/25' 
+        : 'text-slate-400 bg-slate-800 border-slate-700';
+      const opacityClass = isActive ? '' : 'opacity-60 grayscale';
+      
+      // Destaque visual para plano recomendado
+      const borderClass = isRecommended 
+        ? 'border-yellow-500/50 shadow-lg shadow-yellow-500/10' 
+        : 'border-slate-800 hover:border-slate-700';
+      
+      return `
+        <div class="bg-slate-900 rounded-2xl p-6 border relative ${opacityClass} transition-all ${borderClass}">
+          ${isRecommended ? `
+            <div class="absolute -top-3 left-1/2 transform -translate-x-1/2 flex items-center gap-1 px-3 py-1 rounded-full bg-gradient-to-r from-yellow-500 to-amber-500 text-slate-900 text-[10px] font-bold uppercase tracking-wider shadow-lg">
+              <svg class="w-3 h-3" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+              Mais Popular
+            </div>
+          ` : ''}
+          <div class="flex items-start justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-lg text-white">${esc(plan.name)}</h3>
+              <p class="text-xs text-slate-500 font-mono mt-0.5">${esc(plan.code)}</p>
+            </div>
+            <span class="text-xs px-2 py-1 rounded-full border font-semibold ${statusClass}">
+              ${isActive ? '● Ativo' : '○ Inativo'}
+            </span>
+          </div>
+          
+          <div class="mb-4">
+            <span class="text-3xl font-bold ${isRecommended ? 'text-yellow-400' : 'text-white'}">${priceFormatted}</span>
+            <span class="text-sm text-slate-500">/${durationMonths} mês${durationMonths > 1 ? 'es' : ''}</span>
+          </div>
+          
+          ${plan.description ? `<p class="text-sm text-slate-400 mb-4 line-clamp-2">${esc(plan.description)}</p>` : '<div class="mb-4"></div>'}
+          
+          <div class="space-y-2 mb-5">
+            <div class="flex items-center justify-between text-sm py-1 border-b border-slate-800/50">
+              <span class="text-slate-400">Likes por dia</span>
+              <span class="font-semibold text-white">${maxLikesPerDay}</span>
+            </div>
+            <div class="flex items-center justify-between text-sm py-1 border-b border-slate-800/50">
+              <span class="text-slate-400">Boost</span>
+              ${hasBoost
+                ? '<span class="text-green-400 font-semibold">✓ Incluído</span>'
+                : '<span class="flex items-center gap-1 text-slate-500"><svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Não incluso</span>'}
+            </div>
+            <div class="flex items-center justify-between text-sm py-1">
+              <span class="text-slate-400">Modo Incógnito</span>
+              ${hasIncognito
+                ? '<span class="text-green-400 font-semibold">✓ Incluído</span>'
+                : '<span class="flex items-center gap-1 text-slate-500"><svg class="w-3.5 h-3.5 text-slate-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>Não incluso</span>'}
+            </div>
+            ${durationDays ? `
+            <div class="flex items-center justify-between text-sm py-1 border-t border-slate-800/50">
+              <span class="text-slate-400">Duração</span>
+              <span class="text-white">${durationDays} dias</span>
+            </div>` : ''}
+          </div>
+          
+          <div class="flex gap-2">
+            <button onclick="editPlan(${plan.id})" class="flex-1 py-2 rounded-xl text-sm font-medium bg-slate-800 hover:bg-slate-700 text-white transition-colors">
+              Editar
+            </button>
+            ${isActive ? `
+            <button onclick="promptDeletePlan(${plan.id})" class="px-3 py-2 rounded-xl text-sm font-medium border border-red-500/30 text-red-400 hover:bg-red-500/10 transition-colors" title="Desativar plano">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+            </button>` : `
+            <button onclick="reactivatePlan(${plan.id})" class="px-3 py-2 rounded-xl text-sm font-medium border border-green-500/30 text-green-400 hover:bg-green-500/10 transition-colors" title="Reativar plano">
+              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            </button>`}
+          </div>
+        </div>
+      `;
+    }).join('');
+  }
+}
+
+function openPlanModal(planId = null) {
+  const modal = el('plan-modal');
+  const title = el('plan-modal-title');
+  const form = el('plan-form');
+  
+  form.reset();
+  el('plan-id').value = '';
+  el('plan-active').checked = true;
+  el('plan-recommended').checked = false;
+  
+  if (planId) {
+    const plan = lastPlansData.find(p => p.id === planId);
+    if (!plan) return;
+    
+    title.textContent = 'Editar Plano';
+    el('plan-id').value = plan.id;
+    el('plan-code').value = plan.code;
+    el('plan-name').value = plan.name;
+    el('plan-description').value = plan.description || '';
+    el('plan-price-cents').value = plan.price_cents;
+    el('plan-currency').value = plan.price_currency || 'BRL';
+    el('plan-duration-days').value = plan.duration_days ?? 30;
+    el('plan-duration-months').value = Math.round((plan.duration_days ?? 30) / 30) || 1;
+    el('plan-max-likes').value = plan.max_likes_per_day ?? 0;
+    el('plan-has-boost').checked = plan.has_boost ?? false;
+    el('plan-has-incognito').checked = plan.has_incognito ?? false;
+    el('plan-active').checked = plan.active;
+    el('plan-recommended').checked = plan.is_recommended ?? false;
+  } else {
+    title.textContent = 'Novo Plano';
+    el('plan-duration-days').value = 30;
+    el('plan-duration-months').value = 1;
+    el('plan-max-likes').value = 50;
+    el('plan-currency').value = 'BRL';
+    el('plan-has-boost').checked = false;
+    el('plan-has-incognito').checked = false;
+  }
+  
+  currentPlanId = planId;
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closePlanModal() {
+  const modal = el('plan-modal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  currentPlanId = null;
+}
+
+function promptDeletePlan(planId) {
+  planToDelete = planId;
+  const modal = el('plan-delete-modal');
+  modal.classList.remove('hidden');
+  modal.classList.add('flex');
+}
+
+function closePlanDeleteModal() {
+  const modal = el('plan-delete-modal');
+  modal.classList.add('hidden');
+  modal.classList.remove('flex');
+  planToDelete = null;
+}
+
+async function confirmPlanDelete() {
+  if (!planToDelete) return;
+  
+  const res = await api(`${ADMIN}/plans/${planToDelete}`, { method: 'DELETE' });
+  if (res?.ok) {
+    closePlanDeleteModal();
+    loadPlans();
+  } else {
+    alert('Erro ao desativar plano.');
+  }
+}
+
+async function reactivatePlan(planId) {
+  const res = await api(`${ADMIN}/plans/${planId}`, {
+    method: 'PATCH',
+    body: JSON.stringify({ plan: { active: true } })
+  });
+  if (res?.ok) {
+    loadPlans();
+  } else {
+    alert('Erro ao reativar plano.');
+  }
+}
+
+function editPlan(planId) {
+  openPlanModal(planId);
+}
+
+// Form submission
+document.addEventListener('DOMContentLoaded', () => {
+  const planForm = el('plan-form');
+  if (planForm) {
+    planForm.addEventListener('submit', async e => {
+      e.preventDefault();
+      
+      const planData = {
+        plan: {
+          code: el('plan-code').value,
+          name: el('plan-name').value,
+          description: el('plan-description').value,
+          price_cents: parseInt(el('plan-price-cents').value),
+          price_currency: el('plan-currency').value,
+          duration_days: parseInt(el('plan-duration-days').value),
+          duration_months: parseInt(el('plan-duration-months').value),
+          max_likes_per_day: parseInt(el('plan-max-likes').value),
+          has_boost: el('plan-has-boost').checked,
+          has_incognito: el('plan-has-incognito').checked,
+          active: el('plan-active').checked,
+          is_recommended: el('plan-recommended').checked
+        }
+      };
+      
+      const url = currentPlanId ? `${ADMIN}/plans/${currentPlanId}` : `${ADMIN}/plans`;
+      const method = currentPlanId ? 'PATCH' : 'POST';
+      
+      const res = await api(url, {
+        method: method,
+        body: JSON.stringify(planData)
+      });
+      
+      if (res?.ok) {
+        closePlanModal();
+        loadPlans();
+      } else {
+        const data = await res.json();
+        alert('Erro: ' + (data.error || 'Não foi possível salvar o plano.'));
+      }
+    });
+  }
+});
+
+// ─────────────────────────────────────────────
 //  SEARCH DEBOUNCE
 // ─────────────────────────────────────────────
 function debounceSearch() {
@@ -2207,5 +2882,21 @@ function fmtDate(iso) { if(!iso) return '—'; return new Date(iso).toLocaleDate
 function fmtISO(d)    { return d.toISOString().split('T')[0]; }
 function esc(s)       { if(!s) return ''; return String(s).replace(/[&<>'"]/g, c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
 </script>
+<!-- ══ Modal de Atribuição de Plano ao Usuário (global — fora de qualquer section) ══ -->
+<div id="user-plan-modal" style="display:none;position:fixed;inset:0;z-index:9999;align-items:center;justify-content:center;background:rgba(0,0,0,.7);backdrop-filter:blur(4px)">
+  <div style="background:#0f172a;border:1px solid #334155;border-radius:1rem;width:100%;max-width:360px;margin:0 1rem;padding:1.5rem">
+    <h3 style="font-weight:700;font-size:1rem;margin-bottom:.25rem;color:#f1f5f9">Alterar Plano</h3>
+    <p id="user-plan-modal-name" style="font-size:.875rem;color:#94a3b8;margin-bottom:1rem"></p>
+    <label style="display:block;font-size:.75rem;color:#94a3b8;margin-bottom:.25rem">Plano</label>
+    <select id="user-plan-select" style="width:100%;background:#1e293b;border:1px solid #334155;border-radius:.75rem;padding:.625rem .75rem;font-size:.875rem;color:#f1f5f9;margin-bottom:1.25rem">
+      <option value="">Carregando…</option>
+    </select>
+    <div style="display:flex;gap:.75rem">
+      <button onclick="closeUserPlanModal()" style="flex:1;padding:.625rem;border-radius:.75rem;font-size:.875rem;color:#94a3b8;background:transparent;border:1px solid #334155;cursor:pointer">Cancelar</button>
+      <button onclick="saveUserSubscription()" style="flex:1;padding:.625rem;border-radius:.75rem;font-size:.875rem;font-weight:700;color:#fff;background:#4f46e5;border:none;cursor:pointer">Salvar</button>
+    </div>
+  </div>
+</div>
+
 </body>
 </html>

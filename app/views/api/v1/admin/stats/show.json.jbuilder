@@ -15,3 +15,9 @@ end
 json.moderation do
   json.pending_reports @stats[:pending_reports]
 end
+
+json.revenue do
+  json.subscriptions_count @stats[:subscriptions_count]
+  json.mrr_cents           @stats[:mrr_cents]
+  json.mrr_brl             (@stats[:mrr_cents] / 100.0).round(2)
+end

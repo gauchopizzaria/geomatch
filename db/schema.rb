@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_30_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_30_124300) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -166,8 +166,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_30_000001) do
     t.datetime "created_at", null: false
     t.text "description"
     t.integer "duration_days", null: false
+    t.integer "duration_months", default: 1, null: false
     t.jsonb "features", default: {}, null: false
+    t.boolean "has_boost", default: false, null: false
+    t.boolean "has_incognito", default: false, null: false
     t.boolean "is_recommended", default: false, null: false
+    t.integer "max_likes_per_day", default: 50, null: false
     t.string "name", null: false
     t.integer "price_cents", default: 0, null: false
     t.string "price_currency", default: "BRL", null: false

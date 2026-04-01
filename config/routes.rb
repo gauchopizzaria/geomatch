@@ -166,12 +166,25 @@ Rails.application.routes.draw do
         resources :users, only: [:index] do
           member do
             patch :ban
+            patch :update_subscription
           end
         end
 
         resources :reports, only: [:index] do
           member do
             patch :resolve
+          end
+        end
+
+        # Gestão de Planos SaaS
+        resources :plans, except: [:new, :edit]
+
+        # Moderação de Fotos e Verificação de Identidade
+        resources :moderation, only: [:index] do
+          member do
+            patch :verify_user
+            patch :reject_photo
+            patch :ban_user
           end
         end
       end

@@ -26,6 +26,19 @@ module Api
           @users = apply_age_range(@users, params[:age_range])                   if params[:age_range].present?
         end
 
+        # PATCH /api/v1/admin/users/:id/update_subscription
+        def update_subscription
+          @user = User.find(params[:id])
+          plan = Plan.find(params[:plan_id])
+
+          @user.update!(plan: plan, premium_until: plan.name == 'Free' ? nil : 100.years.from_now)
+          render json: { id: @user.id, plan_id: plan.id, plan_name: plan.name, message: 'Plano atualizado com sucesso.' }
+        rescue ActiveRecord::RecordNotFound => e
+          api_not_found(e.message)
+        rescue ActiveRecord::RecordInvalid => e
+          render json: { error: e.message }, status: :unprocessable_entity
+        end
+
         # PATCH /api/v1/admin/users/:id/ban
         def ban
           @user = User.find(params[:id])
