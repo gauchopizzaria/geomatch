@@ -412,6 +412,8 @@
                 <tr class="border-b border-slate-800 text-xs text-slate-500 uppercase tracking-wider">
                   <th class="px-6 py-3 text-left font-semibold">Usuário</th>
                   <th class="px-6 py-3 text-left font-semibold">Plano</th>
+                  <th class="px-6 py-3 text-left font-semibold">Cidade</th>
+                  <th class="px-6 py-3 text-left font-semibold">Estado</th>
                   <th class="px-6 py-3 text-left font-semibold">Cadastro</th>
                   <th class="px-6 py-3 text-left font-semibold">Último acesso</th>
                   <th class="px-6 py-3 text-left font-semibold">Status</th>
@@ -1527,14 +1529,14 @@ async function loadUsers(page = 1) {
   if (ageRange) url += `&age_range=${encodeURIComponent(ageRange)}`;
 
   const tbody = el('users-tbody');
-  tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-500">Carregando…</td></tr>`;
+  tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-16 text-center text-slate-500">Carregando…</td></tr>`;
 
   const res = await api(url); if (!res?.ok) return;
   const data = await res.json();
   lastUsersData = data.users || [];
 
   if (!lastUsersData.length) {
-    tbody.innerHTML = `<tr><td colspan="6" class="px-6 py-16 text-center text-slate-500">Nenhum usuário encontrado.</td></tr>`;
+    tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-16 text-center text-slate-500">Nenhum usuário encontrado.</td></tr>`;
     setText('pagination-info','0 usuários'); el('pagination-btns').innerHTML = ''; return;
   }
 
@@ -1546,6 +1548,8 @@ async function loadUsers(page = 1) {
         ${u.admin?'<span style="color:#fbbf24;font-size:10px;font-weight:700;background:rgba(245,158,11,.1);padding:1px 6px;border-radius:4px;display:inline-block;margin-top:2px">ADMIN</span>':''}
       </td>
       <td class="px-6 py-3.5"><span class="text-xs bg-slate-800 px-2 py-1 rounded-lg font-medium">${esc(u.plan||'Gratuito')}</span></td>
+      <td class="px-6 py-3.5 text-slate-400 text-xs">${esc(u.city||'—')}</td>
+      <td class="px-6 py-3.5 text-slate-400 text-xs">${esc(u.state||'—')}</td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${fmtDate(u.created_at)}</td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${u.last_seen_at ? fmtDate(u.last_seen_at) : '—'}</td>
       <td class="px-6 py-3.5">
@@ -1781,10 +1785,10 @@ async function banFromModeration(userId) {
 // ─────────────────────────────────────────────
 function exportCSV() {
   if (!lastUsersData.length) { alert('Carregue a lista de usuários primeiro.'); return; }
-  const headers = ['ID','Nome','Email','Plano','Status','Cadastro','Último Acesso'];
+  const headers = ['ID','Nome','Email','Plano','Cidade','Estado','Status','Cadastro','Último Acesso'];
   const rows = lastUsersData.map(u => [
     u.id, `"${(u.name||'').replace(/"/g,'""')}"`, `"${(u.email||'').replace(/"/g,'""')}"`,
-    u.plan||'', u.banned?'Banido':'Ativo', fmtDate(u.created_at), u.last_seen_at ? fmtDate(u.last_seen_at) : ''
+    u.plan||'', u.city||'', u.state||'', u.banned?'Banido':'Ativo', fmtDate(u.created_at), u.last_seen_at ? fmtDate(u.last_seen_at) : ''
   ]);
   const csv = [headers, ...rows].map(r => r.join(',')).join('\n');
   const blob = new Blob(['\uFEFF' + csv], { type:'text/csv;charset=utf-8;' });

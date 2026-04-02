@@ -220,6 +220,13 @@ class User < ApplicationRecord
     address.split(",").last&.strip
   end
 
+  def state
+    return nil if address.blank?
+    parts = address.split(",")
+    return nil if parts.size < 2
+    parts[-2]&.strip
+  end
+
   def hobbies_list
     (hobbies || "").split(",")
   end

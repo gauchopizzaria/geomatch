@@ -10,6 +10,8 @@ json.users @users do |user|
   json.name         user.display_name
   json.email        user.email
   json.plan         user.plan&.name
+  json.city         user.city
+  json.state        user.state
   json.admin        user.admin?
   json.verified     user.verified?
   json.banned       user.banned?
