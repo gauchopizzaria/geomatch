@@ -51,6 +51,9 @@ module Api
               details: @plan.errors.full_messages
             }, status: :unprocessable_entity
           end
+        rescue StandardError => e
+          Rails.logger.error "[PlansController#create] #{e.message}\n#{e.backtrace.first(3).join("\n")}"
+          render json: { error: e.message }, status: :internal_server_error
         end
 
         # PATCH/PUT /api/v1/admin/plans/:id
@@ -96,7 +99,7 @@ module Api
 
         # Parâmetros permitidos para criação/atualização de planos
         def plan_params
-          params.require(:plan).permit(
+          params.fetch(:plan, params).permit(
             :code,
             :name,
             :description,

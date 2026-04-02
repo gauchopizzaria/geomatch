@@ -2831,14 +2831,14 @@ document.addEventListener('DOMContentLoaded', () => {
       
       const planData = {
         plan: {
-          code: el('plan-code').value,
-          name: el('plan-name').value,
-          description: el('plan-description').value,
-          price_cents: parseInt(el('plan-price-cents').value),
-          price_currency: el('plan-currency').value,
-          duration_days: parseInt(el('plan-duration-days').value),
-          duration_months: parseInt(el('plan-duration-months').value),
-          max_likes_per_day: parseInt(el('plan-max-likes').value),
+          code: el('plan-code').value.trim(),
+          name: el('plan-name').value.trim(),
+          description: el('plan-description').value.trim(),
+          price_cents: parseInt(el('plan-price-cents').value) || 0,
+          price_currency: el('plan-currency').value || 'BRL',
+          duration_days: parseInt(el('plan-duration-days').value) || 30,
+          duration_months: parseInt(el('plan-duration-months').value) || 1,
+          max_likes_per_day: parseInt(el('plan-max-likes').value) || 50,
           has_boost: el('plan-has-boost').checked,
           has_incognito: el('plan-has-incognito').checked,
           active: el('plan-active').checked,
@@ -2859,7 +2859,8 @@ document.addEventListener('DOMContentLoaded', () => {
         loadPlans();
       } else {
         const data = await res.json();
-        alert('Erro: ' + (data.error || 'Não foi possível salvar o plano.'));
+        const details = Array.isArray(data.details) ? '\n• ' + data.details.join('\n• ') : '';
+        alert('Erro: ' + (data.error || 'Não foi possível salvar o plano.') + details);
       }
     });
   }
