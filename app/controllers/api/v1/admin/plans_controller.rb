@@ -11,8 +11,9 @@ module Api
         # GET /api/v1/admin/plans
         # Lista todos os planos (ativos e inativos) para gestão completa
         def index
+          ActiveRecord::Base.connection.schema_cache.clear!
           @plans = Plan.order(:price_cents, :name)
-          
+
           render json: {
             plans: @plans.map { |plan| serialize_plan(plan) },
             meta: {
@@ -21,6 +22,9 @@ module Api
               inactive: @plans.where(active: false).count
             }
           }, status: :ok
+        rescue => e
+          Rails.logger.error "[PlansController#index] #{e.message}\n#{e.backtrace.first(5).join("\n")}"
+          render json: { error: e.message, backtrace: e.backtrace.first(5) }, status: :internal_server_error
         end
 
         # GET /api/v1/admin/plans/:id
@@ -122,9 +126,9 @@ module Api
             price_formatted: format_price(plan.price_cents, plan.price_currency),
             duration_days: plan.duration_days,
             duration_months: plan.duration_months,
-            max_likes_per_day: plan.max_likes_per_day || 50,
-            has_boost: plan.has_boost == true,
-            has_incognito: plan.has_incognito == true,
+            max_likes_per_day: plan['max_likes_per_day'] || 50,
+            has_boost: !!plan['has_boost'],
+            has_incognito: !!plan['has_incognito'],
             active: plan.active == true,
             is_recommended: plan.is_recommended == true,
             features: plan.features,

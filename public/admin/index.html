@@ -2587,7 +2587,9 @@ async function loadPlans() {
   
   const res = await api(`${ADMIN}/plans`);
   if (!res?.ok) {
-    if (container) container.innerHTML = '<div class="text-red-400 text-sm py-8 text-center col-span-full">Erro ao carregar planos.</div>';
+    let errMsg = 'Erro ao carregar planos.';
+    try { const d = await res.json(); errMsg = d.error || errMsg; } catch {}
+    if (container) container.innerHTML = `<div class="text-red-400 text-sm py-8 text-center col-span-full">❌ ${esc(errMsg)}</div>`;
     return;
   }
   
