@@ -1,5 +1,5 @@
-class ExpireSubscriptionsJob
-  include Sidekiq::Job
+class ExpireSubscriptionsJob < ApplicationJob
+  queue_as :default
 
   def perform
     User.expired_premium.find_each do |user|

@@ -69,15 +69,15 @@ module MercadoPago
     end
 
     def success_checkouts_url
-      "#{base_url}/discover"
+      "#{base_url}/meu-perfil?payment=success"
     end
 
     def failure_checkouts_url
-      "#{base_url}/plans"
+      "#{base_url}/meu-perfil?payment=failure"
     end
 
     def pending_checkouts_url
-      "#{base_url}/discover"
+      "#{base_url}/meu-perfil?payment=pending"
     end
   end
 end

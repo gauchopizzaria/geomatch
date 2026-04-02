@@ -51,8 +51,6 @@ module PaymentStateMachine
   private
 
   def sync_user_plan_from_payment!
-    return if user.plan_id == plan_id
-
     user.update!(plan: plan, premium_until: Time.current + plan.duration_days.days)
   end
 
