@@ -122,7 +122,7 @@ module Api
             price_formatted: format_price(plan.price_cents, plan.price_currency),
             duration_days: plan.duration_days,
             duration_months: plan.duration_months,
-            max_likes_per_day: plan.max_likes_per_day.to_i,
+            max_likes_per_day: plan.max_likes_per_day || 50,
             has_boost: plan.has_boost == true,
             has_incognito: plan.has_incognito == true,
             active: plan.active == true,

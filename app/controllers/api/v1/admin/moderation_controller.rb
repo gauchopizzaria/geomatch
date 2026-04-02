@@ -27,6 +27,9 @@ module Api
               total_count:  pending_users.total_count
             }
           }
+        rescue => e
+          Rails.logger.error "[Moderation#index] Erro: #{e.message}"
+          render json: { pending: [], verified: [], pagination: { current_page: 1, total_pages: 0, total_count: 0 } }, status: :ok
         end
 
         # Marca usuário como verificado e remove a foto de verificação

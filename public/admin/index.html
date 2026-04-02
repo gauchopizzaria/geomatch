@@ -1545,7 +1545,7 @@ async function loadUsers(page = 1) {
         <div class="text-slate-400 text-xs mt-0.5">${esc(u.email)}</div>
         ${u.admin?'<span style="color:#fbbf24;font-size:10px;font-weight:700;background:rgba(245,158,11,.1);padding:1px 6px;border-radius:4px;display:inline-block;margin-top:2px">ADMIN</span>':''}
       </td>
-      <td class="px-6 py-3.5"><span class="text-xs bg-slate-800 px-2 py-1 rounded-lg font-medium">${esc(u.plan||'—')}</span></td>
+      <td class="px-6 py-3.5"><span class="text-xs bg-slate-800 px-2 py-1 rounded-lg font-medium">${esc(u.plan||'Gratuito')}</span></td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${fmtDate(u.created_at)}</td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${u.last_seen_at ? fmtDate(u.last_seen_at) : '—'}</td>
       <td class="px-6 py-3.5">
@@ -2074,7 +2074,7 @@ function renderRanking(containerId, data, scoreFn) {
         <div class="flex items-center gap-1.5 mt-0.5">
           <span class="text-xs" style="color:${gc}">${esc(GENDER_LABELS[u.gender] || u.gender || '?')}</span>
           <span class="text-slate-600 text-xs">·</span>
-          <span class="text-xs text-slate-500">${esc(u.plan || '—')}</span>
+          <span class="text-xs text-slate-500">${esc(u.plan || 'Gratuito')}</span>
         </div>
       </a>
       <span class="text-xs font-bold text-slate-300 flex-shrink-0">${esc(scoreFn(u))}</span>
