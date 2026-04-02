@@ -131,9 +131,9 @@ class User < ApplicationRecord
     # --- REGRA 1: Plus e Gold são ILIMITADOS ---
     return true if ['Plus', 'Gold'].include?(plan.name)
 
-    # --- REGRA 2: Free tem limite de 7 ---
+    # --- REGRA 2: Free tem limite de 3 ---
     if plan.name == 'Free'
-      limit = 7
+      limit = 3
       
       # Verifica reset (24h)
       if last_message_reset_at.nil? || Time.current > (last_message_reset_at + 24.hours)
