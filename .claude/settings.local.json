@@ -19,7 +19,8 @@
       "Bash(grep -E \"\\\\.\\(rb|erb\\)$\")",
       "Bash(xargs grep:*)",
       "Bash(grep -E \"\\\\.rb$\")",
-      "Bash(ls -la app/controllers/api/v1/admin/moderation*)"
+      "Bash(ls -la app/controllers/api/v1/admin/moderation*)",
+      "Bash(bundle exec:*)"
     ]
   }
 }

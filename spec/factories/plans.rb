@@ -17,6 +17,7 @@ FactoryBot.define do
     end
 
     duration_days { 30 }
+    duration_months { 1 }
     active { true }
     description { Faker::Lorem.sentence }
 
@@ -29,6 +30,7 @@ FactoryBot.define do
       name { "Free" }
       price_cents { 0 }
       duration_days { 36500 }
+      duration_months { 1200 }
       features do
         {
           "unlimited_likes" => false,

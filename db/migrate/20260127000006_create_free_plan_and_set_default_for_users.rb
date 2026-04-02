@@ -19,7 +19,6 @@ class CreateFreePlanAndSetDefaultForUsers < ActiveRecord::Migration[8.1]
       duration_days: 36500,
       active: true,
       description: "Plano gratuito",
-      is_recommended: false,
       features: {
         "list_liked" => false,
         "invisible_mode" => false,

@@ -12,7 +12,6 @@ class CreatePlusPlan < ActiveRecord::Migration[8.1]
       duration_days: 30,
       active: true,
       description: "Plano Plus",
-      is_recommended: true,
       features: {
         "list_liked" => true,
         "invisible_mode" => true,
