@@ -68,12 +68,9 @@ module Api
         private
 
         def pending_scope
-          User
-            .where(verified: false, banned_at: nil)
-            .with_attached_verification_photo
-            .where.not(active_storage_attachments: { id: nil })
-            .includes(avatar_attachment: :blob)
-            .order(created_at: :desc)
+          User.where(verified: false, banned_at: nil)
+              .joins(:verification_photo_attachment)
+              .order(created_at: :desc)
         end
 
         def verified_scope

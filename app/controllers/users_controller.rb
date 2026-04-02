@@ -273,22 +273,7 @@ end
     end
   end
 
-  # ==========================================
-  #  PRIVATE
-  # ==========================================
-  private
-
-  def user_params
-    params.require(:user).permit(
-      :avatar, :username, :bio, :birthdate, :gender,
-      :share_location, :interested_in, :invisible, # Adicionado invisible aos permitidos
-      { hobbies_list: [] },
-      album_photos: []
-    )
-  end
-
-
- # Exibe a tela de solicitação
+  # Exibe a tela de solicitação
   def verification
     # Se o usuário já enviou uma foto antes, podemos mostrar um aviso ou status
   end
@@ -296,6 +281,7 @@ end
   # Processa o envio da foto
   def send_verification
     if params[:verification_photo].present?
+      Rails.logger.info "[send_verification] Recebendo foto de verificação para o usuário #{current_user.id}"
       begin
         current_user.verification_photo.attach(params[:verification_photo])
         flash[:notice] = "Solicitação enviada com sucesso! Nossa equipe analisará seu perfil."
@@ -307,9 +293,24 @@ end
         render :verification
       end
     else
+      Rails.logger.error "### FOTO NÃO RECEBIDA ### params: #{params.to_unsafe_h.keys}"
       flash[:alert] = "Por favor, selecione uma foto para enviar."
       render :verification
     end
   end
-  
+
+  # ==========================================
+  #  PRIVATE
+  # ==========================================
+  private
+
+  def user_params
+    params.require(:user).permit(
+      :avatar, :username, :bio, :birthdate, :gender,
+      :share_location, :interested_in, :invisible,
+      { hobbies_list: [] },
+      album_photos: []
+    )
+  end
+
 end

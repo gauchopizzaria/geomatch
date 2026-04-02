@@ -10,7 +10,7 @@
       Para garantir a segurança da comunidade, envie uma foto <strong>segurando um papel com seu nome escrito à mão</strong> ou seu documento de identidade.
     </p>
 
-    <%= form_with url: send_verification_path, method: :patch, local: true, multipart: true, class: "verification-form" do |f| %>
+    <%= form_with url: send_verification_path, method: :patch, local: true, multipart: true, data: { turbo: false }, class: "verification-form" do |f| %>
       
       <div class="upload-box">
         <label for="verification_photo" class="upload-label">
