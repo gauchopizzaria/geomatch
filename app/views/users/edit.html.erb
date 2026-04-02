@@ -90,12 +90,12 @@
 
         <div class="field-group">
           <%= f.label :gender, "Gênero", class: "dark-label" %>
-          <%= f.select :gender, [["Homem", "homem"], ["Mulher", "mulher"], ["Não Binário", "nao-binario"]], {}, class: "dark-input" %>
+          <%= f.select :gender, [["Homem", "Homem"], ["Mulher", "Mulher"], ["Não Binário", "Não Binário"]], { include_blank: "Selecione seu gênero" }, class: "dark-input" %>
         </div>
 
         <div class="field-group">
           <%= f.label :interested_in, "Quero conhecer", class: "dark-label" %>
-          <%= f.select :interested_in, [["Homem", "homem"], ["Mulher", "mulher"], ["Não Binário", "nao-binario"]], {}, class: "dark-input" %>
+          <%= f.select :interested_in, [["Homem", "Homem"], ["Mulher", "Mulher"], ["Não Binário", "Não Binário"]], { include_blank: "Selecione" }, class: "dark-input" %>
         </div>
 
         <div class="field-group">
