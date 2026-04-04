@@ -10,7 +10,7 @@ json.matches @matches do |match|
     json.name       other.display_name
     json.avatar_url other.avatar_url
     json.online     other.online?
-    json.verified   other.verified?
+    json.verified   other&.verified?
 
     # Distância em km — só se ambos tiverem coordenadas
     if current_api_user.latitude.present? && other.latitude.present?

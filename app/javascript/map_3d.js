@@ -176,6 +176,10 @@ function openCinematicPopup(user) {
   // Avatar
   document.getElementById('mco-avatar').src = user.avatar_url || '/default-avatar.png';
 
+  // Badge de verificado
+  const verifiedBadge = document.getElementById('mco-verified-badge');
+  if (verifiedBadge) verifiedBadge.style.display = user.verified ? 'block' : 'none';
+
   // Distância
   const distEl = document.getElementById('mco-distance');
   distEl.textContent = distVal ? `a ${distVal} km` : '';
@@ -268,6 +272,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
   const usersCountElement = document.getElementById("nearby-count");
   const assetsData = document.getElementById('assets-data');
   const frameUrl = assetsData ? assetsData.dataset.frameUrl : '';
+  const verifiedUrl = assetsData ? assetsData.dataset.verifiedUrl : '';
 
   try {
     let url = `/users/nearby?latitude=${latitude}&longitude=${longitude}&range=${rangeMeters}`;
@@ -346,6 +351,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
           <div class="user-list-info">
               <div class="user-list-name-row" style="display: flex; align-items: center; gap: 5px;">
                   <span class="user-list-name">${user.username || user.display_name || 'Usuário'}</span>
+                  ${user.verified ? `<img src="${verifiedUrl}" style="width: 14px; height: 14px;" title="Perfil Verificado">` : ''}
                   <span class="header-status" style="font-size: 0.7rem;">
                       <span class="${isOnline ? 'dot-online' : 'dot-offline'}">●</span>
                       ${isOnline ? 'Online' : 'Offline'}
@@ -403,7 +409,12 @@ function showUserPopup(user) {
   
   const name = userPopup.querySelector("#popup-username");
   if(name) name.textContent = user.username || user.display_name || "Usuário";
-  
+
+  const verifiedBadge = userPopup.querySelector("#popup-verified-badge");
+  if (verifiedBadge) {
+    verifiedBadge.style.display = user.verified ? "block" : "none";
+  }
+
   const loc = userPopup.querySelector("#popup-location");
   if(loc) loc.textContent = user.city || "Localização desconhecida";
   

@@ -210,7 +210,7 @@ class UsersController < ApplicationController
       if u.is_a?(Hash)
         u.merge({ online: is_online }) # Adiciona ao Hash existente
       else
-        u.as_json(only: [:id, :username, :latitude, :longitude, :distance_km, :city, :bio, :gender, :interested_in, :hobbies_list]).merge({
+        u.as_json(only: [:id, :username, :latitude, :longitude, :distance_km, :city, :bio, :gender, :interested_in, :hobbies_list, :verified]).merge({
           avatar_url: u.avatar_url,
           online: is_online # Injeta o status no objeto convertido
         })

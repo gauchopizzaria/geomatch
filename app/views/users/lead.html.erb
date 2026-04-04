@@ -84,10 +84,10 @@
                 </div>
             </div>
 
-            <h2 class="user-title">
+            <h2 class="user-title" style="display: flex; align-items: center; gap: 5px;">
               <%= @next_user.display_name %> <span class="age"><%= @next_user.age %></span>
-              <% if @next_user.respond_to?(:verified) && @next_user.verified %>
-                <%= image_tag "verificado.svg", class: "verified-icon" rescue nil %>
+              <% if @next_user&.verified? %>
+                <%= image_tag "icone-verificar.png", style: "width: 20px; height: 20px;", title: "Perfil Verificado" %>
               <% end %>
             </h2>
             

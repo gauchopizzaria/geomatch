@@ -57,7 +57,12 @@
               <% end %>
               <%= image_tag "aurea-dourada-mensagens.svg", class: "gold-ring-overlay" %>
             </div>
-            <span class="match-name"><%= other.display_name.split.first %></span>
+            <span class="match-name" style="display: flex; align-items: center; justify-content: center; gap: 3px;">
+              <%= other.display_name.split.first %>
+              <% if other&.verified? %>
+                <%= image_tag "icone-verificar.png", style: "width: 13px; height: 13px; flex-shrink: 0;", title: "Perfil Verificado" %>
+              <% end %>
+            </span>
           <% end %>
         <% end %>
       <% end %>
@@ -104,10 +109,10 @@
             </div>
 
             <div class="conv-details">
-              <div class="conv-header">
+              <div class="conv-header" style="display: flex; align-items: center; gap: 5px;">
                 <span class="conv-name"><%= other.display_name %></span>
-                <% if match.respond_to?(:verified) && match.verified %>
-                   <%= image_tag "verified.svg", class: "verified-badge" rescue nil %>
+                <% if other&.verified? %>
+                  <%= image_tag "icone-verificar.png", style: "width: 16px; height: 16px; flex-shrink: 0;", title: "Perfil Verificado" %>
                 <% end %>
               </div>
 

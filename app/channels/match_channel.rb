@@ -20,10 +20,11 @@ class MatchChannel < ApplicationCable::Channel
     return unless @match && user && @match.participant?(user)
 
     MatchChannel.broadcast_to(@match, {
-      typing: !!data["typing"],
-      user_id: user.id,
-      user_name: user.display_name || "Usuário",
-      user_avatar: user.avatar_url
+      typing:      !!data["typing"],
+      user_id:     user.id,
+      user_name:   user.display_name || "Usuário",
+      user_avatar: user.avatar_url,
+      verified:    user.verified?
     })
   end
 end

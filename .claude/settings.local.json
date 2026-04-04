@@ -20,7 +20,17 @@
       "Bash(xargs grep:*)",
       "Bash(grep -E \"\\\\.rb$\")",
       "Bash(ls -la app/controllers/api/v1/admin/moderation*)",
-      "Bash(bundle exec:*)"
+      "Bash(bundle exec:*)",
+      "Bash(ruby -c app/controllers/users_controller.rb)",
+      "Bash(node --input-type=module)",
+      "Bash(node:*)",
+      "Bash(tasklist:*)",
+      "Bash(rails s:*)",
+      "Bash(curl:*)",
+      "Bash(rails runner:*)",
+      "Bash(netstat -ano)",
+      "Bash(findstr :3000)",
+      "Bash(taskkill:*)"
     ]
   }
 }

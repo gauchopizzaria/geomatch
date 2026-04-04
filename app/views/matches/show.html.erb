@@ -18,7 +18,12 @@
       <% end %>
 
       <div class="header-text">
-        <h2 class="header-name"><%= @other_user.display_name %></h2>
+        <h2 class="header-name" style="display: flex; align-items: center; gap: 5px;">
+          <%= @other_user.display_name %>
+          <% if @other_user&.verified? %>
+            <%= image_tag "icone-verificar.png", style: "width: 18px; height: 18px; flex-shrink: 0;", title: "Perfil Verificado" %>
+          <% end %>
+        </h2>
         <span class="header-status">
           <% if @other_user.respond_to?(:online?) && @other_user.online? %>
             <span class="dot-online">●</span> Online

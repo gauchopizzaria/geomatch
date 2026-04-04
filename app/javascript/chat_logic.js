@@ -150,9 +150,12 @@ document.addEventListener('turbo:load', () => {
     if (!typing) return;
 
     if (data.typing === true) {
+      const verifiedBadge = data.verified
+        ? `<img src="/assets/icone-verificar.png" style="width: 14px; height: 14px; vertical-align: middle; margin-left: 2px;" title="Perfil Verificado">`
+        : '';
       typing.innerHTML = `
-        <div class="typing-user" style="color: #888; font-size: 0.8rem; margin-left: 20px;">
-           ${data.user_name || "Alguém"} está digitando...
+        <div class="typing-user" style="color: #888; font-size: 0.8rem; margin-left: 20px; display: flex; align-items: center; gap: 3px;">
+           ${data.user_name || "Alguém"}${verifiedBadge} está digitando...
         </div>
       `;
       typing.style.display = "block";

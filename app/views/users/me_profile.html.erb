@@ -27,7 +27,7 @@
         <%= @user.display_name.split.first %>, <%= @user.age %>
         
         <%# --- LÓGICA: Exibe ícone APENAS se verificado --- %>
-        <% if @user.verified? %>
+        <% if @user&.verified? %>
           <%= image_tag "icone-verificar.png", class: "verified-icon-name", title: "Perfil Verificado" %>
         <% end %>
       </h2>
@@ -48,7 +48,7 @@
   </div>
 
   <%# --- 3. BANNER VERIFICAÇÃO (Lógica condicional) --- %>
-  <% unless @user.verified? %>
+  <% unless @user&.verified? %>
     <%= link_to verification_path, class: "verification-banner" do %>
       <div class="icon-box">
         <%= image_tag "icone-verificar.png", class: "verify-icon-lg" %>

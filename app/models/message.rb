@@ -22,7 +22,8 @@ class Message < ApplicationRecord
         sender_id: sender_id,
         created_at: created_at.iso8601,
         user_name: sender.display_name || "Usuário",
-        avatar_url: sender.avatar_url || "/assets/avatarfoto.jpg"
+        avatar_url: sender.avatar_url || "/assets/avatarfoto.jpg",
+        verified:   sender.verified?
       }
     }
 

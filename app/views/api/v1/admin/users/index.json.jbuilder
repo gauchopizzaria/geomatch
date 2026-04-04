@@ -13,7 +13,7 @@ json.users @users do |user|
   json.city         user.city
   json.state        user.state
   json.admin        user.admin?
-  json.verified     user.verified?
+  json.verified     user&.verified?
   json.banned       user.banned?
   json.banned_at    user.banned_at&.iso8601
   json.created_at   user.created_at.iso8601

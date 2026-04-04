@@ -28,10 +28,10 @@
       <%# Overlay de Informações %>
       <div class="v-view-cover-overlay">
         <div class="v-view-cover-info">
-          <h2 class="v-view-cover-name">
+          <h2 class="v-view-cover-name" style="display: flex; align-items: center; justify-content: center; gap: 6px;">
             <%= @user.display_name %>, <span class="v-view-cover-age"><%= @user.age %></span>
-            <% if @user.respond_to?(:verified) && @user.verified %>
-              <i class="fas fa-check-circle v-view-verified-badge"></i>
+            <% if @user&.verified? %>
+              <%= image_tag "icone-verificar.png", style: "width: 20px; height: 20px;", title: "Perfil Verificado" %>
             <% end %>
           </h2>
           <p class="v-view-cover-distance">
