@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_05_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_05_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -382,8 +382,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_000001) do
     t.datetime "banned_at"
     t.text "bio"
     t.date "birthdate"
+    t.string "city"
     t.datetime "created_at", null: false
-    t.string "education_level"
+    t.integer "education_level"
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
     t.string "gender"
@@ -397,6 +398,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_000001) do
     t.integer "likes_count", default: 0
     t.decimal "longitude", precision: 10, scale: 6
     t.integer "messages_count", default: 0
+    t.string "neighborhood"
     t.string "occupation"
     t.integer "one_off_message_credits", default: 0, null: false
     t.string "phone"
@@ -407,9 +409,12 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_000001) do
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.boolean "share_location"
+    t.string "state"
+    t.string "street"
     t.datetime "updated_at", null: false
     t.string "username"
     t.boolean "verified", default: false
+    t.string "zip_code"
     t.index ["admin"], name: "index_users_on_admin"
     t.index ["banned_at"], name: "index_users_on_banned_at"
     t.index ["email"], name: "index_users_on_email", unique: true

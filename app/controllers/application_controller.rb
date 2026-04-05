@@ -6,8 +6,12 @@ class ApplicationController < ActionController::Base
 
   def configure_permitted_parameters
     # Adicionei :terms_of_use e :data_policy na lista de atributos permitidos
-    attributes = [:username, :bio, :birthdate, :avatar, :gender, :phone, :address, :terms_of_use, :data_policy]
-    
+    attributes = [
+      :username, :bio, :birthdate, :avatar, :gender, :phone, :address,
+      :terms_of_use, :data_policy,
+      :education_level, :zip_code, :street, :neighborhood, :city, :state
+    ]
+
     devise_parameter_sanitizer.permit(:sign_up, keys: attributes)
     devise_parameter_sanitizer.permit(:account_update, keys: attributes + [:share_location])
   end

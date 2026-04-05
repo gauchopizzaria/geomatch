@@ -7,7 +7,11 @@ class User < ApplicationRecord
  
   # Garante que os checkboxes foram marcados no cadastro
   validates :terms_of_use, acceptance: { message: 'devem ser aceitos para prosseguir.' }
-  validates :data_policy, acceptance: { message: 'deve ser aceita para prosseguir.' }       
+  validates :data_policy, acceptance: { message: 'deve ser aceita para prosseguir.' }
+
+  # Campos obrigatórios no cadastro
+  validates :education_level, presence: { message: 'deve ser selecionada' }, on: :create
+  validates :zip_code, presence: { message: 'deve ser preenchido' }, on: :create
 
   # --- Associações ---
   belongs_to :plan
@@ -41,8 +45,16 @@ class User < ApplicationRecord
   has_one_attached :verification_photo
   has_many_attached :album_photos 
 
-  # Geocoder
+  # Enum de escolaridade (coluna integer no banco)
+  enum :education_level, {
+    high_school:          0,
+    college_incomplete:   1,
+    college_complete:     2
+  }
+
+  # Geocoder — usa o campo :address, que é sincronizado a partir dos componentes
   geocoded_by :address
+  before_validation :sync_address_from_components
   after_validation :geocode, if: ->(obj) { obj.address.present? && obj.will_save_change_to_address? }
 
   # --- Scopes ---
@@ -231,18 +243,6 @@ class User < ApplicationRecord
     age_calc
   end
 
-  def city
-    return nil if address.blank?
-    address.split(",").last&.strip
-  end
-
-  def state
-    return nil if address.blank?
-    parts = address.split(",")
-    return nil if parts.size < 2
-    parts[-2]&.strip
-  end
-
   def hobbies_list
     (hobbies || "").split(",")
   end
@@ -300,6 +300,12 @@ class User < ApplicationRecord
   end
   
   private
+
+  # Monta o campo :address a partir dos componentes para o geocoder funcionar
+  def sync_address_from_components
+    parts = [street, neighborhood, city, state].compact_blank
+    self.address = parts.join(", ") if parts.any?
+  end
 
   def reset_likes_counter!
     update(likes_count: 0, last_like_reset_at: Time.current)

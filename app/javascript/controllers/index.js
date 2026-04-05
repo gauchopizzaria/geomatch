@@ -18,3 +18,6 @@ application.register("filters", FiltersController)
 
 import ThemeController from "./theme_controller"
 application.register("theme", ThemeController)
+
+import AddressController from "./address_controller"
+application.register("address", AddressController)

@@ -8,28 +8,98 @@
       <%# --- 1. Dados Pessoais --- %>
       <div class="field">
         <%= f.label :username, "Nome Completo" %>
-        <%= f.text_field :username, placeholder: "Seu nome completo" %>
+        <%= f.text_field :username, placeholder: "Seu nome completo", class: "form-input" %>
       </div>
 
       <div class="field">
         <%= f.label :birthdate, "Data de Nascimento" %>
-        <%= f.date_field :birthdate %>
+        <%= f.date_field :birthdate, class: "form-input" %>
       </div>
 
+      <%# --- 2. Escolaridade --- %>
       <div class="field">
-        <%= f.label :address, "Cidade" %>
-        <%= f.text_field :address, placeholder: "Sua cidade" %>
+        <%= f.label :education_level, "Escolaridade" %>
+        <%= f.select :education_level,
+              options_for_select([
+                ['Ensino Médio', 'high_school'],
+                ['Ensino Superior Incompleto', 'college_incomplete'],
+                ['Ensino Superior Completo', 'college_complete']
+              ], resource.education_level),
+              { prompt: "Selecione sua escolaridade" },
+              { class: "form-input" }
+        %>
       </div>
 
+      <%# --- 3. Endereço via CEP (Stimulus: address) --- %>
+      <div data-controller="address">
+        <div class="field">
+          <%= f.label :zip_code, "CEP" %>
+          <%= f.text_field :zip_code,
+                placeholder: "00000-000",
+                class: "form-input",
+                maxlength: 9,
+                data: {
+                  address_target: "zipCode",
+                  action: "blur->address#lookup"
+                }
+          %>
+          <span class="field-hint" data-address-target="feedback" style="color: #e74c3c; font-size: 0.85rem;"></span>
+        </div>
+
+        <div class="field">
+          <%= f.label :street, "Rua / Logradouro" %>
+          <%= f.text_field :street,
+                placeholder: "Preenchido automaticamente",
+                class: "form-input",
+                readonly: true,
+                data: { address_target: "street" }
+          %>
+        </div>
+
+        <div class="field">
+          <%= f.label :neighborhood, "Bairro" %>
+          <%= f.text_field :neighborhood,
+                placeholder: "Preenchido automaticamente",
+                class: "form-input",
+                readonly: true,
+                data: { address_target: "neighborhood" }
+          %>
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <div class="field" style="flex: 1;">
+            <%= f.label :city, "Cidade" %>
+            <%= f.text_field :city,
+                  placeholder: "Preenchido automaticamente",
+                  class: "form-input",
+                  readonly: true,
+                  data: { address_target: "city" }
+            %>
+          </div>
+
+          <div class="field" style="flex: 0 0 80px;">
+            <%= f.label :state, "UF" %>
+            <%= f.text_field :state,
+                  placeholder: "UF",
+                  class: "form-input",
+                  readonly: true,
+                  maxlength: 2,
+                  data: { address_target: "state" }
+            %>
+          </div>
+        </div>
+      </div>
+
+      <%# --- 4. Telefone --- %>
       <div class="field">
         <%= f.label :phone, "Telefone / WhatsApp" %>
-        <%= f.telephone_field :phone, placeholder: "(XX) 99999-9999" %>
+        <%= f.telephone_field :phone, placeholder: "(XX) 99999-9999", class: "form-input" %>
       </div>
 
-      <%# --- 2. Dados de Acesso --- %>
+      <%# --- 5. Dados de Acesso --- %>
       <div class="field">
         <%= f.label :email %>
-        <%= f.email_field :email, autocomplete: "email" %>
+        <%= f.email_field :email, autocomplete: "email", class: "form-input" %>
       </div>
 
       <% if devise_mapping.confirmable? && resource.pending_reconfirmation? %>
@@ -37,9 +107,9 @@
       <% end %>
 
       <div class="field">
-        <%= f.label :password, "Nova Senha" %> 
+        <%= f.label :password, "Nova Senha" %>
         <i style="font-size: 0.8rem; color: #888;">(deixe em branco se não quiser alterar)</i>
-        <%= f.password_field :password, autocomplete: "new-password", placeholder: "••••••••" %>
+        <%= f.password_field :password, autocomplete: "new-password", placeholder: "••••••••", class: "form-input" %>
         <% if @minimum_password_length %>
           <em class="password-hint"><%= @minimum_password_length %> caracteres no mínimo</em>
         <% end %>
@@ -47,13 +117,13 @@
 
       <div class="field">
         <%= f.label :password_confirmation, "Confirmar Nova Senha" %>
-        <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "••••••••" %>
+        <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "••••••••", class: "form-input" %>
       </div>
 
       <div class="field">
-        <%= f.label :current_password, "Senha Atual" %> 
+        <%= f.label :current_password, "Senha Atual" %>
         <i style="font-size: 0.8rem; color: #888;">(necessário para salvar as alterações)</i>
-        <%= f.password_field :current_password, autocomplete: "current-password", placeholder: "••••••••" %>
+        <%= f.password_field :current_password, autocomplete: "current-password", placeholder: "••••••••", class: "form-input" %>
       </div>
 
       <div class="actions">
@@ -61,9 +131,8 @@
       </div>
     <% end %>
 
-    <%# --- Área de Exclusão (Opcional, pois você já tem no perfil) --- %>
     <hr style="margin: 30px 0; border-color: #eee;">
-    
+
     <h3>Cancelar conta</h3>
     <div style="margin-bottom: 20px;">
       <p>Não está satisfeito?</p>

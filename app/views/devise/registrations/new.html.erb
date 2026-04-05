@@ -11,41 +11,110 @@
         <%= f.text_field :username, autofocus: true, placeholder: "Ex: João Silva", required: true, class: "form-input" %>
       </div>
 
-      <%# --- 2. Gênero (NOVO) --- %>
+      <%# --- 2. Gênero --- %>
       <div class="field">
         <%= f.label :gender, "Gênero" %>
-        <%= f.select :gender, 
-              options_for_select([['Homem', 'Homem'], ['Mulher', 'Mulher'], ['Não Binário', 'Não Binário']]), 
-              { prompt: "Selecione seu gênero" }, 
-              { class: "form-input", required: true } 
+        <%= f.select :gender,
+              options_for_select([['Homem', 'Homem'], ['Mulher', 'Mulher'], ['Não Binário', 'Não Binário']]),
+              { prompt: "Selecione seu gênero" },
+              { class: "form-input", required: true }
         %>
       </div>
 
-      <%# --- 3. Data de Nascimento --- %>
+      <%# --- 3. Escolaridade --- %>
+      <div class="field">
+        <%= f.label :education_level, "Escolaridade" %>
+        <%= f.select :education_level,
+              options_for_select([
+                ['Ensino Médio', 'high_school'],
+                ['Ensino Superior Incompleto', 'college_incomplete'],
+                ['Ensino Superior Completo', 'college_complete']
+              ], resource.education_level),
+              { prompt: "Selecione sua escolaridade" },
+              { class: "form-input", required: true }
+        %>
+      </div>
+
+      <%# --- 4. Data de Nascimento --- %>
       <div class="field">
         <%= f.label :birthdate, "Data de Nascimento" %>
         <%= f.date_field :birthdate, required: true, class: "form-input" %>
       </div>
 
-      <%# --- 4. Cidade --- %>
-      <div class="field">
-        <%= f.label :address, "Cidade" %>
-        <%= f.text_field :address, placeholder: "Ex: São Paulo, SP", required: true, class: "form-input" %>
+      <%# --- 5. Endereço via CEP (Stimulus: address) --- %>
+      <div data-controller="address">
+        <div class="field">
+          <%= f.label :zip_code, "CEP" %>
+          <%= f.text_field :zip_code,
+                placeholder: "00000-000",
+                required: true,
+                class: "form-input",
+                maxlength: 9,
+                data: {
+                  address_target: "zipCode",
+                  action: "blur->address#lookup"
+                }
+          %>
+          <span class="field-hint" data-address-target="feedback" style="color: #e74c3c; font-size: 0.85rem;"></span>
+        </div>
+
+        <div class="field">
+          <%= f.label :street, "Rua / Logradouro" %>
+          <%= f.text_field :street,
+                placeholder: "Preenchido automaticamente",
+                class: "form-input",
+                readonly: true,
+                data: { address_target: "street" }
+          %>
+        </div>
+
+        <div class="field">
+          <%= f.label :neighborhood, "Bairro" %>
+          <%= f.text_field :neighborhood,
+                placeholder: "Preenchido automaticamente",
+                class: "form-input",
+                readonly: true,
+                data: { address_target: "neighborhood" }
+          %>
+        </div>
+
+        <div style="display: flex; gap: 12px;">
+          <div class="field" style="flex: 1;">
+            <%= f.label :city, "Cidade" %>
+            <%= f.text_field :city,
+                  placeholder: "Preenchido automaticamente",
+                  class: "form-input",
+                  readonly: true,
+                  data: { address_target: "city" }
+            %>
+          </div>
+
+          <div class="field" style="flex: 0 0 80px;">
+            <%= f.label :state, "UF" %>
+            <%= f.text_field :state,
+                  placeholder: "UF",
+                  class: "form-input",
+                  readonly: true,
+                  maxlength: 2,
+                  data: { address_target: "state" }
+            %>
+          </div>
+        </div>
       </div>
 
-      <%# --- 5. Telefone --- %>
+      <%# --- 6. Telefone --- %>
       <div class="field">
         <%= f.label :phone, "Telefone / WhatsApp" %>
         <%= f.telephone_field :phone, placeholder: "(XX) 99999-9999", required: true, class: "form-input" %>
       </div>
 
-      <%# --- 6. Email --- %>
+      <%# --- 7. Email --- %>
       <div class="field">
         <%= f.label :email %>
         <%= f.email_field :email, autocomplete: "email", placeholder: "seu.email@exemplo.com", required: true, class: "form-input" %>
       </div>
 
-      <%# --- 7. Senha --- %>
+      <%# --- 8. Senha --- %>
       <div class="field">
         <%= f.label :password %>
         <% if @minimum_password_length %>
@@ -54,13 +123,13 @@
         <%= f.password_field :password, autocomplete: "new-password", placeholder: "••••••••", required: true, class: "form-input" %>
       </div>
 
-   <%# --- 8. Confirmação --- %>
+      <%# --- 9. Confirmação --- %>
       <div class="field">
         <%= f.label :password_confirmation, "Confirmação de Senha" %>
         <%= f.password_field :password_confirmation, autocomplete: "new-password", placeholder: "••••••••", required: true, class: "form-input" %>
       </div>
 
-      <%# --- 9. Termos e Políticas (NOVO) --- %>
+      <%# --- 10. Termos e Políticas --- %>
       <div class="terms-container">
         <div class="checkbox-field">
           <%= f.check_box :terms_of_use, id: "terms-check" %>

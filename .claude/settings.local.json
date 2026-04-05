@@ -30,7 +30,8 @@
       "Bash(rails runner:*)",
       "Bash(netstat -ano)",
       "Bash(findstr :3000)",
-      "Bash(taskkill:*)"
+      "Bash(taskkill:*)",
+      "Bash(bin/rails db:migrate STATUS)"
     ]
   }
 }
