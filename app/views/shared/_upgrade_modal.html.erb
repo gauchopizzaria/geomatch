@@ -54,8 +54,8 @@
 
       <%# Botão Secundário: Pagar Avulso (Só para Mensagens) %>
       <% if type == 'messages' && current_user.plan.name == 'Free' %>
-        <%= link_to new_one_off_message_payment_path, class: "btn btn-match btn-secondary", data: { turbo: false },
-            style: "background: transparent; border: 1px solid #28a745; color: #28a745; padding: 12px; border-radius: 50px; width: 100%; cursor: pointer; font-weight: bold; text-decoration: none; display: block;" do %>
+        <%= button_to new_one_off_message_payment_path, method: :post, class: "btn btn-match btn-secondary", data: { turbo: false },
+            style: "background: transparent; border: 1px solid #28a745; color: #28a745; padding: 12px; border-radius: 50px; width: 100%; cursor: pointer; font-weight: bold;" do %>
           💬 Enviar por R$ 1,99
         <% end %>
       <% else %>
