@@ -25,6 +25,22 @@ class CheckoutController < ApplicationController
     end
   end
 
+  def create_one_off_message
+    amount_cents = 199
+
+    payment = MercadoPago::OneOffMessageService.call(
+      user:         current_user,
+      amount_cents: amount_cents
+    )
+
+    redirect_to payment.checkout_url, allow_other_host: true
+
+  rescue MercadoPago::OneOffMessageService::ConfigurationError,
+         MercadoPago::OneOffMessageService::ProviderError => e
+    Rails.logger.error "[OneOffMessage] Erro para User##{current_user.id}: #{e.message}"
+    redirect_to matches_path, alert: "Não foi possível iniciar o pagamento. Tente novamente."
+  end
+
   private
 
   def set_plan

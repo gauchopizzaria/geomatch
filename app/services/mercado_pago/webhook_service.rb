@@ -82,6 +82,25 @@ module MercadoPago
     end
 
     def update_local_payment_from_mp(payment, mp_payment)
+      if payment.one_off_message?
+        handle_one_off_message_payment(payment, mp_payment)
+      else
+        handle_plan_purchase_payment(payment, mp_payment)
+      end
+    end
+
+    # Pagamento avulso: só interessa o approved (crédita 1 mensagem via state machine)
+    def handle_one_off_message_payment(payment, mp_payment)
+      case mp_payment["status"]
+      when "approved"
+        payment.approve!(mp_payment) if payment.may_approve?
+      when "rejected", "cancelled"
+        payment.reject!(mp_payment) if payment.may_reject?
+      end
+    end
+
+    # Compra de plano: fluxo original completo (approved, rejected, pending, refunded)
+    def handle_plan_purchase_payment(payment, mp_payment)
       case mp_payment["status"]
       when "approved"
         payment.approve!(mp_payment) if payment.may_approve?

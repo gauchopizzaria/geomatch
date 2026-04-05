@@ -31,7 +31,12 @@ module PaymentStateMachine
 
   def set_approve(mp_payment)
     update_payment_with_mp_payment(mp_payment)
-    sync_user_plan_from_payment!
+
+    if one_off_message?
+      user.add_message_credit!
+    else
+      sync_user_plan_from_payment!
+    end
   end
 
   def set_refund(mp_payment)

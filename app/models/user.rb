@@ -131,11 +131,13 @@ class User < ApplicationRecord
     # --- REGRA 1: Plus e Gold são ILIMITADOS ---
     return true if ['Plus', 'Gold'].include?(plan.name)
 
-    # --- REGRA 2: Free tem limite de 3 ---
+    # --- REGRA 2: Créditos avulsos desbloqueiam envio para qualquer plano ---
+    return true if one_off_message_credits > 0
+
+    # --- REGRA 3: Free tem limite diário de 3 ---
     if plan.name == 'Free'
       limit = 3
-      
-      # Verifica reset (24h)
+
       if last_message_reset_at.nil? || Time.current > (last_message_reset_at + 24.hours)
         reset_messages_counter!
       end
@@ -143,11 +145,10 @@ class User < ApplicationRecord
       return messages_count < limit
     end
 
-    # Fallback: Se não for nenhum dos nomes acima, usa o JSON do banco
+    # Fallback: usa o JSON do banco
     return false if dm_config[:enabled] == false
     return true if features[:unlimited_messages] == true || dm_config[:daily_limit].nil?
 
-    # Limite genérico do JSON
     limit = dm_config[:daily_limit]
     if limit.present?
       if last_message_reset_at.nil? || Time.current > (last_message_reset_at + 24.hours)
@@ -159,18 +160,33 @@ class User < ApplicationRecord
     true
   end
 
-  # 4. Incrementa o contador de MENSAGEM
+  # 4. Incrementa o contador de MENSAGEM (consome crédito avulso se houver)
   def increment_messages!
     features = (plan.features || {}).with_indifferent_access
-    dm_config = (features[:direct_messages] || {}).with_indifferent_access
-    
-    # Só incrementa se não for ilimitado (Ou seja, se for Free ou tiver limite no JSON)
     is_unlimited = ['Plus', 'Gold'].include?(plan.name) || features[:unlimited_messages] == true
 
-    if !is_unlimited
+    return if is_unlimited
+
+    # Prioridade: consome crédito avulso antes do limite diário do plano
+    if one_off_message_credits > 0
+      use_message_credit!
+    else
       update(last_message_reset_at: Time.current) if messages_count == 0
       increment!(:messages_count)
     end
+  end
+
+  # 5. Adiciona 1 crédito de mensagem avulsa (chamado após pagamento aprovado)
+  def add_message_credit!
+    increment!(:one_off_message_credits)
+  end
+
+  # 6. Consome 1 crédito de mensagem avulsa (só decrementa se houver saldo)
+  def use_message_credit!
+    return false unless one_off_message_credits > 0
+
+    decrement!(:one_off_message_credits)
+    true
   end
 
   # =========================================================

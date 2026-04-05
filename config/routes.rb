@@ -115,7 +115,8 @@ Rails.application.routes.draw do
   end
   # ------------------------------------------------------
 
-  post "/checkout", to: "checkout#create", as: :checkout
+  post "/checkout",                    to: "checkout#create",                  as: :checkout
+  post "/checkout/one_off_message",    to: "checkout#create_one_off_message",  as: :new_one_off_message_payment
   post "/webhooks/mercado_pago", to: "webhooks/mercado_pago#create", as: :mercado_pago_webhook
 
   # =================================================================

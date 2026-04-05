@@ -36,7 +36,7 @@
       
       <% elsif type == 'messages' %>
         <% if current_user.plan.name == 'Free' %>
-          Você atingiu suas <strong>7 conversas diárias</strong>. Faça upgrade para ilimitado ou pague avulso.
+          Você atingiu suas <strong>3 conversas diárias</strong>. Faça upgrade para ilimitado ou pague avulso.
         <% else %>
           Limite de segurança atingido.
         <% end %>
@@ -54,10 +54,10 @@
 
       <%# Botão Secundário: Pagar Avulso (Só para Mensagens) %>
       <% if type == 'messages' && current_user.plan.name == 'Free' %>
-         <button class="btn btn-match btn-secondary" onclick="alert('Integração de pagamento R$ 1,99 aqui!')" 
-                 style="background: transparent; border: 1px solid #28a745; color: #28a745; padding: 12px; border-radius: 50px; width: 100%; cursor: pointer; font-weight: bold;">
-           💬 Enviar por R$ 1,99
-         </button>
+        <%= link_to new_one_off_message_payment_path, class: "btn btn-match btn-secondary", data: { turbo: false },
+            style: "background: transparent; border: 1px solid #28a745; color: #28a745; padding: 12px; border-radius: 50px; width: 100%; cursor: pointer; font-weight: bold; text-decoration: none; display: block;" do %>
+          💬 Enviar por R$ 1,99
+        <% end %>
       <% else %>
          <button type="button" onclick="document.getElementById('upgrade-modal-container').innerHTML = ''" 
                  style="background: transparent; border: 1px solid #555; color: #aaa; padding: 12px; border-radius: 50px; cursor: pointer; width: 100%;">
