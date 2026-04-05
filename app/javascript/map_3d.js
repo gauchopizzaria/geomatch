@@ -281,6 +281,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
     const response = await fetch(url);
     if (!response.ok) throw new Error("Falha na rede");
     const users = await response.json();
+    console.log('[GeoMatch Debug] Usuários:', users);
 
     // Limpa marcadores antigos
     Object.values(mapboxUserMarkers).forEach(m => m.remove());

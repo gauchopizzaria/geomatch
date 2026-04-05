@@ -208,11 +208,12 @@ class UsersController < ApplicationController
       is_online = last_activity.present? && last_activity > 10.minutes.ago
 
       if u.is_a?(Hash)
-        u.merge({ online: is_online }) # Adiciona ao Hash existente
+        u.merge({ online: is_online }) # Preserva verified (já vem do DiscoveryService) + injeta online
       else
-        u.as_json(only: [:id, :username, :latitude, :longitude, :distance_km, :city, :bio, :gender, :interested_in, :hobbies_list, :verified]).merge({
-          avatar_url: u.avatar_url,
-          online: is_online # Injeta o status no objeto convertido
+        u.as_json(only: [:id, :username, :latitude, :longitude, :distance_km, :city, :bio, :gender, :interested_in, :hobbies_list]).merge({
+          verified: u.verified?,
+          avatar_url: u.avatar.attached? ? rails_blob_path(u.avatar, only_path: true) : nil,
+          online: is_online
         })
       end
     end

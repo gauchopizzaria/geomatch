@@ -45,7 +45,8 @@ class DiscoveryService
         hobbies_list: u.hobbies_list,
         avatar_url: (u.avatar.attached? ? Rails.application.routes.url_helpers.rails_blob_path(u.avatar, only_path: true) : nil),
         distance_km: distance,
-        last_seen_at: u.last_seen_at # Adição crucial para o status online
+        last_seen_at: u.last_seen_at, # Adição crucial para o status online
+        verified: u.verified
       }
     end
   end

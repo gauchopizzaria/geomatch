@@ -200,9 +200,7 @@
       <div style="padding:10px 14px 6px; text-align:center;">
         <div style="display:flex; align-items:center; justify-content:center; gap:5px;">
           <p id="mco-name" style="margin:0; font-weight:700; font-size:1rem; color:#1a1a1a; letter-spacing:-0.2px;"></p>
-          <div id="mco-verified-badge" style="display:none;">
-            <%= image_tag "icone-verificar.png", style: "width:16px; height:16px;", alt: "Verificado" %>
-          </div>
+          <img id="mco-verified-badge" src="<%= image_path('icone-verificar.png') %>", style="display:none; width: 16px; height: 16px;" title="Perfil Verificado">
         </div>
         <p id="mco-distance" style="margin:3px 0 0; font-size:0.78rem; color:#555;"></p>
       </div>
