@@ -8,7 +8,7 @@ module Api
 
         def index
           @users = User
-            .includes(:plan)
+            .includes(:plan, :latest_approved_payment)
             .order(created_at: :desc)
             .page(params[:page])
             .per(PAGE_SIZE)
@@ -28,15 +28,44 @@ module Api
 
         # PATCH /api/v1/admin/users/:id/update_subscription
         def update_subscription
-          @user = User.find(params[:id])
-          plan = Plan.find(params[:plan_id])
+          @user         = User.find(params[:id])
+          plan          = Plan.find(params[:plan_id])
+          old_plan_name = @user.plan&.name  # captura ANTES da transação
 
-          @user.update!(plan: plan, premium_until: plan.name == 'Free' ? nil : 100.years.from_now)
-          render json: { id: @user.id, plan_id: plan.id, plan_name: plan.name, message: 'Plano atualizado com sucesso.' }
+          ActiveRecord::Base.transaction do
+            payment = Payment.create!(
+              user:         @user,
+              plan:         plan,
+              payment_type: :admin_grant
+            )
+            payment.approve!
+
+            AdminLog.create!(
+              admin_id:    current_api_user.id,
+              action:      'plan_change',
+              target_id:   @user.id,
+              target_type: 'User',
+              details: {
+                from_plan:  old_plan_name,
+                to_plan:    plan.name,
+                granted_by: current_api_user.email
+              }
+            )
+          end
+
+          render json: {
+            id:                  @user.id,
+            plan_id:             plan.id,
+            plan_name:           plan.name,
+            plan_is_admin_grant: true,
+            message:             'Plano atualizado como cortesia (admin_grant).'
+          }
         rescue ActiveRecord::RecordNotFound => e
           api_not_found(e.message)
         rescue ActiveRecord::RecordInvalid => e
           render json: { error: e.message }, status: :unprocessable_entity
+        rescue AASM::InvalidTransition => e
+          render json: { error: "Transição de estado inválida: #{e.message}" }, status: :unprocessable_entity
         end
 
         # PATCH /api/v1/admin/users/:id/ban

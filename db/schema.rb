@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_05_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_06_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -71,6 +71,20 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_05_000002) do
     t.bigint "blob_id", null: false
     t.string "variation_digest", null: false
     t.index ["blob_id", "variation_digest"], name: "index_active_storage_variant_records_uniqueness", unique: true
+  end
+
+  create_table "admin_logs", force: :cascade do |t|
+    t.string "action", null: false
+    t.bigint "admin_id", null: false
+    t.datetime "created_at", null: false
+    t.jsonb "details", default: {}, null: false
+    t.bigint "target_id", null: false
+    t.string "target_type", default: "User", null: false
+    t.datetime "updated_at", null: false
+    t.index ["action"], name: "index_admin_logs_on_action"
+    t.index ["admin_id"], name: "index_admin_logs_on_admin_id"
+    t.index ["created_at"], name: "index_admin_logs_on_created_at"
+    t.index ["target_type", "target_id"], name: "index_admin_logs_on_target_type_and_target_id"
   end
 
   create_table "blocks", force: :cascade do |t|

@@ -18,6 +18,9 @@ class User < ApplicationRecord
   validates :plan, presence: true
 
   has_many :payments, dependent: :destroy
+  has_one  :latest_approved_payment,
+           -> { where(state: 'approved').order(created_at: :desc) },
+           class_name: 'Payment'
   has_many :likes, foreign_key: :liker_id, dependent: :destroy
   has_many :push_subscriptions, dependent: :destroy
   

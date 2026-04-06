@@ -29,13 +29,19 @@ module PaymentStateMachine
     end
   end
 
-  def set_approve(mp_payment)
-    update_payment_with_mp_payment(mp_payment)
-
-    if one_off_message?
-      user.add_message_credit!
+  # mp_payment é opcional: ausente para admin_grant (sem Mercado Pago envolvido)
+  def set_approve(mp_payment = {})
+    if admin_grant?
+      update!(paid_at: Time.current)
+      sync_user_plan_from_admin_grant!
     else
-      sync_user_plan_from_payment!
+      update_payment_with_mp_payment(mp_payment)
+
+      if one_off_message?
+        user.add_message_credit!
+      else
+        sync_user_plan_from_payment!
+      end
     end
   end
 
@@ -57,6 +63,12 @@ module PaymentStateMachine
 
   def sync_user_plan_from_payment!
     user.update!(plan: plan, premium_until: Time.current + plan.duration_days.days)
+  end
+
+  # Cortesia do admin: plano Free remove premium, outros recebem acesso indefinido (100 anos)
+  def sync_user_plan_from_admin_grant!
+    premium_until = plan.name == 'Free' ? nil : 100.years.from_now
+    user.update!(plan: plan, premium_until: premium_until)
   end
 
   def sync_user_plan_from_refund!

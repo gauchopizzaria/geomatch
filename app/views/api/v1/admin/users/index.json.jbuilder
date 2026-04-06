@@ -10,6 +10,7 @@ json.users @users do |user|
   json.name         user.display_name
   json.email        user.email
   json.plan         user.plan&.name
+  json.plan_is_admin_grant user.latest_approved_payment&.admin_grant? || false
   json.city         user.city
   json.state        user.state
   json.admin        user.admin?

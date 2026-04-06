@@ -171,6 +171,8 @@ Rails.application.routes.draw do
           end
         end
 
+        resources :logs, only: [:index]
+
         resources :reports, only: [:index] do
           member do
             patch :resolve

@@ -4,12 +4,17 @@ class Payment < ApplicationRecord
   belongs_to :plan, optional: true
   belongs_to :user
 
-  enum :payment_type, { plan_purchase: 'plan_purchase', one_off_message: 'one_off_message' }
+  enum :payment_type, {
+    plan_purchase:  'plan_purchase',
+    one_off_message: 'one_off_message',
+    admin_grant:    'admin_grant'        # Cortesia / ajuste manual pelo administrador
+  }
 
   # Alias para que CheckoutController#create_one_off_message possa chamar payment.checkout_url
   alias_attribute :checkout_url, :mercado_pago_checkout_url
 
-  scope :latest_first, -> { order(created_at: :desc) }
+  scope :latest_first,          -> { order(created_at: :desc) }
+  scope :approved,              -> { where(state: 'approved') }
 
   def amount
     plan&.price

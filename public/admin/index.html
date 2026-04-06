@@ -118,6 +118,10 @@
         Moderação de Fotos
         <span id="badge-moderation" class="ml-auto hidden text-xs font-bold px-1.5 py-px rounded-full text-slate-900" style="background:#f59e0b;font-size:9px">0</span>
       </button>
+      <button data-section="logs" class="nav-btn w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        Histórico de Ações
+      </button>
     </nav>
 
     <div class="p-3 border-t border-slate-800">
@@ -1079,6 +1083,62 @@
         <div id="mod-loading" class="text-center py-20 text-slate-500 text-sm">Carregando…</div>
       </section>
 
+      <!-- ══════════════ HISTÓRICO DE AÇÕES ══════════════ -->
+      <section id="section-logs" class="hidden">
+
+        <!-- Header -->
+        <div class="flex items-center justify-between mb-6">
+          <div>
+            <h2 class="font-bold text-base">Histórico de Ações</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Auditoria de alterações realizadas pelos administradores</p>
+          </div>
+          <button onclick="fetchAdminLogs(1)" title="Atualizar" class="flex items-center gap-2 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg font-medium transition-colors">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            Atualizar
+          </button>
+        </div>
+
+        <!-- Filtros -->
+        <div class="flex flex-wrap gap-3 mb-5">
+          <select id="logs-filter-action" onchange="fetchAdminLogs(1)"
+            class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-300 outline-none focus:border-yellow-500 transition-colors">
+            <option value="">Todas as ações</option>
+            <option value="plan_change">Mudança de Plano</option>
+          </select>
+          <input id="logs-filter-user-id" type="number" placeholder="ID do usuário alvo"
+            oninput="debounceLogsSearch()"
+            class="bg-slate-900 border border-slate-700 rounded-xl px-3 py-2 text-xs text-slate-300 placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-44" />
+          <button onclick="clearLogsFilters()" class="px-3 py-2 bg-slate-800 hover:bg-slate-700 text-slate-400 hover:text-white text-xs rounded-xl transition-colors">
+            Limpar filtros
+          </button>
+        </div>
+
+        <!-- Tabela -->
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
+          <table class="w-full text-sm">
+            <thead>
+              <tr class="border-b border-slate-800">
+                <th class="px-6 py-3 text-left font-semibold text-xs text-slate-400 uppercase tracking-wider">Data / Hora</th>
+                <th class="px-6 py-3 text-left font-semibold text-xs text-slate-400 uppercase tracking-wider">Administrador</th>
+                <th class="px-6 py-3 text-left font-semibold text-xs text-slate-400 uppercase tracking-wider">Ação</th>
+                <th class="px-6 py-3 text-left font-semibold text-xs text-slate-400 uppercase tracking-wider">Alvo</th>
+                <th class="px-6 py-3 text-left font-semibold text-xs text-slate-400 uppercase tracking-wider">Detalhes</th>
+              </tr>
+            </thead>
+            <tbody id="logs-tbody">
+              <tr><td colspan="5" class="px-6 py-16 text-center text-slate-500">Selecione a aba para carregar o histórico.</td></tr>
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Paginação -->
+        <div class="flex items-center justify-between mt-4 text-xs text-slate-500">
+          <span id="logs-pagination-info">—</span>
+          <div id="logs-pagination-btns" class="flex gap-2"></div>
+        </div>
+
+      </section>
+
     </div><!-- /content -->
   </main>
 </div><!-- /dashboard -->
@@ -1097,7 +1157,7 @@ const ADMIN = '/api/v1/admin';
 const TILE  = 'https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png';
 const TILE_OPTS = { attribution:'&copy; OSM &copy; CARTO', subdomains:'abcd', maxZoom:19 };
 const REFRESH_SEC = 30;
-const SECTION_TITLES = { overview:'Visão Geral', map:'Mapa ao Vivo', analytics:'Analytics', users:'Usuários', reports:'Denúncias', performance:'Performance', insights:'Insights BI', engagement:'Engajamento & Comportamento', political:'Inteligência Política', plans:'Planos de Assinatura', moderation:'Moderação de Fotos' };
+const SECTION_TITLES = { overview:'Visão Geral', map:'Mapa ao Vivo', analytics:'Analytics', users:'Usuários', reports:'Denúncias', performance:'Performance', insights:'Insights BI', engagement:'Engajamento & Comportamento', political:'Inteligência Política', plans:'Planos de Assinatura', moderation:'Moderação de Fotos', logs:'Histórico de Ações' };
 
 // State
 let token       = null;
@@ -1114,6 +1174,7 @@ let polTerms = [], lastPolData = null;
 let refreshTimer = null, tickTimer = null, tick = REFRESH_SEC;
 let searchTimer  = null;
 let lastUsersData = [];
+let logsSearchTimer = null;
 
 // Chart.js global dark config
 Chart.defaults.color          = '#64748b';
@@ -1200,7 +1261,7 @@ function logout() {
 // ─────────────────────────────────────────────
 let activeSection = 'overview';
 function gotoSection(name, clickedBtn) {
-  ['overview','map','analytics','users','reports','performance','insights','engagement','political','plans','moderation'].forEach(s => {
+  ['overview','map','analytics','users','reports','performance','insights','engagement','political','plans','moderation','logs'].forEach(s => {
     el(`section-${s}`)?.classList.add('hidden');
   });
   el(`section-${name}`)?.classList.remove('hidden');
@@ -1222,6 +1283,7 @@ function gotoSection(name, clickedBtn) {
   if (name === 'political')   { loadPolitical(); setTimeout(initPolHeatMap, 120); }
   if (name === 'plans')        loadPlans();
   if (name === 'moderation')   loadModeration();
+  if (name === 'logs')         fetchAdminLogs(1);
 }
 
 // ─────────────────────────────────────────────
@@ -1547,7 +1609,10 @@ async function loadUsers(page = 1) {
         <div class="text-slate-400 text-xs mt-0.5">${esc(u.email)}</div>
         ${u.admin?'<span style="color:#fbbf24;font-size:10px;font-weight:700;background:rgba(245,158,11,.1);padding:1px 6px;border-radius:4px;display:inline-block;margin-top:2px">ADMIN</span>':''}
       </td>
-      <td class="px-6 py-3.5"><span class="text-xs bg-slate-800 px-2 py-1 rounded-lg font-medium">${esc(u.plan||'Gratuito')}</span></td>
+      <td class="px-6 py-3.5">
+        <span class="text-xs bg-slate-800 px-2 py-1 rounded-lg font-medium">${esc(u.plan||'Gratuito')}</span>
+        ${u.plan_is_admin_grant ? '<span class="admin-grant-badge" style="color:#f59e0b;font-size:10px;font-weight:700;background:rgba(245,158,11,.12);padding:1px 7px;border-radius:4px;display:inline-block;margin-left:5px;border:1px solid rgba(245,158,11,.3);">Cortesia Admin</span>' : ''}
+      </td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${esc(u.city||'—')}</td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${esc(u.state||'—')}</td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${fmtDate(u.created_at)}</td>
@@ -1634,8 +1699,20 @@ async function saveUserSubscription() {
   // Atualiza o badge de plano na linha da tabela sem recarregar
   const row = el(`row-${_userPlanTargetId}`);
   if (row) {
-    const badge = row.querySelector('td:nth-child(2) span');
-    if (badge) badge.textContent = data.plan_name;
+    const planCell = row.querySelector('td:nth-child(2)');
+    if (planCell) {
+      const planSpan = planCell.querySelector('span:first-child');
+      if (planSpan) planSpan.textContent = data.plan_name;
+
+      // Remove badge antigo (se houver) e re-insere conforme a resposta
+      const existingBadge = planCell.querySelector('.admin-grant-badge');
+      if (existingBadge) existingBadge.remove();
+      if (data.plan_is_admin_grant) {
+        planCell.insertAdjacentHTML('beforeend',
+          '<span class="admin-grant-badge" style="color:#f59e0b;font-size:10px;font-weight:700;background:rgba(245,158,11,.12);padding:1px 7px;border-radius:4px;display:inline-block;margin-left:5px;border:1px solid rgba(245,158,11,.3);">Cortesia Admin</span>'
+        );
+      }
+    }
   }
   closeUserPlanModal();
 }
@@ -2869,6 +2946,100 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// ─────────────────────────────────────────────
+//  HISTÓRICO DE AÇÕES (ADMIN LOGS)
+// ─────────────────────────────────────────────
+
+// Traduz action key → label legível
+function logActionLabel(action) {
+  const MAP = { plan_change: 'Mudança de Plano' };
+  return MAP[action] || action;
+}
+
+// Converte o objeto details em frase legível
+function logDetailsText(details) {
+  if (!details || typeof details !== 'object') return '—';
+  if (details.from_plan && details.to_plan) {
+    return `De ${esc(details.from_plan)} → ${esc(details.to_plan)}`;
+  }
+  // fallback genérico
+  return Object.entries(details)
+    .map(([k, v]) => `${k}: ${v}`)
+    .join(' · ') || '—';
+}
+
+// Formata ISO timestamp → "DD/MM/AAAA HH:MM"
+function fmtDateTime(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  const pad = n => String(n).padStart(2, '0');
+  return `${pad(d.getDate())}/${pad(d.getMonth()+1)}/${d.getFullYear()} ${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
+async function fetchAdminLogs(page = 1) {
+  const action = el('logs-filter-action')?.value  || '';
+  const userId = el('logs-filter-user-id')?.value || '';
+
+  let url = `${ADMIN}/logs?page=${page}`;
+  if (action) url += `&log_action=${encodeURIComponent(action)}`;
+  if (userId) url += `&user_id=${encodeURIComponent(userId)}`;
+
+  const tbody = el('logs-tbody');
+  tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-500">Carregando…</td></tr>`;
+
+  const res = await api(url);
+  if (!res?.ok) {
+    tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-500">Erro ao carregar histórico.</td></tr>`;
+    return;
+  }
+
+  const data = await res.json();
+  const logs = data.logs || [];
+
+  if (!logs.length) {
+    tbody.innerHTML = `<tr><td colspan="5" class="px-6 py-16 text-center text-slate-500">Nenhuma ação registrada.</td></tr>`;
+    setText('logs-pagination-info', '0 registros');
+    el('logs-pagination-btns').innerHTML = '';
+    return;
+  }
+
+  tbody.innerHTML = logs.map(log => `
+    <tr class="border-b border-slate-800/50 hover:bg-slate-800/25 transition-colors">
+      <td class="px-6 py-3.5 text-slate-400 text-xs whitespace-nowrap">${fmtDateTime(log.created_at)}</td>
+      <td class="px-6 py-3.5">
+        <div class="text-white text-xs font-medium">${esc(log.admin_name || '—')}</div>
+        <div class="text-slate-500 text-xs mt-0.5">${esc(log.admin_email || '')}</div>
+      </td>
+      <td class="px-6 py-3.5">
+        <span style="color:#f59e0b;font-size:11px;font-weight:700;background:rgba(245,158,11,.10);padding:2px 8px;border-radius:4px;border:1px solid rgba(245,158,11,.25);">${esc(logActionLabel(log.action))}</span>
+      </td>
+      <td class="px-6 py-3.5">
+        <span class="text-xs text-slate-300">${esc(log.target_type)} <span class="text-slate-500">#${log.target_id}</span></span>
+      </td>
+      <td class="px-6 py-3.5 text-slate-300 text-xs">${logDetailsText(log.details)}</td>
+    </tr>`).join('');
+
+  const { current_page: cp, total_pages: tp, total_count: tc } = data.pagination;
+  setText('logs-pagination-info', `${fmt(tc)} registro${tc !== 1 ? 's' : ''} · página ${cp} de ${tp}`);
+
+  const pEl = el('logs-pagination-btns');
+  pEl.innerHTML = '';
+  if (cp > 1)  pEl.innerHTML += `<button onclick="fetchAdminLogs(${cp-1})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs transition-colors">← Anterior</button>`;
+  pEl.innerHTML += `<span class="px-3 py-1.5 bg-slate-700 rounded-lg text-xs font-bold">${cp}</span>`;
+  if (cp < tp) pEl.innerHTML += `<button onclick="fetchAdminLogs(${cp+1})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs transition-colors">Próxima →</button>`;
+}
+
+function clearLogsFilters() {
+  const a = el('logs-filter-action');   if (a) a.value = '';
+  const u = el('logs-filter-user-id'); if (u) u.value = '';
+  fetchAdminLogs(1);
+}
+
+function debounceLogsSearch() {
+  clearTimeout(logsSearchTimer);
+  logsSearchTimer = setTimeout(() => fetchAdminLogs(1), 400);
+}
 
 // ─────────────────────────────────────────────
 //  SEARCH DEBOUNCE
