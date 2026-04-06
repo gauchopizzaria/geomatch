@@ -376,15 +376,73 @@
       <!-- ══════════════ USUÁRIOS ══════════════ -->
       <section id="section-users" class="hidden">
         <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden">
-          <div class="px-6 py-4 border-b border-slate-800 flex items-center gap-3 flex-wrap">
-            <h2 class="font-semibold text-sm flex-shrink-0">Gestão de Usuários</h2>
-            <div class="flex items-center gap-2 ml-auto flex-wrap">
+          <!-- Cabeçalho: título + contador + ações -->
+          <div class="px-6 pt-4 pb-3 border-b border-slate-800">
+            <div class="flex items-center gap-3 mb-3">
+              <h2 class="font-semibold text-sm">Gestão de Usuários</h2>
+              <span id="users-results-count" class="text-xs text-slate-400 bg-slate-800 px-2.5 py-0.5 rounded-full">— encontrados</span>
+              <div class="ml-auto flex items-center gap-2">
+                <button onclick="clearUserFilters()"
+                  class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors text-slate-400">
+                  Limpar filtros
+                </button>
+                <button onclick="exportCSV()"
+                  class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">
+                  <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                  CSV
+                </button>
+              </div>
+            </div>
+            <!-- Barra de filtros avançada -->
+            <div class="flex items-center gap-2 flex-wrap">
               <input id="user-search" type="text" placeholder="Buscar por e-mail…"
                 onkeyup="debounceSearch()"
                 class="bg-slate-800 border border-slate-700 rounded-xl px-4 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-44" />
+              <select id="user-filter-plan" onchange="loadUsers(1)"
+                class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-yellow-500 transition-colors w-36">
+                <option value="">Todos os planos</option>
+              </select>
+              <select id="user-filter-state" onchange="loadUsers(1)"
+                class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-yellow-500 transition-colors w-36">
+                <option value="">Estado (UF)</option>
+                <option value="AC">AC – Acre</option>
+                <option value="AL">AL – Alagoas</option>
+                <option value="AP">AP – Amapá</option>
+                <option value="AM">AM – Amazonas</option>
+                <option value="BA">BA – Bahia</option>
+                <option value="CE">CE – Ceará</option>
+                <option value="DF">DF – Distrito Federal</option>
+                <option value="ES">ES – Espírito Santo</option>
+                <option value="GO">GO – Goiás</option>
+                <option value="MA">MA – Maranhão</option>
+                <option value="MT">MT – Mato Grosso</option>
+                <option value="MS">MS – Mato Grosso do Sul</option>
+                <option value="MG">MG – Minas Gerais</option>
+                <option value="PA">PA – Pará</option>
+                <option value="PB">PB – Paraíba</option>
+                <option value="PR">PR – Paraná</option>
+                <option value="PE">PE – Pernambuco</option>
+                <option value="PI">PI – Piauí</option>
+                <option value="RJ">RJ – Rio de Janeiro</option>
+                <option value="RN">RN – Rio Grande do Norte</option>
+                <option value="RS">RS – Rio Grande do Sul</option>
+                <option value="RO">RO – Rondônia</option>
+                <option value="RR">RR – Roraima</option>
+                <option value="SC">SC – Santa Catarina</option>
+                <option value="SP">SP – São Paulo</option>
+                <option value="SE">SE – Sergipe</option>
+                <option value="TO">TO – Tocantins</option>
+              </select>
               <input id="user-filter-city" type="text" placeholder="Cidade…"
                 onkeyup="debounceSearch()"
                 class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white placeholder-slate-500 outline-none focus:border-yellow-500 transition-colors w-28" />
+              <select id="user-filter-education" onchange="loadUsers(1)"
+                class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-yellow-500 transition-colors w-44">
+                <option value="">Escolaridade</option>
+                <option value="high_school">Ensino Médio</option>
+                <option value="college_incomplete">Superior Incompleto</option>
+                <option value="college_complete">Superior Completo</option>
+              </select>
               <select id="user-filter-gender" onchange="loadUsers(1)"
                 class="bg-slate-800 border border-slate-700 rounded-xl px-3 py-2 text-xs text-white outline-none focus:border-yellow-500 transition-colors">
                 <option value="">Gênero</option>
@@ -403,11 +461,6 @@
               <label class="flex items-center gap-1.5 text-xs text-slate-400 cursor-pointer select-none">
                 <input id="filter-banned" type="checkbox" onchange="loadUsers(1)" class="rounded" />Banidos
               </label>
-              <button onclick="exportCSV()"
-                class="flex items-center gap-1.5 px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs font-medium transition-colors">
-                <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
-                CSV
-              </button>
             </div>
           </div>
           <div class="overflow-x-auto">
@@ -416,8 +469,8 @@
                 <tr class="border-b border-slate-800 text-xs text-slate-500 uppercase tracking-wider">
                   <th class="px-6 py-3 text-left font-semibold">Usuário</th>
                   <th class="px-6 py-3 text-left font-semibold">Plano</th>
-                  <th class="px-6 py-3 text-left font-semibold">Cidade</th>
-                  <th class="px-6 py-3 text-left font-semibold">Estado</th>
+                  <th class="px-6 py-3 text-left font-semibold">Localização</th>
+                  <th class="px-6 py-3 text-left font-semibold">Escolaridade</th>
                   <th class="px-6 py-3 text-left font-semibold">Cadastro</th>
                   <th class="px-6 py-3 text-left font-semibold">Último acesso</th>
                   <th class="px-6 py-3 text-left font-semibold">Status</th>
@@ -425,7 +478,7 @@
                 </tr>
               </thead>
               <tbody id="users-tbody">
-                <tr><td colspan="6" class="px-6 py-16 text-center text-slate-500">Carregando…</td></tr>
+                <tr><td colspan="8" class="px-6 py-16 text-center text-slate-500">Carregando…</td></tr>
               </tbody>
             </table>
           </div>
@@ -1274,7 +1327,7 @@ function gotoSection(name, clickedBtn) {
   setText('section-title', SECTION_TITLES[name] || name);
   activeSection = name;
   if (name === 'map')         setTimeout(() => { mapFull?.invalidateSize(); loadHeatmapData(); }, 80);
-  if (name === 'users')       loadUsers(1);
+  if (name === 'users')       { loadUserFilterPlans(); loadUsers(1); }
   if (name === 'analytics')   loadAnalytics();
   if (name === 'performance') loadPerformance();
   if (name === 'reports')     loadReports();
@@ -1578,15 +1631,22 @@ function renderBotAlerts(alerts) {
 //  USERS TABLE
 // ─────────────────────────────────────────────
 async function loadUsers(page = 1) {
-  const q       = el('user-search')?.value?.trim()    || '';
-  const banned  = el('filter-banned')?.checked        || false;
-  const city    = el('user-filter-city')?.value?.trim()|| '';
-  const gender  = el('user-filter-gender')?.value     || '';
-  const ageRange= el('user-filter-age')?.value        || '';
+  const q        = el('user-search')?.value?.trim()         || '';
+  const banned   = el('filter-banned')?.checked             || false;
+  const planId   = el('user-filter-plan')?.value            || '';
+  const state    = el('user-filter-state')?.value           || '';
+  const city     = el('user-filter-city')?.value?.trim()    || '';
+  const eduLevel = el('user-filter-education')?.value       || '';
+  const gender   = el('user-filter-gender')?.value          || '';
+  const ageRange = el('user-filter-age')?.value             || '';
+
   let url = `${ADMIN}/users?page=${page}`;
   if (q)        url += `&q=${encodeURIComponent(q)}`;
   if (banned)   url += `&banned=true`;
+  if (planId)   url += `&plan_id=${encodeURIComponent(planId)}`;
+  if (state)    url += `&state=${encodeURIComponent(state)}`;
   if (city)     url += `&city=${encodeURIComponent(city)}`;
+  if (eduLevel) url += `&education_level=${encodeURIComponent(eduLevel)}`;
   if (gender)   url += `&gender=${encodeURIComponent(gender)}`;
   if (ageRange) url += `&age_range=${encodeURIComponent(ageRange)}`;
 
@@ -1597,9 +1657,12 @@ async function loadUsers(page = 1) {
   const data = await res.json();
   lastUsersData = data.users || [];
 
+  const tc = data.pagination?.total_count ?? 0;
+  setText('users-results-count', `${fmt(tc)} encontrado${tc !== 1 ? 's' : ''}`);
+
   if (!lastUsersData.length) {
     tbody.innerHTML = `<tr><td colspan="8" class="px-6 py-16 text-center text-slate-500">Nenhum usuário encontrado.</td></tr>`;
-    setText('pagination-info','0 usuários'); el('pagination-btns').innerHTML = ''; return;
+    setText('pagination-info', '0 usuários'); el('pagination-btns').innerHTML = ''; return;
   }
 
   tbody.innerHTML = lastUsersData.map(u => `
@@ -1607,34 +1670,56 @@ async function loadUsers(page = 1) {
       <td class="px-6 py-3.5">
         <div class="font-medium text-white text-sm">${esc(u.name)}</div>
         <div class="text-slate-400 text-xs mt-0.5">${esc(u.email)}</div>
-        ${u.admin?'<span style="color:#fbbf24;font-size:10px;font-weight:700;background:rgba(245,158,11,.1);padding:1px 6px;border-radius:4px;display:inline-block;margin-top:2px">ADMIN</span>':''}
+        ${u.admin ? '<span style="color:#fbbf24;font-size:10px;font-weight:700;background:rgba(245,158,11,.1);padding:1px 6px;border-radius:4px;display:inline-block;margin-top:2px">ADMIN</span>' : ''}
       </td>
       <td class="px-6 py-3.5">
-        <span class="text-xs bg-slate-800 px-2 py-1 rounded-lg font-medium">${esc(u.plan||'Gratuito')}</span>
+        <span class="text-xs bg-slate-800 px-2 py-1 rounded-lg font-medium">${esc(u.plan || 'Gratuito')}</span>
         ${u.plan_is_admin_grant ? '<span class="admin-grant-badge" style="color:#f59e0b;font-size:10px;font-weight:700;background:rgba(245,158,11,.12);padding:1px 7px;border-radius:4px;display:inline-block;margin-left:5px;border:1px solid rgba(245,158,11,.3);">Cortesia Admin</span>' : ''}
       </td>
-      <td class="px-6 py-3.5 text-slate-400 text-xs">${esc(u.city||'—')}</td>
-      <td class="px-6 py-3.5 text-slate-400 text-xs">${esc(u.state||'—')}</td>
+      <td class="px-6 py-3.5 text-slate-400 text-xs">
+        ${u.city ? esc(u.city) : '—'}${u.state ? `<span class="text-slate-600"> · </span>${esc(u.state)}` : ''}
+      </td>
+      <td class="px-6 py-3.5 text-slate-400 text-xs">${esc(u.education_label || '—')}</td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${fmtDate(u.created_at)}</td>
       <td class="px-6 py-3.5 text-slate-400 text-xs">${u.last_seen_at ? fmtDate(u.last_seen_at) : '—'}</td>
       <td class="px-6 py-3.5">
-        <span id="status-${u.id}" class="text-xs px-2 py-1 rounded-full font-semibold border" style="${u.banned?'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);':'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);'}">${u.banned?'Banido':'Ativo'}</span>
+        <span id="status-${u.id}" class="text-xs px-2 py-1 rounded-full font-semibold border" style="${u.banned ? 'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);' : 'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);'}">${u.banned ? 'Banido' : 'Ativo'}</span>
       </td>
       <td class="px-6 py-3.5 text-right">
         <div class="flex items-center justify-end gap-2">
           <a href="/users/${u.id}" target="_blank" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-xs rounded-lg font-medium transition-colors">Ver Perfil</a>
           <button onclick="openUserPlanModal(${u.id})" class="px-3 py-1.5 bg-indigo-900/60 hover:bg-indigo-800/60 text-indigo-300 text-xs rounded-lg font-medium transition-colors border border-indigo-700/40">Plano</button>
-          ${!u.admin?`<button id="ban-btn-${u.id}" onclick="toggleBan(${u.id},${!!u.banned})" class="px-3 py-1.5 text-xs rounded-lg font-semibold border transition-colors" style="${u.banned?'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);':'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);'}">${u.banned?'Reativar':'Banir'}</button>`:''}
+          ${!u.admin ? `<button id="ban-btn-${u.id}" onclick="toggleBan(${u.id},${!!u.banned})" class="px-3 py-1.5 text-xs rounded-lg font-semibold border transition-colors" style="${u.banned ? 'color:#4ade80;background:rgba(74,222,128,.08);border-color:rgba(74,222,128,.25);' : 'color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25);'}">${u.banned ? 'Reativar' : 'Banir'}</button>` : ''}
         </div>
       </td>
     </tr>`).join('');
 
-  const { current_page:cp, total_pages:tp, total_count:tc } = data.pagination;
-  setText('pagination-info', `${fmt(tc)} usuários · página ${cp} de ${tp}`);
+  const { current_page: cp, total_pages: tp, total_count: tc2 } = data.pagination;
+  setText('pagination-info', `${fmt(tc2)} usuários · página ${cp} de ${tp}`);
   const pEl = el('pagination-btns'); pEl.innerHTML = '';
   if (cp > 1)  pEl.innerHTML += `<button onclick="loadUsers(${cp-1})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs transition-colors">← Anterior</button>`;
   pEl.innerHTML += `<span class="px-3 py-1.5 bg-slate-700 rounded-lg text-xs font-bold">${cp}</span>`;
   if (cp < tp) pEl.innerHTML += `<button onclick="loadUsers(${cp+1})" class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 rounded-lg text-xs transition-colors">Próxima →</button>`;
+}
+
+function clearUserFilters() {
+  ['user-search','user-filter-plan','user-filter-state','user-filter-city',
+   'user-filter-education','user-filter-gender','user-filter-age'].forEach(id => {
+    const f = el(id); if (f) f.value = '';
+  });
+  const banned = el('filter-banned'); if (banned) banned.checked = false;
+  loadUsers(1);
+}
+
+async function loadUserFilterPlans() {
+  const sel = el('user-filter-plan');
+  if (!sel) return;
+  const res = await api(`${ADMIN}/plans`);
+  if (!res?.ok) return;
+  const data = await res.json();
+  const plans = (data.plans || []).filter(p => p.active !== false);
+  sel.innerHTML = '<option value="">Todos os planos</option>' +
+    plans.map(p => `<option value="${p.id}">${esc(p.name)}</option>`).join('');
 }
 
 async function toggleBan(userId, isBanned) {

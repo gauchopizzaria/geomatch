@@ -14,16 +14,27 @@ module Api
             .per(PAGE_SIZE)
 
           # Filtros textuais
-          @users = @users.where('email ILIKE ?', "%#{params[:q]}%")              if params[:q].present?
-          @users = @users.where.not(banned_at: nil)                              if params[:banned] == 'true'
-          @users = @users.where(admin: true)                                     if params[:admins] == 'true'
+          @users = @users.where('email ILIKE ?', "%#{params[:q]}%")    if params[:q].present?
+          @users = @users.where.not(banned_at: nil)                    if params[:banned] == 'true'
+          @users = @users.where(admin: true)                           if params[:admins] == 'true'
 
-          # Filtros demográficos
-          @users = @users.where(gender: params[:gender])                         if params[:gender].present?
-          @users = @users.where('address ILIKE ?', "%#{params[:city]}%")         if params[:city].present?
-          @users = @users.where('address ILIKE ?', "%#{params[:state]}%")        if params[:state].present?
-          @users = @users.where('address ILIKE ?', "%#{params[:country]}%")      if params[:country].present?
-          @users = apply_age_range(@users, params[:age_range])                   if params[:age_range].present?
+          # Filtro por plano
+          @users = @users.where(plan_id: params[:plan_id])             if params[:plan_id].present?
+
+          # Filtros de localização (colunas dedicadas, case-insensitive)
+          @users = @users.where('city ILIKE ?',    "%#{params[:city]}%")    if params[:city].present?
+          @users = @users.where('state ILIKE ?',   "%#{params[:state]}%")   if params[:state].present?
+          @users = @users.where('country ILIKE ?', "%#{params[:country]}%") if params[:country].present?
+
+          # Filtro demográfico
+          @users = @users.where(gender: params[:gender])               if params[:gender].present?
+          @users = apply_age_range(@users, params[:age_range])         if params[:age_range].present?
+
+          # Filtro por escolaridade (enum integer → string key)
+          if params[:education_level].present?
+            level = User.education_levels[params[:education_level]]
+            @users = @users.where(education_level: level) if level
+          end
         end
 
         # PATCH /api/v1/admin/users/:id/update_subscription

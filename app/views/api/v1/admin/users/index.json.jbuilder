@@ -9,10 +9,19 @@ json.users @users do |user|
   json.id           user.id
   json.name         user.display_name
   json.email        user.email
+  json.plan_id      user.plan_id
   json.plan         user.plan&.name
   json.plan_is_admin_grant user.latest_approved_payment&.admin_grant? || false
   json.city         user.city
   json.state        user.state
+  json.zip_code     user.zip_code
+  json.education_level  user.education_level
+  json.education_label  case user.education_level
+                        when 'high_school'        then 'Ensino Médio'
+                        when 'college_incomplete' then 'Superior Incompleto'
+                        when 'college_complete'   then 'Superior Completo'
+                        else '—'
+                        end
   json.admin        user.admin?
   json.verified     user&.verified?
   json.banned       user.banned?
