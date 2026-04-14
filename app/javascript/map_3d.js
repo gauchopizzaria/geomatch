@@ -2,15 +2,17 @@ import { toggleLiveTracking, isCurrentlyTracking } from "./live_location";
 // Turf.js é esperado estar disponível globalmente (ex: via CDN)
 // import * as turf from '@turf/turf'; // Removido para evitar erro de build se não instalado
 
-// ===== KILL-SWITCH GLOBAL: remove o loader após 4s não importa o que aconteça =====
+// ===== KILL-SWITCH GLOBAL: remove o loader após 10s não importa o que aconteça =====
+// GPS tem timeout de 8s; o kill-switch precisa ser posterior para não revelar o mapa
+// na posição errada enquanto o GPS ainda está resolvendo.
 setTimeout(() => {
   const l = document.getElementById('map-loader');
   if (l) {
-    console.log('[GeoMatch] Kill-switch global: removendo loader após 4s');
+    console.log('[GeoMatch] Kill-switch global: removendo loader após 10s');
     l.remove();
   }
-}, 4000);
-// ==================================================================================
+}, 10000);
+// ===================================================================================
 
 
 // --- Configurações e Estado Global ---
@@ -498,11 +500,19 @@ function initializeMapAndLocation() {
 
   mapElement.innerHTML = '';
 
+  // --- Prioridade 2 (Banco de Dados): lê coords do data-attribute injetado pela view ---
+  // Se o GPS for negado ou demorar, o mapa ao menos inicia na região correta do usuário,
+  // pré-carregando tiles úteis mesmo que o loader ainda cubra tudo.
+  const dbLat = parseFloat(mapElement.dataset.userLat) || null;
+  const dbLng = parseFloat(mapElement.dataset.userLng) || null;
+  const hasDbCoords = dbLat && dbLng && dbLat !== 0 && dbLng !== 0;
+  const initialCenter = hasDbCoords ? [dbLng, dbLat] : [-39.2781, -14.7876];
+
   // Inicia em 2D (pitch 0, bearing 0)
   map = new mapboxgl.Map({
     container: 'map-3d',
     style: 'mapbox://styles/mapbox/standard',
-    center: [-39.2781, -14.7876],
+    center: initialCenter, // DB coords ou fallback — o loader cobre qualquer salto residual
     zoom: 14,
     pitch: 0,
     bearing: 0,
@@ -546,7 +556,10 @@ function initializeMapAndLocation() {
   mapResizeInterval = setInterval(() => { if (map) map.resize(); }, 500);
   setTimeout(() => { clearInterval(mapResizeInterval); mapResizeInterval = null; }, 3000);
 
-  map.on('style.load', () => {
+  // O style.load é async para poder aguardar a promise de localização.
+  // window._locationPromise foi criada no turbo:load — o GPS já está rodando em paralelo
+  // com o carregamento do estilo do Mapbox. Nenhuma chamada GPS duplicada aqui.
+  map.on('style.load', async () => {
     map.setConfigProperty('basemap', 'lightPreset', 'day');
     // Prédios/árvores 3D apenas em zoom > 16 — poupa GPU no zoom padrão (14)
     const update3D = () => {
@@ -558,35 +571,27 @@ function initializeMapAndLocation() {
     map.on('zoomend', update3D); // Só roda ao soltar o dedo — não bloqueia a GPU frame a frame
     map.setConfigProperty('basemap', 'showPointOfInterestLabels', false);
 
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          fixedUserLat = position.coords.latitude;
-          fixedUserLng = position.coords.longitude;
-          // Ao obter localização, voamos para o local mas mantemos 2D inicialmente se o zoom for baixo
-          map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 14, essential: true });
-          updateRadarVisuals();
-          loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
-        },
-        (error) => {
-          console.warn("⚠️ Erro ao obter localização:", error.message);
-          fixedUserLat = -14.2350;
-          fixedUserLng = -51.9253;
-          map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 14, essential: true });
-          updateRadarVisuals();
-          loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
-          if (error.code === 1) {
-            alert("O GeoMatch precisa da sua localização para funcionar. Por favor, verifique as permissões do seu navegador/celular.");
-          }
-        },
-        { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-      );
-    } else {
-      fixedUserLat = -14.2350;
-      fixedUserLng = -51.9253;
-      map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 14, essential: true });
+    // --- Aguarda resolução de localização (GPS ou banco de dados) ---
+    // Se o GPS já tiver resolvido antes do style.load, o await retorna imediatamente.
+    // Se o GPS ainda estiver em andamento, aguarda aqui enquanto o loader cobre o mapa.
+    const coords = await window._locationPromise;
+
+    if (coords && coords.lat && coords.lng) {
+      fixedUserLat = coords.lat;
+      fixedUserLng = coords.lng;
+
+      // jumpTo (sem animação): o loader ainda está visível, então não há "pulo" para o usuário.
+      // flyTo causaria o salto visível porque anima desde a posição errada até a correta.
+      map.jumpTo({ center: [coords.lng, coords.lat], zoom: 14 });
+
+      console.log(`[GeoMatch] Posição definida via ${coords.source}: ${coords.lat}, ${coords.lng}`);
       updateRadarVisuals();
       loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
+    } else {
+      // Sem coordenadas válidas — informa o usuário e mantém o loader com aviso
+      console.error('[GeoMatch] Sem coordenadas disponíveis.');
+      const loaderText = document.querySelector('.map-loader-text');
+      if (loaderText) loaderText.textContent = 'Ative o GPS para usar o GeoMatch.';
     }
   });
 
@@ -660,28 +665,74 @@ document.addEventListener("turbo:load", () => {
 
   console.log('[GeoMatch] Loader iniciado');
 
-  // GPS imediato — força popup de permissão no iPhone antes do Mapbox iniciar
-  if ('geolocation' in navigator) {
-    navigator.geolocation.getCurrentPosition(
-      () => {}, () => {}, { maximumAge: 60000, timeout: 5000, enableHighAccuracy: false }
-    );
+  // --- Prioridade 1 (GPS) + Prioridade 2 (Banco) — iniciado AGORA, antes do Mapbox ---
+  //
+  // Dois objetivos com uma única chamada:
+  //   1. Força o popup de permissão no iOS ANTES do Mapbox instanciar (UX correto)
+  //   2. Começa a resolução real de coordenadas sem duplicar requisições
+  //
+  // O resultado fica em window._locationPromise para ser awaited dentro de style.load.
+  // A promise SEMPRE resolve (nunca rejeita) — o fallback para DB coords está no catch.
+  {
+    const dbLat = parseFloat(mapContainer.dataset.userLat) || null;
+    const dbLng = parseFloat(mapContainer.dataset.userLng) || null;
+    const hasDbCoords = dbLat && dbLng && dbLat !== 0 && dbLng !== 0;
+
+    window._locationPromise = new Promise((resolve) => {
+      if (!('geolocation' in navigator)) {
+        console.log('[GeoMatch] Geolocation indisponível — usando coords do banco');
+        resolve(hasDbCoords
+          ? { lat: dbLat, lng: dbLng, source: 'db_no_geo' }
+          : null
+        );
+        return;
+      }
+
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          console.log('[GeoMatch] GPS resolvido ✓');
+          resolve({ lat: position.coords.latitude, lng: position.coords.longitude, source: 'gps' });
+        },
+        (error) => {
+          console.warn(`[GeoMatch] GPS falhou (código ${error.code}): ${error.message}`);
+          if (error.code === 1) {
+            // Permissão negada — alerta movido para cá (antes era dentro de style.load)
+            alert('O GeoMatch precisa da sua localização para funcionar. Por favor, verifique as permissões do seu navegador/celular.');
+          }
+          resolve(hasDbCoords
+            ? { lat: dbLat, lng: dbLng, source: 'db_fallback' }
+            : null
+          );
+        },
+        { enableHighAccuracy: true, maximumAge: 0, timeout: 8000 }
+      );
+    });
   }
+
+  // Sincronização: revela o mapa apenas quando os TRÊS flags forem verdadeiros:
+  //   timerFired   — timer mínimo de 2.5s para garantir que o Mapbox renderizou
+  //   mapFired     — evento 'load' do Mapbox disparou
+  //   locationFired — GPS ou DB coords foram resolvidos
+  //
+  // Declarados FORA do setTimeout para que o .then() da locationPromise acesse o escopo.
+  let timerFired    = false;
+  let mapFired      = false;
+  let locationFired = false;
+
+  const tryReveal = () => {
+    if (!timerFired || !mapFired || !locationFired) return;
+    console.log('[GeoMatch] Três condições OK (timer + mapa + localização) — revelando mapa');
+    if (window._revealMap) window._revealMap();
+    sessionStorage.removeItem('geomatch_reload_done');
+  };
+
+  // Terceiro flag: localização resolvida (GPS ou DB)
+  window._locationPromise.then(() => { locationFired = true; tryReveal(); });
 
   // Debounce 300ms para o Turbo finalizar a transição de DOM
   setTimeout(() => {
     initializeMapAndLocation();
     requestAnimationFrame(() => { if (map) map.resize(); });
-
-    // Sincronização: revela apenas quando AMBOS forem verdadeiros —
-    // o mapa disparou 'load' E o timer de 2.5s terminou.
-    let timerFired = false;
-    let mapFired   = false;
-    const tryReveal = () => {
-      if (!timerFired || !mapFired) return;
-      console.log('[GeoMatch] Ambas condições OK — revelando mapa');
-      if (window._revealMap) window._revealMap();
-      sessionStorage.removeItem('geomatch_reload_done');
-    };
 
     window._onMapLoaded = () => { mapFired = true; tryReveal(); };
     setTimeout(() => { timerFired = true; tryReveal(); }, 2500);
@@ -842,10 +893,10 @@ document.addEventListener("turbo:load", () => {
   if (fabCenterMap) {
     fabCenterMap.addEventListener("click", () => {
       closeCinematicPopup();
-      const center = (fixedUserLat && fixedUserLng)
-        ? [fixedUserLng, fixedUserLat]
-        : [-39.2781, -14.7876];
-      map.flyTo({ center, zoom: 14, pitch: 0, bearing: 0, essential: true });
+      // fixedUserLat/Lng são sempre válidos quando o mapa está visível (reveal só ocorre após coords)
+      if (fixedUserLat && fixedUserLng) {
+        map.flyTo({ center: [fixedUserLng, fixedUserLat], zoom: 14, pitch: 0, bearing: 0, essential: true });
+      }
     });
   }
 

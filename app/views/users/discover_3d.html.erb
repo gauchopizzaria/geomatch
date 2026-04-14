@@ -14,7 +14,14 @@
 
 <div class="discover-fullscreen-container">
 
-  <div id="map-3d" class="map-fullscreen"></div>
+  <%#
+    data-user-lat / data-user-lng: coords do banco (Prioridade 2 na hierarquia de localização).
+    Usadas quando o GPS é negado, demora ou o usuário não tem geolocation.
+    to_f garante que nil vira 0.0 — o JS checa por valores válidos antes de usar.
+  %>
+  <div id="map-3d" class="map-fullscreen"
+       data-user-lat="<%= current_user.latitude.to_f %>"
+       data-user-lng="<%= current_user.longitude.to_f %>"></div>
 
   <div id="map-loader">
     <div class="map-loader-inner">
