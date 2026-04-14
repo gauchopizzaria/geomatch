@@ -273,13 +273,10 @@ Devise.setup do |config|
   # up on your models and hooks.
   # config.omniauth :github, 'APP_ID', 'APP_SECRET', scope: 'user,public_repo'
 
-  config.omniauth :google_oauth2,
-    ENV.fetch("GOOGLE_CLIENT_ID"),
-    ENV.fetch("GOOGLE_CLIENT_SECRET"),
-    scope:          "email,profile",
-    prompt:         "select_account",
-    image_aspect_ratio: "square",
-    image_size:     200
+  # ENV[] retorna nil se a variável não existir (seguro no build/precompile).
+  # ENV.fetch lançaria KeyError no assets:precompile do Render, abortando o deploy.
+  config.omniauth :google_oauth2, ENV['GOOGLE_CLIENT_ID'], ENV['GOOGLE_CLIENT_SECRET'],
+    { scope: 'email,profile' }
 
   # ==> Warden configuration
   # If you want to use other strategies, that are not supported by Devise, or
