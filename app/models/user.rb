@@ -1,7 +1,8 @@
 class User < ApplicationRecord
   # Devise
   devise :database_authenticatable, :registerable,
-         :recoverable, :rememberable, :validatable
+         :recoverable, :rememberable, :validatable,
+         :omniauthable, omniauth_providers: %i[google_oauth2]
 
 
  
@@ -59,6 +60,29 @@ class User < ApplicationRecord
   geocoded_by :address
   before_validation :sync_address_from_components
   after_validation :geocode, if: ->(obj) { obj.address.present? && obj.will_save_change_to_address? }
+
+  # =========================================================
+  # OMNIAUTH — Google OAuth2
+  # =========================================================
+
+  # Chamado pelo callback controller para buscar usuário existente pelo par provider+uid.
+  def self.from_omniauth(auth)
+    find_by(provider: auth.provider, uid: auth.uid)
+  end
+
+  # Chamado pelo Devise::RegistrationsController#build_resource durante GET e POST
+  # de /users/sign_up para mesclar dados do Google (armazenados na sessão) ao
+  # resource sendo construído. Nunca sobrescreve o que o usuário já preencheu.
+  def self.new_with_session(params, session)
+    super.tap do |user|
+      next unless (data = session["devise.google_data"])
+
+      user.email    = data[:email]    if user.email.blank?
+      user.username = data[:name]     if user.username.blank?
+      user.provider = data[:provider]
+      user.uid      = data[:uid]
+    end
+  end
 
   # --- Scopes ---
   scope :expired_premium, -> { 

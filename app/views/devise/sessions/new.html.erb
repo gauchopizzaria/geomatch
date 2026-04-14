@@ -2,15 +2,29 @@
   <div class="devise-form-card">
     <h2>Entrar no GeoMatch</h2>
 
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
+    <%#
+      data: { turbo: false } no form_for é obrigatório com Devise + Turbo/Rails 8.
+      Sem isso, o Turbo intercepta o redirect pós-login e lança erro de navegação.
+      A opção vai dentro de html: {} para chegar ao atributo do <form>.
+    %>
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name),
+          html: { data: { turbo: false } }) do |f| %>
+
       <div class="field">
         <%= f.label :email %>
-        <%= f.email_field :email, autofocus: true, autocomplete: "email", placeholder: "seu.email@exemplo.com" %>
+        <%= f.email_field :email,
+              autofocus: true,
+              autocomplete: "email",
+              placeholder: "seu.email@exemplo.com",
+              class: "form-input" %>
       </div>
 
       <div class="field">
         <%= f.label :password %>
-        <%= f.password_field :password, autocomplete: "current-password", placeholder: "••••••••" %>
+        <%= f.password_field :password,
+              autocomplete: "current-password",
+              placeholder: "••••••••",
+              class: "form-input" %>
       </div>
 
       <% if devise_mapping.rememberable? %>
@@ -23,6 +37,27 @@
       <div class="actions">
         <%= f.submit "Entrar", class: "btn btn-primary" %>
       </div>
+    <% end %>
+
+    <div class="oauth-divider">
+      <span>ou</span>
+    </div>
+
+    <%#
+      button_to com form_class: + form: { data: } — distribuição correta dos atributos:
+        - class: "btn-google-auth"       → vai no <button>
+        - form_class: "form-google-auth" → vai no <form>  (Rails 7.1+)
+        - form: { data: { turbo: false } } → data-turbo="false" no <form>
+          (Turbo Drive lê esse atributo no elemento <form>, não no <button>)
+        - authenticity_token incluído automaticamente pelo Rails
+    %>
+    <%= button_to user_google_oauth2_omniauth_authorize_path,
+          class: "btn-google-auth",
+          form_class: "form-google-auth",
+          form: { data: { turbo: false } } do %>
+      <img src="https://www.svgrepo.com/show/475656/google-color.svg"
+           alt="Google" class="google-icon">
+      Continuar com o Google
     <% end %>
 
     <div class="devise-links">

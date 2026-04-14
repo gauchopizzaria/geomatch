@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_04_06_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_04_13_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -420,12 +420,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_000002) do
     t.bigint "plan_id"
     t.jsonb "political_interests", default: []
     t.datetime "premium_until"
+    t.string "provider"
     t.datetime "remember_created_at"
     t.datetime "reset_password_sent_at"
     t.string "reset_password_token"
     t.boolean "share_location"
     t.string "state"
     t.string "street"
+    t.string "uid"
     t.datetime "updated_at", null: false
     t.string "username"
     t.boolean "verified", default: false
@@ -436,6 +438,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_04_06_000002) do
     t.index ["latitude", "longitude"], name: "index_users_on_latitude_and_longitude"
     t.index ["plan_id"], name: "index_users_on_plan_id"
     t.index ["premium_until"], name: "index_users_on_premium_until"
+    t.index ["provider", "uid"], name: "index_users_on_provider_and_uid", unique: true
     t.index ["reset_password_token"], name: "index_users_on_reset_password_token", unique: true
     t.index ["username"], name: "index_users_on_username"
   end

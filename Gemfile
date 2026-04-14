@@ -7,6 +7,8 @@ gem "bootsnap", require: false
 gem "cloudinary"
 gem "dartsass-rails"
 gem "devise"
+gem "omniauth-google-oauth2"
+gem "omniauth-rails_csrf_protection"
 gem "dotenv-rails", groups: [ :development, :test ]
 gem "enumerize"
 gem "fiddle"

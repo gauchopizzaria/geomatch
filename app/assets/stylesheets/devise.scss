@@ -187,10 +187,133 @@
       color: var(--color-primary);
       text-decoration: none;
       font-weight: 600;
-      
+
       &:hover {
         text-decoration: underline;
       }
     }
+  }
+}
+
+// --------------------------------------------------
+// OAuth — Botão Google, divisor e banner de completar perfil
+// --------------------------------------------------
+
+// button_to gera <form class="form-google-auth"><button class="btn-google-auth">.
+// display: block + width: 100% impedem que o <form> quebre o layout do card.
+.form-google-auth {
+  display: block;
+  width: 100%;
+}
+
+// Divisor "ou" entre o botão Google e o formulário email/senha
+.oauth-divider {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  color: rgba(255, 255, 255, 0.5);
+  margin: 1.5rem 0;
+
+  &::before,
+  &::after {
+    content: "";
+    flex: 1;
+    border-bottom: 1px solid rgba(255, 215, 0, 0.3); // gold translúcido
+  }
+
+  span {
+    padding: 0 10px;
+    font-size: 0.9rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+}
+
+// Botão "Continuar com o Google" — glassmorphism gold
+.btn-google-auth {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  padding: 12px 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 215, 0, 0.4);
+  border-radius: 12px;
+  color: #fff;
+  font-weight: 600;
+  font-size: 1rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: all 0.3s ease;
+
+  .google-icon {
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+    // A imagem carrega do CDN svgrepo.com — requer conexão à internet.
+    // Se o projeto usar CSP estrito, adicione svgrepo.com à diretiva img-src.
+  }
+
+  &:hover {
+    background: rgba(255, 215, 0, 0.1);
+    box-shadow: 0 4px 15px rgba(255, 215, 0, 0.2);
+    transform: translateY(-2px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+}
+
+// Banner exibido quando o usuário vem do Google e precisa completar o cadastro.
+// Usa a paleta dourada do app (--color-primary) em vez de azul externo.
+.google-signup-banner {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(212, 175, 55, 0.08);  // gold translúcido
+  color: var(--color-primary);
+  border: 1px solid rgba(212, 175, 55, 0.28);
+  border-radius: 10px;
+  padding: 0.72rem 1rem;
+  font-size: 0.88rem;
+  font-weight: 500;
+  line-height: 1.4;
+  margin-bottom: 1.4rem;
+  text-align: left;
+
+  &__icon {
+    flex-shrink: 0;
+    margin-top: 1px; // alinhamento óptico com o texto
+  }
+}
+
+// Campo de e-mail bloqueado (vindo do Google).
+// A especificidade precisa superar o seletor input[type="email"] que está
+// dentro de .devise-form-card .field — por isso usamos .devise-form-card aqui.
+.devise-form-card .field input.form-input--locked {
+  background-color: rgba(255, 255, 255, 0.03) !important;
+  color: var(--color-text-secondary) !important;
+  border-style: dashed !important;
+  cursor: not-allowed;
+  user-select: none;
+
+  &:focus {
+    // Cancela o glow dourado do focus — campo não é editável
+    border-color: var(--color-border) !important;
+    box-shadow: none !important;
+  }
+}
+
+// Dica abaixo do campo de e-mail locked
+.field-hint {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: var(--color-text-secondary);
+
+  &--locked {
+    color: var(--color-primary);
+    opacity: 0.85;
   }
 }

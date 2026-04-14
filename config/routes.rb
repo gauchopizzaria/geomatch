@@ -2,7 +2,10 @@ Rails.application.routes.draw do
   # =================================================================
   # 1. AUTENTICAÇÃO (DEVISE)
   # =================================================================
-  devise_for :users
+  devise_for :users, controllers: {
+    omniauth_callbacks: "users/omniauth_callbacks",
+    registrations:      "users/registrations"
+  }
 
   devise_scope :user do
     delete "/logout", to: "devise/sessions#destroy", as: :logout
