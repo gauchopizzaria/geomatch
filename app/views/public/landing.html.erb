@@ -1,3 +1,10 @@
+<% if turbo_native_app? %>
+  <div class="native-app-cta">
+    <%= link_to "Cadastrar", new_user_registration_path, class: "native-btn native-btn-primary" %>
+    <%= link_to "Entrar", new_user_session_path, class: "native-btn native-btn-outline" %>
+  </div>
+<% end %>
+
 <section class="landing-hero">
   <div class="hero-content">
     <h1>Descubra Pessoas Próximas.</h1>
