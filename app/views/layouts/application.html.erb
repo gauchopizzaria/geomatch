@@ -49,36 +49,40 @@
 
   </head>
 
-  <body>
+  <body class='<%= 'turbo-native' if turbo_native_app? %>' data-turbo-native='<%= turbo_native_app? %>'>
     <% if user_signed_in? %>
       <!-- Estrutura principal com Sidebar e Conteúdo para usuários autenticados -->
       <div class="authenticated-layout">
-        <%= render 'layouts/sidebar' %>
+        <% unless turbo_native_app? %>
+          <%= render 'layouts/sidebar' %>
+        <% end %>
         <main class="site-content">
           <%= yield %>
         </main>
       </div>
     <% else %>
       <!-- Estrutura para usuários não autenticados (com header e footer ) -->
-      <header class="site-header">
-        <div class="container header-inner">
-          <%= link_to root_path, class: "brand" do %>
-            <img src="<%= asset_path('logo-geomatch.svg') %>" alt="GeoMatch" class="brand-logo" />
-          <% end %>
+      <% unless turbo_native_app? %>
+        <header class="site-header">
+          <div class="container header-inner">
+            <%= link_to root_path, class: "brand" do %>
+              <img src="<%= asset_path('logo-geomatch.svg') %>" alt="GeoMatch" class="brand-logo" />
+            <% end %>
 
-          <nav class="nav">
-            <%= link_to "Entrar", new_user_session_path, class: "btn btn-outline" %>
-            <%= link_to "Cadastrar", new_user_registration_path, class: "btn btn-primary" %>
-          </nav>
-        </div>
-      </header>
+            <nav class="nav">
+              <%= link_to "Entrar", new_user_session_path, class: "btn btn-outline" %>
+              <%= link_to "Cadastrar", new_user_registration_path, class: "btn btn-primary" %>
+            </nav>
+          </div>
+        </header>
+      <% end %>
 
       <main class="site-content">
         <%= yield %>
       </main>
     <% end %>
 
-    <% unless user_signed_in? %>
+    <% unless user_signed_in? || turbo_native_app? %>
       <!-- O Footer só é renderizado para usuários não autenticados -->
        <footer class="site-footer">
       <div class="container footer-inner">
