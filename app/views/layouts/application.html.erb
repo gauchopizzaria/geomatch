@@ -53,9 +53,7 @@
     <% if user_signed_in? %>
       <!-- Estrutura principal com Sidebar e Conteúdo para usuários autenticados -->
       <div class="authenticated-layout">
-        <% unless turbo_native_app? %>
-          <%= render 'layouts/sidebar' %>
-        <% end %>
+        <%= render 'layouts/sidebar' %>
         <main class="site-content">
           <%= yield %>
         </main>
