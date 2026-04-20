@@ -7,6 +7,8 @@
   background-color: #000;
   overflow-y: auto; // Libera o movimento
   -webkit-overflow-scrolling: touch;
+  // Cancela o padding do .authenticated-layout para este wrapper tomar conta da safe area
+  margin-top: calc(-1 * env(safe-area-inset-top, 0px));
 
   // 1. HEADER
   .pp-edit-header {
@@ -18,7 +20,10 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 20px;
-    height: 60px;
+    // Estende o header para cobrir a safe area e empurra o conteúdo abaixo do notch
+    padding-top: calc(10px + env(safe-area-inset-top, 0px));
+    height: auto;
+    min-height: 60px;
 
     .pp-header-btn-left, .pp-header-btn-right {
       text-decoration: none;
@@ -44,7 +49,7 @@
   // 2. ABAS
   .pp-edit-tabs {
     position: sticky;
-    top: 60px;
+    top: calc(60px + env(safe-area-inset-top, 0px));
     z-index: 999;
     display: flex;
     background: #000;

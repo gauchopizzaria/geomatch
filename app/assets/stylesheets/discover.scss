@@ -674,7 +674,7 @@
 /* 4. CONTROLES DO MODAL (FECHAR/ALÇA) */
 .dsc-close-btn {
   position: absolute;
-  top: 30px; // Espaço para não bater no notch do celular
+  top: calc(env(safe-area-inset-top, 0px) + 15px);
   right: 20px;
   z-index: 100;
   background: rgba(0, 0, 0, 0.4);

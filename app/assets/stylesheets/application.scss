@@ -1099,9 +1099,13 @@ html, body {
   }
 }
 
+// Empurra conteúdo para baixo do notch/Dynamic Island em qualquer iPhone
+.authenticated-layout {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+
 // IMPORTANTE: Empurrar o conteúdo da página para cima
 .site-content {
-  /* Aumentamos o cálculo para garantir que o último item da lista apareça */
   /* 85px (altura base estimada) + área segura + 15px de folga */
   padding-bottom: calc(90px + env(safe-area-inset-bottom));
 }
@@ -1109,7 +1113,8 @@ html, body {
 /* Ajuste para telas menores (mobile) */
 @media (max-width: 768px) {
   .site-content {
-    padding: 0; /* Remove padding lateral no mobile para preencher a tela */
+    padding-left: 0;
+    padding-right: 0;
   }
 }
 
