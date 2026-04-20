@@ -1,5 +1,21 @@
 let watchId = null;
 let isTracking = false;
+let lastLat = null;
+let lastLng = null;
+
+// Deslocamento mínimo real (metros) para propagar uma atualização de posição.
+// Filtra o ruído inerente do GPS — o celular parado reporta variações de 1-4m continuamente.
+const MIN_MOVE_METERS = 5;
+
+function haversineMeters(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
 
 // Inicia rastreamento direto — sempre liga, independente do estado anterior.
 // Usar na inicialização da tela para garantir que o GPS começa ligado.
@@ -9,7 +25,9 @@ export function startLiveTracking(map, buttonElement, onLocationChange) {
     watchId = null;
   }
   isTracking = false;
-  startTracking(map, buttonElement, onLocationChange);
+  lastLat = null;
+  lastLng = null;
+  startTracking(buttonElement, onLocationChange);
 }
 
 // Alterna entre ligado/desligado — usar no evento de click do botão.
@@ -18,7 +36,7 @@ export function toggleLiveTracking(map, buttonElement, onLocationChange) {
     stopTracking(buttonElement);
     return false;
   } else {
-    startTracking(map, buttonElement, onLocationChange);
+    startTracking(buttonElement, onLocationChange);
     return true;
   }
 }
@@ -30,10 +48,13 @@ export function resetTracking(buttonElement) {
     watchId = null;
   }
   isTracking = false;
+  lastLat = null;
+  lastLng = null;
   if (buttonElement) buttonElement.classList.remove("active-tracking");
 }
 
-function startTracking(map, buttonElement, onLocationChange) {
+// map não é mais usado internamente — parâmetro mantido nos exports para compatibilidade
+function startTracking(buttonElement, onLocationChange) {
   if (!("geolocation" in navigator)) {
     alert("Geolocalização não suportada pelo seu navegador.");
     return;
@@ -47,13 +68,19 @@ function startTracking(map, buttonElement, onLocationChange) {
     (position) => {
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
-      console.log(`🚶 Movimento detectado: ${lat}, ${lng}`);
 
-      if (map.getCenter && map.setCenter) {
-        map.panTo([lng, lat], { duration: 1000 });
-      } else if (map.setView) {
-        map.panTo([lat, lng], { animate: true, duration: 1.0 });
+      // Filtra ruído GPS: ignora posições que não representam deslocamento real.
+      // Primeiro fix sempre passa (lastLat === null) para inicializar a posição.
+      if (lastLat !== null) {
+        const dist = haversineMeters(lastLat, lastLng, lat, lng);
+        if (dist < MIN_MOVE_METERS) return;
+        console.log(`🚶 Movimento real detectado: ${dist.toFixed(1)}m → (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
+      } else {
+        console.log(`📍 Posição inicial fixada: (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
       }
+
+      lastLat = lat;
+      lastLng = lng;
 
       if (onLocationChange) onLocationChange(lat, lng);
     },
@@ -63,8 +90,8 @@ function startTracking(map, buttonElement, onLocationChange) {
     },
     {
       enableHighAccuracy: true,
-      maximumAge: 0,
-      timeout: 10000
+      maximumAge: 10000, // aceita posição de até 10s atrás — reduz chamadas redundantes ao GPS
+      timeout: 5000      // falha rápido se o GPS não responder
     }
   );
 }
@@ -75,6 +102,8 @@ function stopTracking(buttonElement) {
     watchId = null;
   }
   isTracking = false;
+  lastLat = null;
+  lastLng = null;
   if (buttonElement) buttonElement.classList.remove("active-tracking");
   console.log("🛑 Rastreamento contínuo parado.");
 }
