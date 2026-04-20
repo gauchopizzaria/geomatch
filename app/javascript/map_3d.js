@@ -663,11 +663,11 @@ document.addEventListener("turbo:before-cache", () => {
 });
 
 // Fallback: corrige canvas ao retornar de outra aba
-window.addEventListener('focus', () => { if (map) map.resize(); });
+window.addEventListener('focus', () => { if (map && document.getElementById('map-3d')) map.resize(); });
 
 // Garante resize ao voltar para a página via Turbo Drive (cache restaurado)
 document.addEventListener("turbo:render", () => {
-  if (map) map.resize();
+  if (map && document.getElementById('map-3d')) map.resize();
 });
 
 document.addEventListener("turbo:load", () => {
@@ -679,9 +679,10 @@ document.addEventListener("turbo:load", () => {
   const loader = document.getElementById('map-loader');
   const mapContainer = document.getElementById('map-3d');
 
-  // Sem mapa nesta página: destrói loader imediatamente
+  // Sem mapa nesta página: destrói loader e qualquer instância obsoleta
   if (!mapContainer) {
     if (loader) loader.remove();
+    if (map) { try { map.remove(); } catch (_) {} map = null; }
     return;
   }
 

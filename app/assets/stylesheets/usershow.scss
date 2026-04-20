@@ -1,5 +1,29 @@
 /* Estilos para o Perfil Público */
 
+// Barra de ações fixa (X / Chat / Coração) na página de perfil de outro usuário
+.v-view-action-bar {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
+  left: 0;
+  right: 0;
+  z-index: 1100;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 28px;
+  padding: 14px 24px;
+  background: linear-gradient(to top, rgba(10, 10, 10, 0.97) 70%, transparent);
+  pointer-events: auto;
+
+  // Remove margens/paddings herdados dos forms gerados pelo button_to
+  .dsc-action-form {
+    margin: 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+  }
+}
+
 .profile-static-text {
   /* Estilo para o texto estático, para diferenciá-lo do input */
   font-size: 1rem;
