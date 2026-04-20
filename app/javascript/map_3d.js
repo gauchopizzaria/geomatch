@@ -44,6 +44,17 @@ let activeMarkerEl = null;
 const radarSourceId = 'radar-circle-source';
 const radarLayerId = 'radar-circle-layer';
 
+// --- Haversine: distância métrica real entre dois pontos geográficos ---
+function haversineDistanceM(lat1, lng1, lat2, lng2) {
+  const R = 6371000;
+  const φ1 = lat1 * Math.PI / 180;
+  const φ2 = lat2 * Math.PI / 180;
+  const Δφ = (lat2 - lat1) * Math.PI / 180;
+  const Δλ = (lng2 - lng1) * Math.PI / 180;
+  const a = Math.sin(Δφ / 2) ** 2 + Math.cos(φ1) * Math.cos(φ2) * Math.sin(Δλ / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+}
+
 // --- Funções de Interface (UI) ---
 
 // Função para exibir mensagens rápidas (Toasts)
@@ -311,16 +322,43 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
       let uLat = parseFloat(user.latitude);
       let uLng = parseFloat(user.longitude);
 
-      const jitter = () => (Math.random() - 0.5) * 0.0005;
-      uLat += jitter();
-      uLng += jitter();
+      // Polar scatter + rigid Haversine clamp:
+      // after jitter, verify the real geographic distance and force the point
+      // strictly inside the radar boundary — the avatar center never escapes the ring.
+      {
+        const mPerDegLat = 111000;
+        const mPerDegLng = 111000 * Math.cos(fixedUserLat * Math.PI / 180);
+        const maxScatterM = Math.min(25, currentRangeMeters * 0.12);
+        const angle = Math.random() * 2 * Math.PI;
+        const r = Math.random() * maxScatterM;
+        uLat += (r * Math.sin(angle)) / mPerDegLat;
+        uLng += (r * Math.cos(angle)) / mPerDegLng;
+
+        // Hard clamp: Haversine gives the true arc distance; Euclidean vector
+        // is used only for direction (safe at sub-300m scale).
+        const limitM = currentRangeMeters - 2;
+        const realDistM = haversineDistanceM(fixedUserLat, fixedUserLng, uLat, uLng);
+        if (realDistM > limitM) {
+          const dLatM = (uLat - fixedUserLat) * mPerDegLat;
+          const dLngM = (uLng - fixedUserLng) * mPerDegLng;
+          const vecLen = Math.sqrt(dLatM * dLatM + dLngM * dLngM);
+          if (vecLen > 0) {
+            const scale = limitM / vecLen;
+            uLat = fixedUserLat + (dLatM * scale) / mPerDegLat;
+            uLng = fixedUserLng + (dLngM * scale) / mPerDegLng;
+          } else {
+            uLat = fixedUserLat + limitM / mPerDegLat;
+            uLng = fixedUserLng;
+          }
+        }
+      }
 
       if (!isNaN(uLat) && !isNaN(uLng)) {
         const el = document.createElement('div');
         el.className = 'premium-marker';
         el.innerHTML = `<img src="${user.avatar_url || '/default-avatar.png'}" class="premium-marker-img" alt="${user.username || ''}">`;
 
-        const marker = new mapboxgl.Marker(el)
+        const marker = new mapboxgl.Marker(el, { anchor: 'center' })
           .setLngLat([uLng, uLat])
           .addTo(map);
         mapboxUserMarkers[user.id] = marker;
