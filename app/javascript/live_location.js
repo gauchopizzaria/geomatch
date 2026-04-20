@@ -1,8 +1,18 @@
 let watchId = null;
 let isTracking = false;
-let lastLoggedState = null;
 
-// Função para iniciar ou parar o rastreamento
+// Inicia rastreamento direto — sempre liga, independente do estado anterior.
+// Usar na inicialização da tela para garantir que o GPS começa ligado.
+export function startLiveTracking(map, buttonElement, onLocationChange) {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  isTracking = false;
+  startTracking(map, buttonElement, onLocationChange);
+}
+
+// Alterna entre ligado/desligado — usar no evento de click do botão.
 export function toggleLiveTracking(map, buttonElement, onLocationChange) {
   if (isTracking) {
     stopTracking(buttonElement);
@@ -13,6 +23,16 @@ export function toggleLiveTracking(map, buttonElement, onLocationChange) {
   }
 }
 
+// Limpa estado do GPS sem efeitos colaterais de UI — usar no turbo:before-cache.
+export function resetTracking(buttonElement) {
+  if (watchId !== null) {
+    navigator.geolocation.clearWatch(watchId);
+    watchId = null;
+  }
+  isTracking = false;
+  if (buttonElement) buttonElement.classList.remove("active-tracking");
+}
+
 function startTracking(map, buttonElement, onLocationChange) {
   if (!("geolocation" in navigator)) {
     alert("Geolocalização não suportada pelo seu navegador.");
@@ -21,29 +41,20 @@ function startTracking(map, buttonElement, onLocationChange) {
 
   isTracking = true;
   if (buttonElement) buttonElement.classList.add("active-tracking");
+  console.log("📍 Iniciando rastreamento contínuo...");
 
-  if (lastLoggedState !== true) {
-    console.log("📍 Iniciando rastreamento contínuo...");
-    lastLoggedState = true;
-  }
-
-  // watchPosition é o segredo para atualizar em tempo real
   watchId = navigator.geolocation.watchPosition(
     (position) => {
       const lat = position.coords.latitude;
       const lng = position.coords.longitude;
-      
       console.log(`🚶 Movimento detectado: ${lat}, ${lng}`);
 
-          // Move a câmera do mapa suavemente para a nova localização
-      // Adaptação para Mapbox GL JS ou Leaflet
-      if (map.getCenter && map.setCenter) { // É um mapa Mapbox GL JS
-        map.panTo([lng, lat], { duration: 1000 }); // Mapbox usa [lng, lat]
-      } else if (map.setView) { // É um mapa Leaflet
-        map.panTo([lat, lng], { animate: true, duration: 1.0 }); // Leaflet usa [lat, lng]
+      if (map.getCenter && map.setCenter) {
+        map.panTo([lng, lat], { duration: 1000 });
+      } else if (map.setView) {
+        map.panTo([lat, lng], { animate: true, duration: 1.0 });
       }
 
-      // Chama a função de callback no map.js para atualizar marcadores e buscar usuários
       if (onLocationChange) onLocationChange(lat, lng);
     },
     (error) => {
@@ -51,9 +62,9 @@ function startTracking(map, buttonElement, onLocationChange) {
       stopTracking(buttonElement);
     },
     {
-      enableHighAccuracy: true, // Força o uso do GPS (melhor precisão)
-      maximumAge: 0,            // Não aceita posições velhas
-      timeout: 10000            // Tempo limite de busca
+      enableHighAccuracy: true,
+      maximumAge: 0,
+      timeout: 10000
     }
   );
 }
@@ -65,14 +76,9 @@ function stopTracking(buttonElement) {
   }
   isTracking = false;
   if (buttonElement) buttonElement.classList.remove("active-tracking");
-
-  if (lastLoggedState !== false) {
-    console.log("🛑 Rastreamento contínuo parado.");
-    lastLoggedState = false;
-  }
+  console.log("🛑 Rastreamento contínuo parado.");
 }
 
-// Verifica se o rastreamento está ativo
 export function isCurrentlyTracking() {
   return isTracking;
 }

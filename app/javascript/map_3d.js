@@ -1,4 +1,4 @@
-import { toggleLiveTracking, isCurrentlyTracking } from "./live_location";
+import { toggleLiveTracking, startLiveTracking, resetTracking, isCurrentlyTracking } from "./live_location";
 // Turf.js é esperado estar disponível globalmente (ex: via CDN)
 // import * as turf from '@turf/turf'; // Removido para evitar erro de build se não instalado
 
@@ -649,11 +649,13 @@ function initializeMapAndLocation() {
 
 // Libera toda memória de GPU/WebGL antes do Turbo cachear ou navegar — previne crash no iOS
 document.addEventListener("turbo:before-cache", () => {
-  stopRotation(); // Cancela cancelAnimationFrame antes de qualquer cleanup
+  stopRotation();
+  // Limpa estado do GPS para que a próxima visita sempre inicie com rastreamento ligado
+  resetTracking(document.getElementById('fab-live-tracking'));
   if (mapResizeObserver) { mapResizeObserver.disconnect(); mapResizeObserver = null; }
   if (mapResizeInterval) { clearInterval(mapResizeInterval); mapResizeInterval = null; }
   if (map) {
-    map.remove(); // Destrói contexto WebGL e libera memória da GPU
+    map.remove();
     map = null;
     mapboxUserMarkers = {};
     mapboxMarkerDistances = {};
@@ -940,37 +942,39 @@ document.addEventListener("turbo:load", () => {
   }
 
   // MODO TEMPO REAL (FOLLOW ME)
+  // Callback reutilizado tanto na inicialização automática quanto no click manual
+  const trackingCallback = (newLat, newLng) => {
+    fixedUserLat = newLat;
+    fixedUserLng = newLng;
+    updateRadarVisuals();
+    const now = Date.now();
+    if (now - lastUserFetchTime > FETCH_COOLDOWN_MS) {
+      lastUserFetchTime = now;
+      loadNearbyUsers(newLat, newLng, currentRangeMeters, currentGenderFilter);
+      if (window._mapIsReady && !isUserInvisible) {
+        fetch(`/users/update_location?latitude=${newLat}&longitude=${newLng}`, {
+          method: 'POST',
+          headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
+        });
+      }
+    }
+  };
+
   if (fabLiveTracking) {
     fabLiveTracking.addEventListener("click", () => {
-      const isNowTracking = toggleLiveTracking(map, fabLiveTracking, (newLat, newLng) => {
-        fixedUserLat = newLat;
-        fixedUserLng = newLng;
-        updateRadarVisuals();
-        const now = Date.now();
-        if (now - lastUserFetchTime > FETCH_COOLDOWN_MS) {
-          lastUserFetchTime = now;
-          loadNearbyUsers(newLat, newLng, currentRangeMeters, currentGenderFilter);
-          if (window._mapIsReady && !isUserInvisible) {
-            fetch(`/users/update_location?latitude=${newLat}&longitude=${newLng}`, {
-              method: 'POST',
-              headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
-            });
-          }
-        }
-      });
-
+      const isNowTracking = toggleLiveTracking(map, fabLiveTracking, trackingCallback);
       const metaUserId = document.querySelector('meta[name="current-user-id"]');
       const userId = metaUserId ? metaUserId.content : null;
 
       if (isNowTracking) {
         showTrackingToast("✅ Visibilidade em tempo real ligada! Prepare-se para encontros espontâneos.");
         if (window.Android && userId) {
-           window.Android.iniciarRastreioSegundoPlano(userId);
+          window.Android.iniciarRastreioSegundoPlano(userId);
         }
       } else {
         showTrackingToast("❌ Visibilidade em tempo real desativada. Sua localização não está mais visível.");
         if (window.Android) {
-           window.Android.pararRastreioSegundoPlano();
+          window.Android.pararRastreioSegundoPlano();
         }
       }
     });
@@ -1132,9 +1136,17 @@ document.addEventListener("turbo:load", () => {
     }
   }, 120000);
 
+  // Liga rastreamento automaticamente ao abrir o mapa — sempre ligado por padrão,
+  // sem depender do estado anterior da sessão ou de qualquer storage.
   setTimeout(() => {
     if (fabLiveTracking) {
-      fabLiveTracking.click();
+      const metaUserId = document.querySelector('meta[name="current-user-id"]');
+      const userId = metaUserId ? metaUserId.content : null;
+      startLiveTracking(map, fabLiveTracking, trackingCallback);
+      showTrackingToast("✅ Visibilidade em tempo real ligada! Prepare-se para encontros espontâneos.");
+      if (window.Android && userId) {
+        window.Android.iniciarRastreioSegundoPlano(userId);
+      }
     }
   }, 1000);
 
