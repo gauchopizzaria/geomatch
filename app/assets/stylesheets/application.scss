@@ -1110,6 +1110,10 @@ html, body {
 }
 
 // No app nativo iOS a Tab Bar nativa já gerencia o espaço inferior
+body.turbo-native .sidebar {
+  display: none !important;
+}
+
 body.turbo-native .site-content {
   padding-bottom: 0;
 }
