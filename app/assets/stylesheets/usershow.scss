@@ -61,7 +61,8 @@
   padding-bottom: 100px;
   font-family: 'Poppins', sans-serif;
   color: #fff;
-  padding-top: calc(20px + env(safe-area-inset-top));
+  // Safe area já aplicada pelo .authenticated-layout — padding fixo aqui
+  padding-top: 20px;
 }
 
 /* 1. Header (Apenas Título) */

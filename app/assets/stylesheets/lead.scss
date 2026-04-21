@@ -19,7 +19,9 @@
 
 .geomatch-screen-wrapper {
   background-color: var(--bg-dark);
-  height: 100dvh; 
+  // .authenticated-layout já empurra o conteúdo env(safe-area-inset-top) para baixo,
+  // então subtraímos esse valor para que a tela não ultrapasse o fundo do viewport.
+  height: calc(100dvh - env(safe-area-inset-top, 0px));
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -32,8 +34,9 @@
 // 1. HEADER (TOPO)
 // =========================================
 .geomatch-header {
-  height: calc(var(--header-height) + env(safe-area-inset-top));
-  padding-top: env(safe-area-inset-top);
+  // Safe area já aplicada pelo .authenticated-layout — apenas altura fixa aqui
+  height: var(--header-height);
+  padding-top: 0;
   
   display: flex;
   justify-content: space-between;

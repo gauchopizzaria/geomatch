@@ -984,28 +984,27 @@ html, body {
 // --------------------------------------------------
 
 .sidebar {
-  width: 100%;
-  height: auto; 
-  min-height: 70px; /* Aumentei levemente para garantir conforto visual */
-  
-  background-color: #0e0e10; 
-  
+  height: auto;
+  min-height: 70px;
+  background-color: #0e0e10;
   display: flex;
   justify-content: center;
   align-items: center;
-  
+
+  /* Colado ao fundo do ecrã em qualquer iPhone/Android */
   position: fixed;
   bottom: 0;
   left: 0;
+  right: 0;   /* mais robusto que width:100% em fixed elements */
+  width: 100%;
   z-index: 1000;
-  
-  border-top: 1px solid rgba(255, 255, 255, 0.1); 
-  
-  /* --- CORREÇÃO DO PROBLEMA --- */
-  /* Usa a área segura do iPhone. Se for 0 (alguns Androids), soma + 12px de garantia */
-  padding-bottom: calc(env(safe-area-inset-bottom) + 12px);
-  padding-top: 10px; 
-  
+
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+
+  /* Empurra os ícones acima do Home Indicator do iPhone */
+  padding-top: 10px;
+  padding-bottom: env(safe-area-inset-bottom, 12px);
+
   box-shadow: 0 -4px 20px rgba(0,0,0,0.2);
 
   .sidebar-nav {
