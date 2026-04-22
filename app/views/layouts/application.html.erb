@@ -161,5 +161,16 @@
   })();
 </script>
 
+    <script>
+      document.addEventListener("turbo:load", function() {
+        if (navigator.userAgent.includes("Turbo Native") || window.TurboNativeBridge) {
+          document.querySelectorAll('.sidebar, aside').forEach(function(el) {
+            el.style.display = 'none';
+          });
+          var main = document.querySelector('.site-content');
+          if (main) main.style.paddingBottom = '0';
+        }
+      });
+    </script>
   </body>
 </html>
