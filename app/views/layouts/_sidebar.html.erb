@@ -1,11 +1,3 @@
-<script>
-  document.addEventListener("turbo:load", function() {
-    if (navigator.userAgent.includes("Turbo Native") || window.TurboNativeBridge) {
-      var sidebar = document.querySelector('.sidebar');
-      if (sidebar) sidebar.style.display = 'none';
-    }
-  });
-</script>
 <% unless turbo_native_app? %>
 <aside class="sidebar">
   <nav class="sidebar-nav">
