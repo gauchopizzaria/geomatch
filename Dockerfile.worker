@@ -11,4 +11,7 @@ RUN chmod +x bin/* && \
     sed -i "s/\r$//g" bin/* && \
     sed -i 's/ruby\.exe$/ruby/' bin/*
 
-CMD ["bundle", "exec", "ruby", "bin/jobs"]
+# Permissão explícita + diagnóstico: confirma no log do build que o arquivo existe
+RUN chmod +x bin/jobs && ls -la bin/jobs
+
+CMD ["bundle", "exec", "ruby", "./bin/jobs"]
