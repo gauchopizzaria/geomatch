@@ -1119,6 +1119,15 @@ body.turbo-native .site-content {
   padding-bottom: 0;
 }
 
+// Trava horizontal iOS — bloqueia scroll lateral no app nativo
+body.turbo-native,
+body.turbo-native html {
+  overflow-x: hidden !important;
+  overscroll-behavior-x: none !important;
+  max-width: 100vw !important;
+  width: 100% !important;
+}
+
 /* Ajuste para telas menores (mobile) */
 @media (max-width: 768px) {
   .site-content {
