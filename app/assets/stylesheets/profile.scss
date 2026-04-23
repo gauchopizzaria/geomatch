@@ -269,24 +269,21 @@ input[type="submit"] {
   align-items: center;
   justify-content: center;
   gap: 15px;
-  
-  /* TRUQUE PARA SUBIR: Margem negativa puxa a caixa preta pra cima */
-  margin-top: -15px; 
-  
-  /* Reduzi o padding do topo de 40px para 10px para o botão subir mais */
-  padding: 10px 20px 120px 20px; 
-  
-  /* Fundo preto */
-  background-color: #000000; 
-  
-  /* Truque para esticar o fundo preto até as bordas da tela */
-  margin-left: -24px; 
-  margin-right: -24px;
-  width: calc(100% + 48px); 
-  
-  /* Garante que fique acima de qualquer margem residual */
-  position: relative; 
-  z-index: 1; 
+
+  margin-top: -15px;
+
+  padding: 10px 20px 120px 20px;
+
+  background-color: #000000;
+
+  /* Largura natural — sem margens negativas que causam overflow horizontal */
+  margin-left: 0;
+  margin-right: 0;
+  width: 100%;
+
+  position: relative;
+  z-index: 1;
+  box-sizing: border-box;
 }
 
 /* Botão Sair */
