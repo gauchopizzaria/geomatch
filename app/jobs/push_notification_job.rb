@@ -15,7 +15,7 @@ class PushNotificationJob < ApplicationJob
     end
 
     vapid = {
-      subject:     ENV.fetch("APP_BASE_URL", "mailto:contato@geomatch.app"),
+      subject:     ENV.fetch("VAPID_SUBJECT", "mailto:contato@geomatch.app"),
       public_key:  ENV["VAPID_PUBLIC_KEY"],
       private_key: ENV["VAPID_PRIVATE_KEY"]
     }
@@ -28,7 +28,7 @@ class PushNotificationJob < ApplicationJob
     }.to_json
 
     recipient.push_subscriptions.each do |subscription|
-      ::Webpush.payload_send(
+      ::WebPush.payload_send(
         message:      payload,
         endpoint:     subscription.endpoint,
         p256dh:       subscription.p256dh,
@@ -38,7 +38,7 @@ class PushNotificationJob < ApplicationJob
         open_timeout: 5,
         read_timeout: 5
       )
-    rescue ::Webpush::ExpiredSubscription
+    rescue ::WebPush::ExpiredSubscription
       subscription.destroy
     rescue => e
       Rails.logger.error "[PushNotificationJob] message=#{message_id} subscription=#{subscription.id} error=#{e.message}"
