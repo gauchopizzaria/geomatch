@@ -1,3 +1,5 @@
+require "webpush"
+
 class PushNotificationJob < ApplicationJob
   queue_as :default
 
