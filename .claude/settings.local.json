@@ -32,7 +32,11 @@
       "Bash(findstr :3000)",
       "Bash(taskkill:*)",
       "Bash(bin/rails db:migrate STATUS)",
-      "Bash(git update-index *)"
+      "Bash(git update-index *)",
+      "Bash(bundle update *)",
+      "Bash(rm -rf \"C:/Ruby34-x64/lib/ruby/gems/3.4.0/cache/bundler/git/webpush-3745947aa051394d66856671c006e430177dd3ea\")",
+      "Bash(rm -rf \"C:/Ruby34-x64/lib/ruby/gems/3.4.0/bundler/gems/webpush-\"*)",
+      "Bash(gem contents *)"
     ]
   }
 }

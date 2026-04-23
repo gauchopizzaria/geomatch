@@ -38,7 +38,7 @@ gem "thruster", require: false
 gem "turbo-rails"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "sidekiq-cron"
-gem 'webpush'
+gem "webpush"
 
 group :development, :test do
   gem "bundler-audit", require: false

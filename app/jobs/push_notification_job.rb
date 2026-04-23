@@ -14,18 +14,10 @@ class PushNotificationJob < ApplicationJob
       return
     end
 
-    # VapidKey.from_keys inicializa os objetos OpenSSL corretamente,
-    # evitando o erro "pkeys are immutable" do OpenSSL 3.0 que ocorre
-    # quando strings brutas são passadas diretamente ao webpush.
-    vapid_key = ::Webpush::VapidKey.from_keys(
-      ENV["VAPID_PUBLIC_KEY"],
-      ENV["VAPID_PRIVATE_KEY"]
-    )
-
     vapid = {
       subject:     ENV.fetch("APP_BASE_URL", "mailto:contato@geomatch.app"),
-      public_key:  vapid_key.public_key,
-      private_key: vapid_key.private_key
+      public_key:  ENV["VAPID_PUBLIC_KEY"],
+      private_key: ENV["VAPID_PRIVATE_KEY"]
     }
 
     payload = {
