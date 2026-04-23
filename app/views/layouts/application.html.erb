@@ -47,6 +47,10 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
 
+  <% if request.user_agent.to_s.match?(/Turbo Native/) %>
+  <style>[data-hide-in-app] { display: none !important; }</style>
+  <% end %>
+
   </head>
 
   <body class='<%= 'turbo-native' if turbo_native_app? %>' data-turbo-native='<%= turbo_native_app? %>'>
@@ -164,11 +168,11 @@
     <script>
       document.addEventListener("turbo:load", function() {
         if (navigator.userAgent.includes("Turbo Native") || window.TurboNativeBridge) {
-          document.querySelectorAll('.sidebar, aside').forEach(function(el) {
-            el.style.display = 'none';
+          document.querySelectorAll('[data-hide-in-app]').forEach(function(el) {
+            el.style.setProperty('display', 'none', 'important');
           });
           var main = document.querySelector('.site-content');
-          if (main) main.style.paddingBottom = '0';
+          if (main) main.style.setProperty('padding-bottom', '0', 'important');
         }
       });
     </script>
