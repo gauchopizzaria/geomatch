@@ -11,4 +11,4 @@ RUN chmod +x bin/* && \
     sed -i "s/\r$//g" bin/* && \
     sed -i 's/ruby\.exe$/ruby/' bin/*
 
-CMD ["bundle", "exec", "ruby", "bin/jobs", "start"]
+CMD ["bundle", "exec", "bin/jobs"]
