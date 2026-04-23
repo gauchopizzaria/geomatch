@@ -34,39 +34,7 @@ class Message < ApplicationRecord
     MatchChannel.broadcast_to(match, { deleted_message_id: id })
   end
 
-  # Envia a notificação push (para quem está com o celular bloqueado ou app fechado)
- # Envia a notificação push (para quem está com o celular bloqueado ou app fechado)
   def send_push_notification
-    recipient = match.other_user(sender)
-    return if recipient == sender
-
-    # Itera sobre todas as inscrições de dispositivos do destinatário
-    recipient.push_subscriptions.each do |subscription|
-      begin
-        # AJUSTE: Enviamos o JSON completo dentro do campo 'message'
-        # Isso garante que o Service Worker receba title, body e path corretamente
-        WebPush.payload_send(
-          message: {
-            title: sender.display_name,
-            body:  content.truncate(80),
-            data:  { path: "/matches/#{match.id}", app: "GeoMatch" },
-            tag:   "chat-#{match.id}"
-          }.to_json,
-          endpoint: subscription.endpoint,
-          p256dh: subscription.p256dh,
-          auth: subscription.auth,
-          vapid: {
-            subject: 'mailto:seu_email@exemplo.com',
-            public_key: ENV['VAPID_PUBLIC_KEY'],
-            private_key: ENV['VAPID_PRIVATE_KEY']
-          }
-        )
-      rescue WebPush::ExpiredSubscription
-        # Remove a inscrição se ela não for mais válida
-        subscription.destroy
-      rescue => e
-        Rails.logger.error "Erro ao enviar push: #{e.message}"
-      end
-    end
+    PushNotificationJob.perform_later(id)
   end
 end
