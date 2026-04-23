@@ -32,10 +32,11 @@ Rails.application.configure do
   config.log_tags = [:request_id]
   config.log_level = :debug
 
-  logger = Logger.new(STDOUT)
-  config.logger = logger
-  config.action_controller.logger = logger
-  config.active_record.logger = logger
+  if ENV["RAILS_LOG_TO_STDOUT"].present?
+    logger           = ActiveSupport::Logger.new(STDOUT)
+    logger.formatter = config.log_formatter
+    config.logger    = ActiveSupport::TaggedLogging.new(logger)
+  end
 
   # --------------------------
   # Healthcheck
