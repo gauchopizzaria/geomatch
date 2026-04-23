@@ -35,7 +35,7 @@ production:
   queue:
     adapter: postgresql
     encoding: unicode
-    pool: 5
+    pool: <%= ENV.fetch("SOLID_QUEUE_POOL") { 15 } %>
     url: <%= ENV["DATABASE_URL"] %>
     
 
