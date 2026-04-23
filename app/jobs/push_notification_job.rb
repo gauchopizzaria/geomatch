@@ -1,5 +1,3 @@
-require "webpush"
-
 class PushNotificationJob < ApplicationJob
   queue_as :default
 
@@ -19,7 +17,7 @@ class PushNotificationJob < ApplicationJob
     # VapidKey.from_keys inicializa os objetos OpenSSL corretamente,
     # evitando o erro "pkeys are immutable" do OpenSSL 3.0 que ocorre
     # quando strings brutas são passadas diretamente ao webpush.
-    vapid_key = Webpush::VapidKey.from_keys(
+    vapid_key = ::Webpush::VapidKey.from_keys(
       ENV["VAPID_PUBLIC_KEY"],
       ENV["VAPID_PRIVATE_KEY"]
     )
@@ -38,7 +36,7 @@ class PushNotificationJob < ApplicationJob
     }.to_json
 
     recipient.push_subscriptions.each do |subscription|
-      WebPush.payload_send(
+      ::Webpush.payload_send(
         message:      payload,
         endpoint:     subscription.endpoint,
         p256dh:       subscription.p256dh,
@@ -48,7 +46,7 @@ class PushNotificationJob < ApplicationJob
         open_timeout: 5,
         read_timeout: 5
       )
-    rescue WebPush::ExpiredSubscription
+    rescue ::Webpush::ExpiredSubscription
       subscription.destroy
     rescue => e
       Rails.logger.error "[PushNotificationJob] message=#{message_id} subscription=#{subscription.id} error=#{e.message}"
