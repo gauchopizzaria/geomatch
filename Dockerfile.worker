@@ -6,4 +6,9 @@ COPY . .
 
 RUN bundle install
 
+# Garante permissão de execução e remove artefatos Windows (CRLF + ruby.exe)
+RUN chmod +x bin/* && \
+    sed -i "s/\r$//g" bin/* && \
+    sed -i 's/ruby\.exe$/ruby/' bin/*
+
 CMD ["bash", "-lc", "bin/jobs start"]
