@@ -31,7 +31,8 @@
       "Bash(netstat -ano)",
       "Bash(findstr :3000)",
       "Bash(taskkill:*)",
-      "Bash(bin/rails db:migrate STATUS)"
+      "Bash(bin/rails db:migrate STATUS)",
+      "Bash(git update-index *)"
     ]
   }
 }
