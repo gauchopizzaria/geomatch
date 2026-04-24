@@ -1,5 +1,6 @@
 class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
+  before_action :disable_cache_for_auth, if: :devise_controller?
   before_action :update_last_seen, if: :user_signed_in?
 
   protected
@@ -31,5 +32,13 @@ class ApplicationController < ActionController::Base
     # Redireciona para /discover_3d após o login
   def after_sign_in_path_for(resource)
     discover_3d_path
+  end
+
+  private
+
+  def disable_cache_for_auth
+    response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
+    response.headers["Pragma"]        = "no-cache"
+    response.headers["Expires"]       = "Fri, 01 Jan 1990 00:00:00 GMT"
   end
 end

@@ -2,13 +2,7 @@
   <div class="devise-form-card">
     <h2>Entrar no GeoMatch</h2>
 
-    <%#
-      data: { turbo: false } no form_for é obrigatório com Devise + Turbo/Rails 8.
-      Sem isso, o Turbo intercepta o redirect pós-login e lança erro de navegação.
-      A opção vai dentro de html: {} para chegar ao atributo do <form>.
-    %>
-    <%= form_for(resource, as: resource_name, url: session_path(resource_name),
-          html: { data: { turbo: false } }) do |f| %>
+    <%= form_for(resource, as: resource_name, url: session_path(resource_name)) do |f| %>
 
       <div class="field">
         <%= f.label :email %>
