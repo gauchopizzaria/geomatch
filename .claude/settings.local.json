@@ -45,7 +45,10 @@
       "Bash(git -C \"C:/Ruby34-x64/lib/ruby/gems/3.4.0/cache/bundler/git/webpush-3745947aa051394d66856671c006e430177dd3ea\" config uploadpack.allowAnySHA1InWant true)",
       "Bash(grep -v \"warning\\\\|rdoc\\\\|RDoc\\\\|VERSION\\\\|^$\")",
       "Bash(gem install *)",
-      "Bash(grep -v \"^$\")"
+      "Bash(grep -v \"^$\")",
+      "Bash(git add *)",
+      "Bash(git commit *)",
+      "Bash(git push *)"
     ]
   }
 }
