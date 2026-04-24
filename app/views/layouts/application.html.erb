@@ -7,6 +7,7 @@
 
     <% if user_signed_in? %>
       <meta name="current-user-id" content="<%= current_user.id %>">
+      <meta name="user-logged-in" content="true">
     <% end %>
 
     <link rel="manifest" href="/manifest.json">
