@@ -10,6 +10,10 @@
       <meta name="user-logged-in" content="true">
     <% end %>
 
+    <% if devise_controller? %>
+      <meta name="turbo-cache-control" content="no-cache">
+    <% end %>
+
     <link rel="manifest" href="/manifest.json">
 
 <meta name="mobile-web-app-capable" content="yes">

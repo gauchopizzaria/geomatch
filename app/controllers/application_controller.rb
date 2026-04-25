@@ -3,6 +3,8 @@ class ApplicationController < ActionController::Base
   before_action :disable_cache_for_auth, if: :devise_controller?
   before_action :update_last_seen, if: :user_signed_in?
 
+  rescue_from ActionController::InvalidAuthenticityToken, with: :redirect_and_refresh_token
+
   protected
 
   def configure_permitted_parameters
@@ -40,5 +42,9 @@ class ApplicationController < ActionController::Base
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"
     response.headers["Pragma"]        = "no-cache"
     response.headers["Expires"]       = "Fri, 01 Jan 1990 00:00:00 GMT"
+  end
+
+  def redirect_and_refresh_token
+    redirect_to new_user_session_path, alert: "Sessão atualizada por segurança. Por favor, tente novamente."
   end
 end
