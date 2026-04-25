@@ -40,8 +40,7 @@
       data: { turbo: false } no form_for é obrigatório com Devise + Turbo/Rails 8.
       Sem isso o Turbo trata o redirect do Devise como um fetch e quebra o fluxo.
     %>
-    <%= form_for(resource, as: resource_name, url: registration_path(resource_name),
-          html: { data: { turbo: false } }) do |f| %>
+    <%= form_for(resource, as: resource_name, url: registration_path(resource_name)) do |f| %>
       <%= render "devise/shared/error_messages", resource: resource %>
 
       <%# --- 1. Nome Completo --- %>
