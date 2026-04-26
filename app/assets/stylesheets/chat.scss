@@ -2,6 +2,10 @@
 // CHAT DARK PREMIUM (SEM SIDEBAR) - VERSÃO FINAL CORRIGIDA
 // =========================================================
 
+.chat-screen-wrapper, .chat-screen-wrapper * {
+  box-sizing: border-box;
+}
+
 /* Container Geral - COBRE A TELA TODA E FIXA O RODAPÉ */
 .chat-screen-wrapper {
   background-color: #0e0e10;
@@ -9,6 +13,7 @@
   top: 0;
   left: 0;
   width: 100%;
+  max-width: 100vw;
   height: 100dvh; /* dvh: exclui barras do Safari automaticamente */
   z-index: 2000;
   display: flex;
@@ -16,11 +21,13 @@
   color: #ffffff;
   font-family: 'Poppins', sans-serif;
   overflow: hidden;
+  overflow-x: hidden;
 }
 
 /* --- 1. HEADER (Blindado contra cortes e alinhado à direita) --- */
 .chat-header-dark {
   flex-shrink: 0;
+  width: 100%;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -231,6 +238,7 @@
 /* --- 3. BARRA DE INPUT (Fixo no Rodapé) --- */
 .chat-input-dark {
   flex-shrink: 0; /* Garante que a barra de input nunca suma ou diminua */
+  width: 100%;
   padding: 10px 15px;
   background-color: #0e0e10;
   border-top: 1px solid #222;
