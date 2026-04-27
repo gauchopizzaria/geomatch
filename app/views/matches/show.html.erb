@@ -77,9 +77,11 @@
   </div> 
 
   <%# --- 2. ÁREA DE MENSAGENS --- %>
-  <div id="chat-window" class="chat-window-dark" 
+  <div id="chat-window" class="chat-window-dark"
        data-match-id="<%= @match.id %>"
        data-current-user-id="<%= current_user.id %>">
+
+  <div class="messages-slide-container">
 
    <%# Aviso de Match (Topo) %>
     <div class="match-date-notice">
@@ -125,6 +127,7 @@
        <div class="message-bubble">
         <%= message.content %>
        </div>
+       <span class="message-timestamp"><%= message.created_at.strftime("%H:%M") %></span>
       </div>
     <% end %>
 
@@ -132,6 +135,8 @@
     <div id="typing-indicator" style="display: none; padding: 10px 20px; font-size: 0.8rem; color: #888;">
       <%# O JS vai injetar: "Fulano está digitando..." aqui %>
     </div>
+
+  </div><%# /messages-slide-container %>
 
   </div>
 

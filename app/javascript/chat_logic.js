@@ -233,9 +233,18 @@ document.addEventListener('turbo:load', () => {
     }
 
     const bubbleHtml = `<div class="message-bubble">${escapeHtml(message.content)}</div>`;
+    const tsHtml = `<span class="message-timestamp">${formatTime(message.created_at)}</span>`;
 
-    el.innerHTML = avatarHtml + bubbleHtml;
-    chatWindow.appendChild(el);
+    el.innerHTML = avatarHtml + bubbleHtml + tsHtml;
+
+    const slideContainer = chatWindow.querySelector('.messages-slide-container');
+    const target = slideContainer || chatWindow;
+    const typingIndicator = target.querySelector('#typing-indicator');
+    if (typingIndicator) {
+      target.insertBefore(el, typingIndicator);
+    } else {
+      target.appendChild(el);
+    }
 
     // Configura long press na nova mensagem
     setupLongPress(el);
@@ -526,6 +535,12 @@ document.addEventListener('turbo:load', () => {
     }[c]));
   }
 
+  function formatTime(isoString) {
+    if (!isoString) return "";
+    const d = new Date(isoString);
+    return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  }
+
   function scrollToBottom() {
     chatWindow.scrollTop = chatWindow.scrollHeight;
   }
@@ -560,4 +575,73 @@ document.addEventListener('turbo:load', () => {
     }
     requestAnimationFrame(scrollToBottom);
   });
+
+  // =======================================================
+  //   DESLIZAR PARA REVELAR HORÁRIOS (estilo Instagram)
+  // =======================================================
+  (function setupTimestampReveal() {
+    const slideContainer = chatWindow.querySelector('.messages-slide-container');
+    if (!slideContainer) return;
+
+    const MAX_SLIDE = 52;
+    let startX = 0;
+    let startY = 0;
+    let active = false;
+    let directionLocked = false;
+    let isHorizontal = false;
+
+    function onStart(x, y) {
+      startX = x;
+      startY = y;
+      active = true;
+      directionLocked = false;
+      isHorizontal = false;
+    }
+
+    function onMove(x, y) {
+      if (!active) return;
+      const dx = startX - x;   // positivo = moveu para a esquerda
+      const dy = Math.abs(y - startY);
+
+      if (!directionLocked) {
+        if (Math.abs(dx) < 5 && dy < 5) return;
+        directionLocked = true;
+        isHorizontal = Math.abs(dx) > dy;
+      }
+
+      if (!isHorizontal) return;
+
+      const offset = Math.min(Math.max(dx, 0), MAX_SLIDE);
+      slideContainer.classList.add('is-dragging');
+      slideContainer.style.transform = `translateX(-${offset}px)`;
+    }
+
+    function onEnd() {
+      if (!active) return;
+      active = false;
+      slideContainer.classList.remove('is-dragging');
+      slideContainer.style.transform = '';
+    }
+
+    // — Touch (capture: true para não ser bloqueado pelo stopPropagation do long-press)
+    chatWindow.addEventListener('touchstart', (e) => {
+      const t = e.touches[0];
+      onStart(t.clientX, t.clientY);
+    }, { passive: true, capture: true });
+
+    chatWindow.addEventListener('touchmove', (e) => {
+      const t = e.touches[0];
+      onMove(t.clientX, t.clientY);
+      if (active && isHorizontal) e.preventDefault();
+    }, { passive: false, capture: true });
+
+    chatWindow.addEventListener('touchend',    onEnd, { capture: true });
+    chatWindow.addEventListener('touchcancel', onEnd, { capture: true });
+
+    // — Mouse (para testes no desktop)
+    chatWindow.addEventListener('mousedown', (e) => onStart(e.clientX, e.clientY));
+    chatWindow.addEventListener('mousemove', (e) => onMove(e.clientX, e.clientY));
+    chatWindow.addEventListener('mouseup',   onEnd);
+    chatWindow.addEventListener('mouseleave', onEnd);
+  })();
 });

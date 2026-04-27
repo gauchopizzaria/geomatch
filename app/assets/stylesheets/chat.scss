@@ -173,15 +173,43 @@
   user-select: none;
 }
 
+/* Container interno que desliza ao revelar horários */
+.messages-slide-container {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+  will-change: transform;
+
+  &.is-dragging {
+    transition: none;
+  }
+}
+
 /* Ajuste na Linha da Mensagem */
 .message-row {
   display: flex;
   align-items: flex-end;
   width: 100%;           // A linha ocupa tudo
   margin-bottom: 4px;    // Espaço entre mensagens
-  
+  position: relative;    // ancora o timestamp absoluto
+
   /* Garante que o conteúdo interno (balão) não estique */
-  flex-direction: row; 
+  flex-direction: row;
+}
+
+/* Horário revelado ao deslizar para a esquerda */
+.message-timestamp {
+  position: absolute;
+  right: -52px;
+  bottom: 2px;
+  width: 48px;
+  font-size: 0.68rem;
+  color: #888;
+  white-space: nowrap;
+  text-align: right;
+  pointer-events: none;
+  line-height: 1.4;
 }
 
 /* --- BALÃO ENVIADO (DIREITA) --- */
