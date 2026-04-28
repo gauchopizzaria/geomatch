@@ -4,30 +4,40 @@ class MatchesController < ApplicationController
   before_action :set_match, only: [:show, :clear_conversation]
 
   def index
-  # 1. Busca matches iniciados ordenados pela data da última mensagem
-  # Usamos a função de agregação MAX diretamente no ORDER BY para evitar o erro de coluna inexistente no Postgres
-  @matches_initiated = current_user.matches
-    .joins(:messages)
-    .select('matches.*, MAX(messages.created_at) AS last_msg_at')
-    .group('matches.id')
-    .order('MAX(messages.created_at) DESC') # Repetimos a função aqui para o Postgres aceitar
-    .includes(:user, :matched_user)
+    # 1. IDs dos matches que já têm mensagem, ordenados pela mensagem mais recente.
+    # Query separada (apenas em messages) evita o conflito GROUP BY x SELECT *
+    # que quebrava no Postgres em produção quando o Rails fazia eager_load do includes.
+    initiated_ids_ordered = Message
+      .joins(:match)
+      .where("matches.user_id = :uid OR matches.matched_user_id = :uid", uid: current_user.id)
+      .group(:match_id)
+      .order(Arel.sql("MAX(messages.created_at) DESC"))
+      .pluck(:match_id)
 
-  # 2. Pega os IDs para não duplicar na lista de baixo
-  initiated_ids = @matches_initiated.pluck(:id)
+    # 2. Carrega os matches preservando a ordem dos IDs acima
+    @matches_initiated =
+      if initiated_ids_ordered.any?
+        loaded = Match
+          .where(id: initiated_ids_ordered)
+          .includes(:user, :matched_user)
+          .index_by(&:id)
+        initiated_ids_ordered.map { |id| loaded[id] }.compact
+      else
+        []
+      end
 
-  # 3. Matches não iniciados (mantendo sua lógica original de verificação de likes)
-  @all_uninitiated = current_user.matches
-    .where.not(id: initiated_ids)
-    .includes(:user, :matched_user)
+    # 3. Matches não iniciados (sem mensagens) — verifica match mútuo via likes
+    @all_uninitiated = current_user.matches
+      .where.not(id: initiated_ids_ordered)
+      .includes(:user, :matched_user)
 
-  @matches_uninitiated = @all_uninitiated.select do |match|
-    other = match.other_user(current_user)
-    # Sua lógica de segurança de likes
-    Like.exists?(liker_id: current_user.id, liked_id: other.id) &&
-    Like.exists?(liker_id: other.id, liked_id: current_user.id)
+    @matches_uninitiated = @all_uninitiated.select do |match|
+      other = match.other_user(current_user)
+      next false if other.nil?
+      Like.exists?(liker_id: current_user.id, liked_id: other.id) &&
+        Like.exists?(liker_id: other.id, liked_id: current_user.id)
+    end
   end
-end
 
   def show
     # @match já definido pelo before_action de forma segura

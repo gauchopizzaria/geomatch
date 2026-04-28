@@ -48,6 +48,7 @@
       <% if @matches_uninitiated.any? %>
         <% @matches_uninitiated.each do |match| %>
           <% other = match.other_user(current_user) %>
+          <% next if other.nil? %>
           <%= link_to match_path(match), class: "match-item" do %>
             <div class="avatar-wrapper">
               <% if other.avatar.attached? %>
@@ -80,6 +81,7 @@
       <div class="conversations-list" id="conversations-master-list">
         <% @matches_initiated.each do |match| %>
           <% other = match.other_user(current_user) %>
+          <% next if other.nil? %>
           <div class="swipe-container" id="match-row-<%= match.id %>"
                data-match-id="<%= match.id %>"
                data-other-user-id="<%= other.id %>">
