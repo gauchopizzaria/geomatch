@@ -31,6 +31,7 @@ document.addEventListener('turbo:load', () => {
       connected() {
         console.log("Conectado ao match", matchId);
         scrollToBottom();
+        chatWindow.querySelectorAll('.message-row.received').forEach(row => readObserver.observe(row));
       },
 
       received(data) {
@@ -44,10 +45,22 @@ document.addEventListener('turbo:load', () => {
         }
 
         // -------------------------
+        //   ATUALIZAÇÃO DE STATUS
+        // -------------------------
+        if (data.action === 'status_update') {
+          handleStatusUpdate(data);
+          return;
+        }
+
+        // -------------------------
         //     NOVA MENSAGEM
         // -------------------------
         if (data.message) {
           appendMessageToDOM(data.message);
+
+          if (data.message.sender_id !== currentUserId) {
+            matchChannel.perform('mark_as_delivered', { message_id: data.message.id });
+          }
 
           const conversationList = document.getElementById('conversations-master-list');
           const conversationRow = document.getElementById(`match-row-${data.message.match_id}`);
@@ -85,6 +98,18 @@ document.addEventListener('turbo:load', () => {
       }
     }
   );
+
+  // =======================================================
+  //   INTERSECTION OBSERVER — MARCAR MENSAGENS COMO LIDAS
+  // =======================================================
+  const readObserver = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if (!entry.isIntersecting) return;
+      const msgId = parseInt(entry.target.id.replace('msg-', ''), 10);
+      matchChannel.perform('mark_as_read', { message_id: msgId });
+      readObserver.unobserve(entry.target);
+    });
+  }, { root: chatWindow, threshold: 0.5 });
 
   // =======================================================
   //   LIMPAR CONVERSA
@@ -233,9 +258,12 @@ document.addEventListener('turbo:load', () => {
     }
 
     const bubbleHtml = `<div class="message-bubble">${escapeHtml(message.content)}</div>`;
+    const statusHtml = isSender
+      ? `<div class="message-status status-${message.status || 'sent'}" data-status-id="${message.id}"></div>`
+      : '';
     const tsHtml = `<span class="message-timestamp">${formatTime(message.created_at)}</span>`;
 
-    el.innerHTML = avatarHtml + bubbleHtml + tsHtml;
+    el.innerHTML = avatarHtml + bubbleHtml + statusHtml + tsHtml;
 
     const slideContainer = chatWindow.querySelector('.messages-slide-container');
     const target = slideContainer || chatWindow;
@@ -248,6 +276,8 @@ document.addEventListener('turbo:load', () => {
 
     // Configura long press na nova mensagem
     setupLongPress(el);
+
+    if (!isSender) readObserver.observe(el);
 
     scrollToBottom();
   }
@@ -539,6 +569,12 @@ document.addEventListener('turbo:load', () => {
     if (!isoString) return "";
     const d = new Date(isoString);
     return `${String(d.getHours()).padStart(2, "0")}:${String(d.getMinutes()).padStart(2, "0")}`;
+  }
+
+  function handleStatusUpdate(data) {
+    const el = document.querySelector(`.message-status[data-status-id="${data.message_id}"]`);
+    if (!el) return;
+    el.className = `message-status status-${data.status}`;
   }
 
   function scrollToBottom() {

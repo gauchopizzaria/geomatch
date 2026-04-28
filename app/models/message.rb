@@ -1,5 +1,7 @@
-class Message < ApplicationRecord  
+class Message < ApplicationRecord
   include GlobalID::Identification
+
+  enum :status, { sent: 0, delivered: 1, read: 2 }, default: :sent
 
   belongs_to :match
   belongs_to :sender, class_name: "User"
@@ -13,15 +15,16 @@ class Message < ApplicationRecord
 
   private
 
-  # Envia a mensagem em tempo real via ActionCable (para quem está com o chat aberto)
   def broadcast_message
     payload = {
       message: {
-        id: id,
-        content: content,
-        sender_id: sender_id,
+        id:         id,
+        match_id:   match_id,
+        content:    content,
+        sender_id:  sender_id,
+        status:     status,
         created_at: created_at.iso8601,
-        user_name: sender.display_name || "Usuário",
+        user_name:  sender.display_name || "Usuário",
         avatar_url: sender.avatar_url || "/assets/avatarfoto.jpg",
         verified:   sender.verified?
       }

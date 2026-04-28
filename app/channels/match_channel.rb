@@ -27,4 +27,36 @@ class MatchChannel < ApplicationCable::Channel
       verified:    user.verified?
     })
   end
+
+  def mark_as_delivered(data)
+    user = connection.current_user
+    return unless @match && user && @match.participant?(user)
+
+    message = @match.messages.find_by(id: data["message_id"])
+    return unless message && message.sender_id != user.id
+    return unless message.sent?
+
+    message.update!(status: :delivered)
+    MatchChannel.broadcast_to(@match, {
+      action:     "status_update",
+      message_id: message.id,
+      status:     "delivered"
+    })
+  end
+
+  def mark_as_read(data)
+    user = connection.current_user
+    return unless @match && user && @match.participant?(user)
+
+    message = @match.messages.find_by(id: data["message_id"])
+    return unless message && message.sender_id != user.id
+    return if message.read?
+
+    message.update!(status: :read)
+    MatchChannel.broadcast_to(@match, {
+      action:     "status_update",
+      message_id: message.id,
+      status:     "read"
+    })
+  end
 end

@@ -198,6 +198,72 @@
   flex-direction: row;
 }
 
+/* --- RECIBOS DE LEITURA --- */
+.message-status {
+  flex-shrink: 0;
+  align-self: flex-end;
+  margin-left: 4px;
+  margin-bottom: 3px;
+  height: 12px;
+  position: relative;
+
+  // 1 círculo = enviado
+  &.status-sent {
+    width: 12px;
+
+    &::before { display: none; }
+
+    &::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      left: 1px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid #888;
+    }
+  }
+
+  // 2 círculos cinzas = entregue
+  &.status-delivered {
+    width: 18px;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid #888;
+    }
+
+    &::before { left: 0; }
+    &::after  { left: 8px; }
+  }
+
+  // 2 círculos azuis = lido
+  &.status-read {
+    width: 18px;
+
+    &::before,
+    &::after {
+      content: '';
+      position: absolute;
+      top: 1px;
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      border: 1.5px solid #5b9cf6;
+    }
+
+    &::before { left: 0; }
+    &::after  { left: 8px; }
+  }
+}
+
 /* Horário revelado ao deslizar para a esquerda */
 .message-timestamp {
   position: absolute;

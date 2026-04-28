@@ -127,6 +127,9 @@
        <div class="message-bubble">
         <%= message.content %>
        </div>
+       <% if message.sender_id == current_user.id %>
+         <div class="message-status status-<%= message.status %>" data-status-id="<%= message.id %>"></div>
+       <% end %>
        <span class="message-timestamp"><%= message.created_at.strftime("%H:%M") %></span>
       </div>
     <% end %>
