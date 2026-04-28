@@ -4,39 +4,37 @@ class MatchesController < ApplicationController
   before_action :set_match, only: [:show, :clear_conversation]
 
   def index
-    # 1. IDs dos matches que já têm mensagem, ordenados pela mensagem mais recente.
-    # Query separada (apenas em messages) evita o conflito GROUP BY x SELECT *
-    # que quebrava no Postgres em produção quando o Rails fazia eager_load do includes.
+    # 1. IDs dos matches com mensagem, ordenados pela mais recente.
+    # Colunas qualificadas (messages.match_id) para evitar ambiguidade com matches.id no JOIN.
     initiated_ids_ordered = Message
       .joins(:match)
-      .where("matches.user_id = :uid OR matches.matched_user_id = :uid", uid: current_user.id)
-      .group(:match_id)
+      .where("matches.user_id = ? OR matches.matched_user_id = ?", current_user.id, current_user.id)
+      .group("messages.match_id")
       .order(Arel.sql("MAX(messages.created_at) DESC"))
-      .pluck(:match_id)
+      .pluck("messages.match_id")
 
-    # 2. Carrega os matches preservando a ordem dos IDs acima
-    @matches_initiated =
-      if initiated_ids_ordered.any?
-        loaded = Match
-          .where(id: initiated_ids_ordered)
-          .includes(:user, :matched_user)
-          .index_by(&:id)
-        initiated_ids_ordered.map { |id| loaded[id] }.compact
-      else
-        []
-      end
+    # 2. Carrega matches iniciados preservando a ordem
+    @matches_initiated = if initiated_ids_ordered.any?
+      matches_hash = Match.where(id: initiated_ids_ordered)
+                          .includes(:user, :matched_user)
+                          .index_by(&:id)
+      initiated_ids_ordered.map { |id| matches_hash[id] }.compact
+    else
+      []
+    end
 
-    # 3. Matches não iniciados (sem mensagens) — verifica match mútuo via likes
-    @all_uninitiated = current_user.matches
+    # 3. Matches não iniciados (mútuos via likes) — Match.where direto para evitar
+    # qualquer pegadinha de chaining sobre o helper current_user.matches.
+    @matches_uninitiated = Match
+      .where("user_id = ? OR matched_user_id = ?", current_user.id, current_user.id)
       .where.not(id: initiated_ids_ordered)
       .includes(:user, :matched_user)
-
-    @matches_uninitiated = @all_uninitiated.select do |match|
-      other = match.other_user(current_user)
-      next false if other.nil?
-      Like.exists?(liker_id: current_user.id, liked_id: other.id) &&
-        Like.exists?(liker_id: other.id, liked_id: current_user.id)
-    end
+      .select do |match|
+        other = match.other_user(current_user)
+        next false if other.nil?
+        Like.exists?(liker_id: current_user.id, liked_id: other.id) &&
+          Like.exists?(liker_id: other.id, liked_id: current_user.id)
+      end
   end
 
   def show

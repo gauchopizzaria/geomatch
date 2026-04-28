@@ -98,7 +98,7 @@
     <%# Loop de Mensagens %>
     <% last_date = nil %>
     <% @messages.each do |message| %>
-      
+
       <%# Separador de Data %>
       <% msg_date = message.created_at.to_date %>
       <% if last_date != msg_date %>
@@ -108,18 +108,18 @@
         <% last_date = msg_date %>
       <% end %>
 
-      <div id="msg-<%= message.id %>" 
+      <div id="msg-<%= message.id %>"
            data-sending="false"
            data-content="<%= message.content %>"
            class="message message-row <%= message.sender_id == current_user.id ? 'sent' : 'received' %>">
-        
+
         <%# Avatar (apenas nas recebidas) %>
         <% unless message.sender_id == current_user.id %>
           <div class="msg-avatar-container">
-            <% if message.sender.avatar.attached? %>
+            <% if message.sender&.avatar&.attached? %>
               <%= image_tag message.sender.avatar, class: "msg-avatar" %>
             <% else %>
-              <div class="msg-avatar-placeholder"><%= message.sender.display_name[0] %></div>
+              <div class="msg-avatar-placeholder"><%= message.sender&.display_name.to_s[0] || "?" %></div>
             <% end %>
           </div>
         <% end %>
