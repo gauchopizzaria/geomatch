@@ -80,6 +80,18 @@
         <path d="M18 12h2"></path>
       </svg>
     </button>
+
+    <%= link_to discover_3d_gallery_path,
+        class: "fab-button fab-gallery",
+        title: "Busca por cidade",
+        style: "background: linear-gradient(135deg,#d4be91,#b8975a); color:#1a1a1a; box-shadow: 0 4px 15px rgba(180,140,70,0.45);" do %>
+      <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="3"  y="3"  width="7" height="7" rx="1.5"></rect>
+        <rect x="14" y="3"  width="7" height="7" rx="1.5"></rect>
+        <rect x="3"  y="14" width="7" height="7" rx="1.5"></rect>
+        <rect x="14" y="14" width="7" height="7" rx="1.5"></rect>
+      </svg>
+    <% end %>
   </div>
 
   <div class="users-bottom-sheet">

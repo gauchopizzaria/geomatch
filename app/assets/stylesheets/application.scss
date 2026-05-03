@@ -19,6 +19,7 @@
 @use "plans";
 @use "preview";
 @use "map_3d";
+@use "gallery";
 
 // Importa os estilos base do Leaflet (se ainda não tiver)
 @import "leaflet/dist/leaflet.css";

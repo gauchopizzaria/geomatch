@@ -21,3 +21,6 @@ application.register("theme", ThemeController)
 
 import AddressController from "./address_controller"
 application.register("address", AddressController)
+
+import GalleryFiltersController from "./gallery_filters_controller"
+application.register("gallery-filters", GalleryFiltersController)

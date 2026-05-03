@@ -1,0 +1,163 @@
+<div class="gallery-screen">
+
+  <%# ============================================== %>
+  <%#  HEADER                                         %>
+  <%# ============================================== %>
+  <div class="gallery-header">
+    <%= link_to discover_3d_path, class: "gallery-back-btn", title: "Voltar ao mapa" do %>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M15 18l-6-6 6-6"></path>
+      </svg>
+    <% end %>
+
+    <h1 class="gallery-header-title">Busca por Cidade</h1>
+
+    <%= image_tag "logo-geomatch-dourada.png", class: "gallery-header-logo", alt: "GeoMatch" %>
+  </div>
+
+  <%# ============================================== %>
+  <%#  FILTROS                                        %>
+  <%# ============================================== %>
+  <section class="gallery-filters">
+    <%= form_with url: discover_3d_gallery_path, method: :get, local: true, class: "gallery-filter-form", data: { controller: "gallery-filters" } do |f| %>
+
+      <%# --- Sexo --- %>
+      <div>
+        <h3 class="filter-group-title">
+          <%= image_tag "filtro-dourado.svg", alt: "" %>
+          Sexo
+        </h3>
+        <div class="gender-pills" role="radiogroup" aria-label="Filtrar por sexo">
+          <% [
+               { value: "",       label: "Todos"  },
+               { value: "homem",  label: "Homem"  },
+               { value: "mulher", label: "Mulher" }
+             ].each do |opt| %>
+            <% selected = (@filters[:sexo].to_s.downcase == opt[:value]) %>
+            <label class="gender-pill <%= 'is-active' if selected %>">
+              <%= f.radio_button :sexo, opt[:value], checked: selected,
+                    data: { action: "change->gallery-filters#submit" } %>
+              <%= opt[:label] %>
+            </label>
+          <% end %>
+        </div>
+      </div>
+
+      <%# --- Localização: Estado > Cidade --- %>
+      <div>
+        <h3 class="filter-group-title">
+          <%= image_tag "mapa-vazada.svg", alt: "" %>
+          Localização
+        </h3>
+
+        <div class="location-selects two-cols">
+          <%# Estado %>
+          <div class="gallery-select-wrapper">
+            <%= f.select :estado,
+                  options_for_select([["Estado", ""]] + @available_states.map { |s| [s, s] }, @filters[:estado]),
+                  {},
+                  class: "gallery-select",
+                  data: { action: "change->gallery-filters#submit" } %>
+          </div>
+
+          <%# Cidade — habilitado apenas se estado escolhido %>
+          <div class="gallery-select-wrapper">
+            <%= f.select :cidade,
+                  options_for_select([["Cidade", ""]] + @available_cities.map { |c| [c, c] }, @filters[:cidade]),
+                  {},
+                  class: "gallery-select",
+                  disabled: @filters[:estado].blank?,
+                  data: { action: "change->gallery-filters#submit" } %>
+          </div>
+        </div>
+      </div>
+
+      <div class="filter-actions-row">
+        <button type="submit" class="filter-apply-btn">Aplicar Filtros</button>
+        <%= link_to "Limpar", discover_3d_gallery_path, class: "filter-clear-btn" %>
+      </div>
+    <% end %>
+  </section>
+
+  <%# ============================================== %>
+  <%#  META / CONTAGEM                                %>
+  <%# ============================================== %>
+  <div class="gallery-meta">
+    <span class="meta-count">
+      <strong><%= @users.size %></strong>
+      <%= @users.size == 1 ? "perfil encontrado" : "perfis encontrados" %>
+    </span>
+    <% if @filters.values.any?(&:present?) %>
+      <span class="meta-tag">Filtros ativos</span>
+    <% else %>
+      <span class="meta-tag">Em destaque</span>
+    <% end %>
+  </div>
+
+  <%# ============================================== %>
+  <%#  GRID DE CARDS                                  %>
+  <%# ============================================== %>
+  <% if @users.any? %>
+    <div class="gallery-grid">
+      <% @users.each do |user| %>
+        <% photo_url = user.avatar.attached? ? url_for(user.avatar) : asset_path("default-avatar.png") %>
+        <% location_text = [user.city, user.state].compact_blank.join(", ").presence || user.country.presence || "Localização oculta" %>
+
+        <article class="profile-card">
+          <%= link_to user_path(user), class: "profile-card-link", aria: { label: "Ver perfil de #{user.display_name}" } do %>
+            <%= image_tag photo_url, class: "profile-card-img", alt: user.display_name, loading: "lazy" %>
+          <% end %>
+
+          <div class="profile-card-overlay"></div>
+
+          <% if user.plan&.name && %w[Plus Gold].include?(user.plan.name) %>
+            <span class="profile-card-badge"><%= user.plan.name %></span>
+          <% end %>
+
+          <div class="profile-card-actions">
+            <%# Coração — favoritar (mapeado para o sistema de Likes existente) %>
+            <%= button_to likes_path(user_id: user.id),
+                  method: :post,
+                  class: "card-action-btn card-action-fav",
+                  form: { class: "card-action-form" },
+                  title: "Favoritar #{user.display_name}",
+                  aria: { label: "Favoritar" } do %>
+              <%= hidden_field_tag :source, "gallery" %>
+              <%= image_tag "coracao-vazada.svg", alt: "" %>
+            <% end %>
+
+            <%# Mensagem — abrir chat %>
+            <%= button_to start_chat_path(user_id: user.id),
+                  method: :post,
+                  class: "card-action-btn card-action-chat",
+                  form: { class: "card-action-form" },
+                  title: "Conversar com #{user.display_name}",
+                  aria: { label: "Enviar mensagem" } do %>
+              <%= image_tag "mensagem-vazada.svg", alt: "" %>
+            <% end %>
+          </div>
+
+          <div class="profile-card-info">
+            <div class="name-row">
+              <span><%= user.display_name %><% if user.age %>, <%= user.age %><% end %></span>
+              <% if user.respond_to?(:verified?) && user.verified? %>
+                <%= image_tag "icone-verificar.png", class: "verified-badge", alt: "Verificado" %>
+              <% end %>
+            </div>
+            <div class="location-row">
+              <i class="fas fa-map-marker-alt"></i>
+              <span><%= location_text %></span>
+            </div>
+          </div>
+        </article>
+      <% end %>
+    </div>
+  <% else %>
+    <div class="gallery-empty">
+      <div class="empty-icon">🔍</div>
+      <h3>Nenhum perfil encontrado</h3>
+      <p>Ajuste os filtros acima para descobrir mais pessoas.</p>
+    </div>
+  <% end %>
+
+</div>

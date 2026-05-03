@@ -39,7 +39,8 @@ Rails.application.routes.draw do
   # 3. FUNCIONALIDADES DE DISCOVERY / LEAD
   # =================================================================
 
-  get "/discover_3d", to: "users#discover_3d", as: :discover_3d
+  get "/discover_3d",         to: "users#discover_3d",     as: :discover_3d
+  get "/discover_3d/gallery", to: "discover_3d#gallery",    as: :discover_3d_gallery
 
 
   # Lead/Swipe
