@@ -138,6 +138,7 @@ Rails.application.routes.draw do
   # 8. PUSH SUBSCRIPTIONS
   # =================================================================
   resources :push_subscriptions, only: [:create, :destroy]
+  post '/push_subscriptions/apns', to: 'push_subscriptions#create_apns'
 
   resources :reports, only: [:create]
 

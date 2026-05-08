@@ -1,7 +1,7 @@
 # app/controllers/push_subscriptions_controller.rb
 class PushSubscriptionsController < ApplicationController
   before_action :authenticate_user!
-  skip_before_action :verify_authenticity_token, only: [:create, :destroy] # Pode ser necessário para PWA
+  skip_before_action :verify_authenticity_token, only: [:create, :destroy, :create_apns] # Pode ser necessário para PWA / Hotwire Native
 
   def create
     subscription_params = params.require(:push_subscription).permit(:endpoint, :p256dh, :auth)
@@ -25,5 +25,11 @@ class PushSubscriptionsController < ApplicationController
     else
       head :not_found
     end
+  end
+
+  # Recebe o device token APNs do app Hotwire Native (iOS) e persiste no usuário.
+  def create_apns
+    current_user.update(apns_token: params[:device_token])
+    head :ok
   end
 end

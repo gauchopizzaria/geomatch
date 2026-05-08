@@ -39,6 +39,7 @@ gem "turbo-rails"
 gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "sidekiq-cron"
 gem "web-push"
+gem "apnotic"
 
 group :development, :test do
   gem "bundler-audit", require: false

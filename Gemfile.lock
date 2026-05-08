@@ -80,6 +80,10 @@ GEM
       uri (>= 0.13.1)
     addressable (2.8.7)
       public_suffix (>= 2.0.2, < 7.0)
+    apnotic (1.8.0)
+      base64
+      connection_pool (>= 2, < 4)
+      net-http2 (>= 0.18.3, < 2)
     ast (2.4.3)
     aws-eventstream (1.4.0)
     aws-partitions (1.1187.0)
@@ -204,6 +208,7 @@ GEM
     hashdiff (1.2.1)
     hashie (5.1.0)
       logger
+    http-2 (1.1.3)
     http-accept (1.7.0)
     http-cookie (1.1.0)
       domain_name (~> 0.5)
@@ -306,6 +311,8 @@ GEM
     multipart-post (2.4.1)
     net-http (0.8.0)
       uri (>= 0.11.1)
+    net-http2 (0.19.0)
+      http-2 (>= 1.0)
     net-imap (0.5.12)
       date
       net-protocol
@@ -600,6 +607,7 @@ PLATFORMS
 DEPENDENCIES
   aasm
   activestorage-cloudinary-service
+  apnotic
   aws-sdk-s3
   bootsnap
   brakeman

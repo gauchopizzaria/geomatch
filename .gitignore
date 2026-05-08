@@ -33,6 +33,10 @@
 # Ignore key files for decrypting credentials and more.
 /config/*.key
 
+# Ignore APNs auth keys (Apple Push Notifications)
+/config/*.p8
+*.p8
+
 
 /app/assets/builds/*
 !/app/assets/builds/.keep
