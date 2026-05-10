@@ -1,19 +1,13 @@
 /* Estilos para o Perfil Público */
 
-// Barra de ações fixa (X / Chat / Coração) na página de perfil de outro usuário
+// Barra de ações (X / Chat / Coração) — em fluxo normal, antes do "Sobre Mim"
 .v-view-action-bar {
-  position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
-  left: 0;
-  right: 0;
-  z-index: 1100;
   display: flex;
   justify-content: center;
   align-items: center;
   gap: 28px;
-  padding: 14px 24px;
-  background: linear-gradient(to top, rgba(10, 10, 10, 0.97) 70%, transparent);
-  pointer-events: auto;
+  padding: 18px 24px;
+  margin-bottom: 8px;
 
   // Remove margens/paddings herdados dos forms gerados pelo button_to
   .dsc-action-form {

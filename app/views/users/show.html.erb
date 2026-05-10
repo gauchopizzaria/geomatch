@@ -42,7 +42,35 @@
     </div>
 
     <div class="v-view-body-container">
-      
+
+      <%# --- BARRA DE AÇÕES (fluxo normal, antes do "Sobre Mim") --- %>
+      <% if @user != current_user %>
+        <div class="v-view-action-bar">
+          <%# 1. REJEITAR / PASSAR %>
+          <%= button_to reject_user_path(user_id: @user.id), method: :post,
+              class: "dsc-action-btn btn-reject",
+              form: { class: "dsc-action-form" } do %>
+            <%= image_tag "botao-rejeitar.svg", alt: "Rejeitar" %>
+          <% end %>
+
+          <%# 2. MENSAGEM / CHAT %>
+          <%= button_to start_chat_path(user_id: @user.id), method: :post,
+              class: "dsc-action-btn btn-chat",
+              form: { class: "dsc-action-form" } do %>
+            <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
+          <% end %>
+
+          <%# 3. CURTIR / LIKE %>
+          <%= button_to likes_path(user_id: @user.id), method: :post,
+              class: "dsc-action-btn btn-like",
+              form: { class: "dsc-action-form" } do %>
+            <div class="dsc-heart-icon-wrapper">
+              <%= image_tag "coracao-chapada.png", alt: "Curtir" %>
+            </div>
+          <% end %>
+        </div>
+      <% end %>
+
       <%# --- CARD: SOBRE MIM --- %>
       <div class="v-view-info-card">
         <h3 class="v-view-card-header">SOBRE MIM</h3>
@@ -89,35 +117,7 @@
         <div class="v-view-safety-divider"></div>
       </div>
 
-      <div class="v-view-bottom-spacer" style="height: <%= @user != current_user ? '110px' : '32px' %>;"></div>
+      <div class="v-view-bottom-spacer"></div>
     </div>
   </div>
-
-  <%# --- BARRA DE AÇÕES FIXA — visível apenas para perfis de outros usuários --- %>
-  <% if @user != current_user %>
-    <div class="v-view-action-bar">
-      <%# 1. REJEITAR / PASSAR %>
-      <%= button_to reject_user_path(user_id: @user.id), method: :post,
-          class: "dsc-action-btn btn-reject",
-          form: { class: "dsc-action-form" } do %>
-        <%= image_tag "botao-rejeitar.svg", alt: "Rejeitar" %>
-      <% end %>
-
-      <%# 2. MENSAGEM / CHAT %>
-      <%= button_to start_chat_path(user_id: @user.id), method: :post,
-          class: "dsc-action-btn btn-chat",
-          form: { class: "dsc-action-form" } do %>
-        <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
-      <% end %>
-
-      <%# 3. CURTIR / LIKE %>
-      <%= button_to likes_path(user_id: @user.id), method: :post,
-          class: "dsc-action-btn btn-like",
-          form: { class: "dsc-action-form" } do %>
-        <div class="dsc-heart-icon-wrapper">
-          <%= image_tag "coracao-chapada.png", alt: "Curtir" %>
-        </div>
-      <% end %>
-    </div>
-  <% end %>
 </div>
