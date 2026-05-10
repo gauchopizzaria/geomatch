@@ -28,8 +28,21 @@ class PushSubscriptionsController < ApplicationController
   end
 
   # Recebe o device token APNs do app Hotwire Native (iOS) e persiste no usuário.
+  # authenticate_user! já garante current_user presente — guard explícito abaixo é defensivo,
+  # útil se algum dia trocarmos a auth ou o app tentar registrar antes do login.
   def create_apns
-    current_user.update(apns_token: params[:device_token])
-    head :ok
+    Rails.logger.info "[APNs] Tentativa de registro para o usuário: #{current_user&.email || 'sem sessão'}"
+
+    return head :unauthorized if current_user.blank?
+
+    token = params[:device_token].to_s.strip
+    return head :bad_request if token.blank?
+
+    if current_user.update(apns_token: token)
+      Rails.logger.info "[APNs] token registrado user=#{current_user.id} token=#{token.first(8)}…"
+      head :ok
+    else
+      render json: current_user.errors, status: :unprocessable_entity
+    end
   end
 end
