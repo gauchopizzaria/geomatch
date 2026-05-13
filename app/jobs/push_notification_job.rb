@@ -1,3 +1,5 @@
+require "stringio"
+
 class PushNotificationJob < ApplicationJob
   queue_as :default
 
@@ -50,21 +52,37 @@ class PushNotificationJob < ApplicationJob
 
     # NOVO Disparo (iOS Push via APNs)
     if recipient.apns_token.present?
+      connection = nil
       begin
-        connection = Apnotic::Connection.new(
-          cert_path: Rails.root.join("config/apns.p8"),
-          key_id: ENV["APNS_KEY_ID"],
-          team_id: ENV["APNS_TEAM_ID"]
-        )
+        p8_key = StringIO.new(ENV.fetch("APNS_KEY_P8").gsub('\n', "\n"))
+
+        connection_options = {
+          auth_method: :token,
+          cert_path:   p8_key,
+          key_id:      ENV.fetch("APNS_KEY_ID"),
+          team_id:     ENV.fetch("APNS_TEAM_ID")
+        }
+
+        connection = if ENV.fetch("APNS_ENV", "production") == "development"
+                       Apnotic::Connection.development(connection_options)
+                     else
+                       Apnotic::Connection.new(connection_options)
+                     end
 
         notification = Apnotic::Notification.new(recipient.apns_token)
         notification.alert = { title: title, body: body }
         notification.custom_payload = { url: url }
-        notification.topic = "br.com.geomatch.app"
+        notification.topic = ENV.fetch("APNS_TOPIC", "br.com.geomatch.app")
 
-        connection.push(notification)
+        response = connection.push(notification)
+
+        if response&.ok?
+          Rails.logger.info "[PushNotificationJob] message=#{message_id} apns ok recipient=#{recipient.id}"
+        else
+          Rails.logger.error "[PushNotificationJob] message=#{message_id} apns failed status=#{response&.status} body=#{response&.body}"
+        end
       rescue => e
-        Rails.logger.error "[PushNotificationJob] message=#{message_id} apns error=#{e.message}"
+        Rails.logger.error "[PushNotificationJob] message=#{message_id} apns error=#{e.class}: #{e.message}"
       ensure
         connection&.close
       end

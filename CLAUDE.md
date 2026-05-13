@@ -263,6 +263,11 @@ VAPID_PUBLIC_KEY / VAPID_PRIVATE_KEY
 SMTP_USERNAME / SMTP_PASSWORD
 MAPBOX_TOKEN
 APP_BASE_URL  # Usado nas back_urls do MP e nos webhooks
+APNS_KEY_P8   # Conteúdo da chave .p8 da Apple (com \n escapado — desescapado em runtime via StringIO)
+APNS_KEY_ID   # 10 caracteres, identificador da chave .p8 no Apple Developer Portal
+APNS_TEAM_ID  # 10 caracteres, identificador do time Apple Developer
+APNS_ENV      # "production" (default) ou "development" — seleciona endpoint do APNs
+APNS_TOPIC    # Bundle ID do app iOS (default: br.com.geomatch.app)
 ```
 
 ---
