@@ -54,16 +54,17 @@ class PushNotificationJob < ApplicationJob
     if recipient.apns_token.present?
       connection = nil
       begin
-        raw_key = ENV.fetch("APNS_KEY_P8").dup
-        raw_key.gsub!(/\\n/, "\n") # Trata \n literais, se houver
+        raw_env = ENV.fetch("APNS_KEY_P8", "")
 
-        # Se o provedor achatou a chave em uma única linha sem \n:
-        if raw_key.exclude?("\n")
-          base64_part = raw_key.gsub("-----BEGIN PRIVATE KEY-----", "").gsub("-----END PRIVATE KEY-----", "").delete(" ")
-          raw_key = "-----BEGIN PRIVATE KEY-----\n#{base64_part.scan(/.{1,64}/).join("\n")}\n-----END PRIVATE KEY-----\n"
-        end
+        # Remove os cabeçalhos e TODOS os espaços, tabs ou quebras de linha
+        pure_base64 = raw_env.gsub(/-----BEGIN PRIVATE KEY-----/, "")
+                             .gsub(/-----END PRIVATE KEY-----/, "")
+                             .gsub(/\s+/, "")
 
-        p8_key = StringIO.new(raw_key)
+        # Reconstrói o formato PEM estrito exigido pelo OpenSSL (linhas de 64 caracteres)
+        formatted_key = "-----BEGIN PRIVATE KEY-----\n#{pure_base64.scan(/.{1,64}/).join("\n")}\n-----END PRIVATE KEY-----\n"
+
+        p8_key = StringIO.new(formatted_key)
 
         connection_options = {
           auth_method: :token,
