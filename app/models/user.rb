@@ -12,7 +12,6 @@ class User < ApplicationRecord
 
   # Campos obrigatórios no cadastro
   validates :education_level, presence: { message: 'deve ser selecionada' }, on: :create
-  validates :zip_code, presence: { message: 'deve ser preenchido' }, on: :create
 
   # --- Associações ---
   belongs_to :plan

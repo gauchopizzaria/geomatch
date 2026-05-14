@@ -40,27 +40,6 @@
       </div>
     <% end %>
 
-    <div class="oauth-divider">
-      <span>ou</span>
-    </div>
-
-    <%#
-      button_to com form_class: + form: { data: } — distribuição correta dos atributos:
-        - class: "btn-google-auth"       → vai no <button>
-        - form_class: "form-google-auth" → vai no <form>  (Rails 7.1+)
-        - form: { data: { turbo: false } } → data-turbo="false" no <form>
-          (Turbo Drive lê esse atributo no elemento <form>, não no <button>)
-        - authenticity_token incluído automaticamente pelo Rails
-    %>
-    <%= button_to user_google_oauth2_omniauth_authorize_path,
-          class: "btn-google-auth",
-          form_class: "form-google-auth",
-          form: { data: { turbo: false } } do %>
-      <img src="https://www.svgrepo.com/show/475656/google-color.svg"
-           alt="Google" class="google-icon">
-      Continuar com o Google
-    <% end %>
-
     <div class="devise-links">
       <%= render "devise/shared/links" %>
     </div>
