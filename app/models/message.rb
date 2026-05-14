@@ -31,13 +31,20 @@ class Message < ApplicationRecord
     }
 
     MatchChannel.broadcast_to(match, payload)
+  rescue => e
+    Rails.logger.error "[Message#broadcast_message] Falha no broadcast match=#{match_id} error=#{e.class}: #{e.message}"
   end
 
   def broadcast_deletion
     MatchChannel.broadcast_to(match, { deleted_message_id: id })
+  rescue => e
+    Rails.logger.error "[Message#broadcast_deletion] Falha no broadcast match=#{match_id} error=#{e.class}: #{e.message}"
   end
 
   def send_push_notification
+    Rails.logger.info "[Message] Enfileirando PushNotificationJob para message=#{id} match=#{match_id}"
     PushNotificationJob.perform_later(id)
+  rescue => e
+    Rails.logger.error "[Message#send_push_notification] Falha ao enfileirar job message=#{id} error=#{e.class}: #{e.message}"
   end
 end
