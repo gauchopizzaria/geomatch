@@ -20,6 +20,7 @@ Rails.application.routes.draw do
   # Estas rotas apontam para o PagesController criado para o formulário
   get 'termos-de-uso', to: 'pages#terms', as: 'terms'
   get 'politica-de-privacidade', to: 'pages#privacy', as: 'privacy'
+  get '/suporte', to: 'pages#suporte', as: 'suporte'
   # -----------------------------------------------------------
 
   # Páginas estáticas existentes (Mantidas)
