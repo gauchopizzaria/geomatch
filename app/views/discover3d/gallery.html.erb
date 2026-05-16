@@ -18,7 +18,9 @@
   <%# ============================================== %>
   <%#  FILTROS                                        %>
   <%# ============================================== %>
-  <section class="gallery-filters">
+  <section class="gallery-filters"
+           data-controller="location-filter"
+           data-location-filter-current-city-value="<%= @filters[:city].to_s %>">
     <%= form_with url: discover_3d_gallery_path, method: :get, local: true, class: "gallery-filter-form", data: { controller: "gallery-filters" } do |f| %>
 
       <%# --- Sexo --- %>
@@ -51,23 +53,39 @@
         </h3>
 
         <div class="location-selects two-cols">
-          <%# Estado %>
+          <%# Estado — lista estática dos 27 estados do Brasil %>
           <div class="gallery-select-wrapper">
-            <%= f.select :estado,
-                  options_for_select([["Estado", ""]] + @available_states.map { |s| [s, s] }, @filters[:estado]),
+            <%= f.select :state,
+                  options_for_select([
+                    ["Estado", ""],
+                    ["Acre", "Acre"], ["Alagoas", "Alagoas"], ["Amapá", "Amapá"],
+                    ["Amazonas", "Amazonas"], ["Bahia", "Bahia"], ["Ceará", "Ceará"],
+                    ["Distrito Federal", "Distrito Federal"], ["Espírito Santo", "Espírito Santo"],
+                    ["Goiás", "Goiás"], ["Maranhão", "Maranhão"], ["Mato Grosso", "Mato Grosso"],
+                    ["Mato Grosso do Sul", "Mato Grosso do Sul"], ["Minas Gerais", "Minas Gerais"],
+                    ["Pará", "Pará"], ["Paraíba", "Paraíba"], ["Paraná", "Paraná"],
+                    ["Pernambuco", "Pernambuco"], ["Piauí", "Piauí"],
+                    ["Rio de Janeiro", "Rio de Janeiro"], ["Rio Grande do Norte", "Rio Grande do Norte"],
+                    ["Rio Grande do Sul", "Rio Grande do Sul"], ["Rondônia", "Rondônia"],
+                    ["Roraima", "Roraima"], ["Santa Catarina", "Santa Catarina"],
+                    ["São Paulo", "São Paulo"], ["Sergipe", "Sergipe"], ["Tocantins", "Tocantins"]
+                  ], @filters[:state]),
                   {},
                   class: "gallery-select",
-                  data: { action: "change->gallery-filters#submit" } %>
+                  data: { "location-filter-target": "state", action: "change->location-filter#fetchCities" } %>
           </div>
 
-          <%# Cidade — habilitado apenas se estado escolhido %>
+          <%# Cidade — populada via IBGE pelo Stimulus após selecionar estado %>
           <div class="gallery-select-wrapper">
-            <%= f.select :cidade,
-                  options_for_select([["Cidade", ""]] + @available_cities.map { |c| [c, c] }, @filters[:cidade]),
+            <%= f.select :city,
+                  options_for_select([["Cidade", ""]], @filters[:city]),
                   {},
                   class: "gallery-select",
-                  disabled: @filters[:estado].blank?,
-                  data: { action: "change->gallery-filters#submit" } %>
+                  disabled: @filters[:state].blank?,
+                  data: {
+                    "location-filter-target": "city",
+                    action: "change->gallery-filters#submit"
+                  } %>
           </div>
         </div>
       </div>
@@ -75,6 +93,12 @@
       <div class="filter-actions-row">
         <button type="submit" class="filter-apply-btn">Aplicar Filtros</button>
         <%= link_to "Limpar", discover_3d_gallery_path, class: "filter-clear-btn" %>
+        <%= link_to favorites_path, class: "filter-favorites-btn", title: "Meus favoritos" do %>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14" aria-hidden="true">
+            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
+          </svg>
+          Favoritos
+        <% end %>
       </div>
     <% end %>
   </section>
@@ -100,63 +124,20 @@
   <% if @users.any? %>
     <div class="gallery-grid">
       <% @users.each do |user| %>
-        <% photo_url = user.avatar.attached? ? url_for(user.avatar) : asset_path("default-avatar.png") %>
-        <% location_text = [user.city, user.state].compact_blank.join(", ").presence || user.country.presence || "Localização oculta" %>
-
-        <article class="profile-card">
-          <%= link_to user_path(user), class: "profile-card-link", aria: { label: "Ver perfil de #{user.display_name}" } do %>
-            <%= image_tag photo_url, class: "profile-card-img", alt: user.display_name, loading: "lazy" %>
-          <% end %>
-
-          <div class="profile-card-overlay"></div>
-
-          <% if user.plan&.name && %w[Plus Gold].include?(user.plan.name) %>
-            <span class="profile-card-badge"><%= user.plan.name %></span>
-          <% end %>
-
-          <div class="profile-card-actions">
-            <%# Coração — favoritar (mapeado para o sistema de Likes existente) %>
-            <%= button_to likes_path(user_id: user.id),
-                  method: :post,
-                  class: "card-action-btn card-action-fav",
-                  form: { class: "card-action-form" },
-                  title: "Favoritar #{user.display_name}",
-                  aria: { label: "Favoritar" } do %>
-              <%= hidden_field_tag :source, "gallery" %>
-              <%= image_tag "coracao-vazada.svg", alt: "" %>
-            <% end %>
-
-            <%# Mensagem — abrir chat %>
-            <%= button_to start_chat_path(user_id: user.id),
-                  method: :post,
-                  class: "card-action-btn card-action-chat",
-                  form: { class: "card-action-form" },
-                  title: "Conversar com #{user.display_name}",
-                  aria: { label: "Enviar mensagem" } do %>
-              <%= image_tag "mensagem-vazada.svg", alt: "" %>
-            <% end %>
-          </div>
-
-          <div class="profile-card-info">
-            <div class="name-row">
-              <span><%= user.display_name %><% if user.age %>, <%= user.age %><% end %></span>
-              <% if user.respond_to?(:verified?) && user.verified? %>
-                <%= image_tag "icone-verificar.png", class: "verified-badge", alt: "Verificado" %>
-              <% end %>
-            </div>
-            <div class="location-row">
-              <i class="fas fa-map-marker-alt"></i>
-              <span><%= location_text %></span>
-            </div>
-          </div>
-        </article>
+        <%= render "discover3d/profile_card", user: user, favorites_map: @favorites_map %>
       <% end %>
     </div>
   <% else %>
     <div class="gallery-empty">
       <div class="empty-icon">🔍</div>
-      <h3>Nenhum perfil encontrado</h3>
-      <p>Ajuste os filtros acima para descobrir mais pessoas.</p>
+      <% if @filters[:state].present? %>
+        <h3>Nenhum usuário encontrado nesta região</h3>
+        <p>Tente expandir sua busca para o estado inteiro ou limpe os filtros!</p>
+      <% else %>
+        <h3>Nenhum perfil encontrado</h3>
+        <p>Ajuste os filtros acima para descobrir mais pessoas.</p>
+      <% end %>
+      <%= link_to "Limpar filtros", discover_3d_gallery_path, class: "favorites-explore-btn", style: "margin-top: 14px;" %>
     </div>
   <% end %>
 

@@ -32,8 +32,9 @@ Rails.application.routes.draw do
   # Stories
   resources :stories, only: [:index, :create]
 
-  # Likes e Notificações
-  resources :likes, only: [:create, :destroy]
+  # Likes, Favoritos e Notificações
+  resources :likes,     only: [:create, :destroy]
+  resources :favorites, only: [:index, :create, :destroy]
   resources :notifications, only: [:index]
 
   # =================================================================

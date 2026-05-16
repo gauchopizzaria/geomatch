@@ -8,15 +8,15 @@ class Discover3dController < ApplicationController
                .where.not(id: current_user.excluded_user_ids + [current_user.id])
 
     @filters = {
-      sexo:   params[:sexo].presence,
-      estado: params[:estado].presence,
-      cidade: params[:cidade].presence
+      sexo:  params[:sexo].presence,
+      state: params[:state].presence,
+      city:  params[:city].presence
     }
 
     scope = base
     scope = scope.where("LOWER(gender) = ?", @filters[:sexo].downcase) if @filters[:sexo]
-    scope = scope.where(state: @filters[:estado])                       if @filters[:estado]
-    scope = scope.where(city: @filters[:cidade])                        if @filters[:cidade]
+    scope = scope.where("state ILIKE ?", @filters[:state])             if @filters[:state]
+    scope = scope.where("city ILIKE ?", @filters[:city])               if @filters[:city]
 
     if @filters.values.all?(&:blank?)
       # Sem filtros: perfis em destaque (verificados → premium → mais ativos)
@@ -30,13 +30,9 @@ class Discover3dController < ApplicationController
 
     @users = scope.limit(GALLERY_LIMIT)
 
-    @available_states = base.where.not(state: [nil, ""]).distinct.pluck(:state).sort
-    @available_cities = if @filters[:estado]
-                          base.where(state: @filters[:estado])
-                              .where.not(city: [nil, ""])
-                              .distinct.pluck(:city).sort
-                        else
-                          []
-                        end
+    @favorites_map = current_user.favorites
+                                  .where(favorited_user_id: @users.map(&:id))
+                                  .each_with_object({}) { |f, h| h[f.favorited_user_id] = f.id }
+
   end
 end

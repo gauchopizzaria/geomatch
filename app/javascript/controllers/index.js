@@ -27,3 +27,6 @@ application.register("gallery-filters", GalleryFiltersController)
 
 import MapLoaderController from "./map_loader_controller"
 application.register("map-loader", MapLoaderController)
+
+import LocationFilterController from "./location_filter_controller"
+application.register("location-filter", LocationFilterController)

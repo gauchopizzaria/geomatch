@@ -395,6 +395,60 @@
 
 .card-action-form { margin: 0; }
 
+// Botão Ver Favoritos (ao lado de Aplicar e Limpar)
+.filter-favorites-btn {
+  flex: 1;
+  padding: 13px 12px;
+  border-radius: 12px;
+  background: transparent;
+  border: 1.5px solid rgba(212, 175, 55, 0.55);
+  color: var(--color-accent);
+  font-weight: 600;
+  font-size: 0.85rem;
+  text-decoration: none;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 5px;
+  cursor: pointer;
+  transition: all 0.18s ease;
+  white-space: nowrap;
+
+  svg { flex-shrink: 0; }
+  &:hover { background: rgba(212, 175, 55, 0.12); border-color: var(--color-primary); color: var(--color-dark); }
+}
+
+// Botão estrela no card
+.card-action-star {
+  color: rgba(255, 255, 255, 0.9);
+  svg { width: 18px; height: 18px; }
+  &:hover { background: rgba(212, 175, 55, 0.65); color: #fff; }
+
+  &--active {
+    background: linear-gradient(135deg, #d4be91, #b8975a);
+    color: #1a1a1a;
+    &:hover { background: linear-gradient(135deg, #c8a870, #9a7040); }
+  }
+}
+
+// Botão explorar galeria (empty state de favoritos)
+.favorites-explore-btn {
+  display: inline-block;
+  margin-top: 16px;
+  padding: 12px 28px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #d4be91, #b8975a);
+  color: #1a1a1a;
+  font-weight: 700;
+  font-size: 0.9rem;
+  text-decoration: none;
+  box-shadow: 0 4px 14px rgba(180, 140, 70, 0.35);
+  transition: transform 0.15s ease, box-shadow 0.15s ease;
+  &:hover  { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(180, 140, 70, 0.45); }
+  &:active { transform: translateY(0); }
+}
+
 // ----- ESTADO VAZIO -----
 .gallery-empty {
   margin: 40px 24px;

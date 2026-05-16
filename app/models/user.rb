@@ -31,6 +31,9 @@ class User < ApplicationRecord
   has_many :notifications, foreign_key: :recipient_id, dependent: :destroy
   has_many :stories, dependent: :destroy
 
+  has_many :favorites, dependent: :destroy
+  has_many :favorited_users, through: :favorites, source: :favorited_user
+
   # =========================================================
   # BLOQUEIOS
   # =========================================================
