@@ -24,3 +24,6 @@ application.register("address", AddressController)
 
 import GalleryFiltersController from "./gallery_filters_controller"
 application.register("gallery-filters", GalleryFiltersController)
+
+import MapLoaderController from "./map_loader_controller"
+application.register("map-loader", MapLoaderController)

@@ -2,17 +2,17 @@ import { toggleLiveTracking, startLiveTracking, resetTracking, isCurrentlyTracki
 // Turf.js é esperado estar disponível globalmente (ex: via CDN)
 // import * as turf from '@turf/turf'; // Removido para evitar erro de build se não instalado
 
-// ===== KILL-SWITCH GLOBAL: remove o loader após 10s não importa o que aconteça =====
+// ===== KILL-SWITCH GLOBAL: despacha map:loaded após 10s não importa o que aconteça =====
 // GPS tem timeout de 8s; o kill-switch precisa ser posterior para não revelar o mapa
 // na posição errada enquanto o GPS ainda está resolvendo.
 setTimeout(() => {
-  const l = document.getElementById('map-loader');
-  if (l) {
-    console.log('[GeoMatch] Kill-switch global: removendo loader após 10s');
-    l.remove();
+  const wrapper = document.querySelector('[data-controller="map-loader"]');
+  if (wrapper) {
+    console.log('[GeoMatch] Kill-switch global: disparando map:loaded após 10s');
+    wrapper.dispatchEvent(new CustomEvent("map:loaded"));
   }
 }, 10000);
-// ===================================================================================
+// ========================================================================================
 
 
 // --- Configurações e Estado Global ---
@@ -569,18 +569,20 @@ function initializeMapAndLocation() {
     setTimeout(() => map.resize(), 900);
   });
 
-  // Revela o mapa — controlado apenas por tempo (sem dependência de eventos do Mapbox)
+  // Revela o mapa — dispara map:loaded para o Stimulus map-loader esconder a animação
   window._revealMap = (() => {
     let revealed = false;
     return () => {
       console.log('[GeoMatch] Tentando remover loader...');
       if (revealed) return;
       revealed = true;
-      const loader = document.getElementById('map-loader');
-      if (!loader) { console.log('[GeoMatch] Loader já removido'); return; }
       map.resize();
-      loader.classList.add('fade-out');
-      setTimeout(() => loader.remove(), 650);
+      const wrapper = document.querySelector('[data-controller="map-loader"]');
+      if (wrapper) {
+        wrapper.dispatchEvent(new CustomEvent("map:loaded"));
+      } else {
+        console.log('[GeoMatch] Wrapper map-loader não encontrado');
+      }
     };
   })();
 
@@ -628,8 +630,8 @@ function initializeMapAndLocation() {
     } else {
       // Sem coordenadas válidas — informa o usuário e mantém o loader com aviso
       console.error('[GeoMatch] Sem coordenadas disponíveis.');
-      const loaderText = document.querySelector('.map-loader-text');
-      if (loaderText) loaderText.textContent = 'Ative o GPS para usar o GeoMatch.';
+      const loaderCaption = document.querySelector('.map-loading__caption');
+      if (loaderCaption) loaderCaption.textContent = 'Ative o GPS para usar o GeoMatch.';
     }
   });
 
@@ -678,7 +680,7 @@ document.addEventListener("turbo:load", () => {
   window._mapIsReady = false;
   window._onMapLoaded = null;
 
-  const loader = document.getElementById('map-loader');
+  const loader = document.querySelector('.map-loading');
   const mapContainer = document.getElementById('map-3d');
 
   // Sem mapa nesta página: destrói loader e qualquer instância obsoleta
