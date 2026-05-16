@@ -60,13 +60,14 @@ class UsersController < ApplicationController
     end
   end
 
-  # Ação para atualizar localização (chamada via JS as vezes)
   def update_location
-    if current_user.invisible
-    return head :ok # Retorna sucesso mas não salva nada
-    end
-    if params[:latitude].present? && params[:longitude].present?
-      current_user.update(latitude: params[:latitude], longitude: params[:longitude], last_seen_at: Time.zone.now)
+    return head :ok if current_user.invisible
+
+    lat = params[:latitude].to_f
+    lng = params[:longitude].to_f
+
+    if lat != 0.0 && lng != 0.0
+      current_user.update(latitude: lat, longitude: lng, last_seen_at: Time.zone.now)
       head :ok
     else
       head :unprocessable_entity

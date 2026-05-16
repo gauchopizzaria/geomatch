@@ -2,6 +2,7 @@ let watchId = null;
 let isTracking = false;
 let lastLat = null;
 let lastLng = null;
+let nativeLocationCallback = null;
 
 // Deslocamento mínimo real (metros) para propagar uma atualização de posição.
 // Filtra o ruído inerente do GPS — o celular parado reporta variações de 1-4m continuamente.
@@ -61,8 +62,13 @@ function startTracking(buttonElement, onLocationChange) {
   }
 
   isTracking = true;
+  nativeLocationCallback = onLocationChange || null;
   if (buttonElement) buttonElement.classList.add("active-tracking");
   console.log("📍 Iniciando rastreamento contínuo...");
+
+  if (window.webkit?.messageHandlers?.locationHandler) {
+    window.webkit.messageHandlers.locationHandler.postMessage('startTracking');
+  }
 
   watchId = navigator.geolocation.watchPosition(
     (position) => {
@@ -104,10 +110,46 @@ function stopTracking(buttonElement) {
   isTracking = false;
   lastLat = null;
   lastLng = null;
+  nativeLocationCallback = null;
   if (buttonElement) buttonElement.classList.remove("active-tracking");
   console.log("🛑 Rastreamento contínuo parado.");
+
+  if (window.webkit?.messageHandlers?.locationHandler) {
+    window.webkit.messageHandlers.locationHandler.postMessage('stopTracking');
+  }
 }
 
 export function isCurrentlyTracking() {
   return isTracking;
 }
+
+// Ponte nativa iOS (Swift → JS): chamada pela WebView quando o app envia posição em background.
+// Aplica o mesmo filtro de ruído do watchPosition para evitar updates desnecessários.
+window.handleNativeLocationUpdate = (latitude, longitude) => {
+  const lat = parseFloat(latitude);
+  const lng = parseFloat(longitude);
+  if (isNaN(lat) || isNaN(lng)) return;
+
+  if (lastLat !== null) {
+    const dist = haversineMeters(lastLat, lastLng, lat, lng);
+    if (dist < MIN_MOVE_METERS) return;
+    console.log(`🌐 [Native] Movimento: ${dist.toFixed(1)}m → (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
+  } else {
+    console.log(`🌐 [Native] Posição inicial: (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
+  }
+
+  lastLat = lat;
+  lastLng = lng;
+
+  if (nativeLocationCallback) nativeLocationCallback(lat, lng);
+
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+  fetch('/users/update_location', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken || ''
+    },
+    body: JSON.stringify({ latitude: lat, longitude: lng })
+  }).catch(err => console.warn('⚠️ [Native] Falha ao enviar localização:', err));
+};
