@@ -100,7 +100,8 @@ class User < ApplicationRecord
     where(birthdate: start_date..end_date)
   }
 
-  scope :visible, -> { where(invisible: [false, nil]) }
+  scope :visible,       -> { where(invisible: [false, nil]) }
+  scope :online_on_map, -> { where('last_location_updated_at >= ?', 3.minutes.ago) }
   
   # --- Callbacks ---
   after_create :attach_default_avatar

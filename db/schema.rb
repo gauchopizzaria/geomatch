@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_16_000001) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_16_000002) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -419,6 +419,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_000001) do
     t.string "interested_in"
     t.boolean "invisible", default: false
     t.datetime "last_like_reset_at"
+    t.datetime "last_location_updated_at"
     t.datetime "last_message_reset_at"
     t.datetime "last_seen_at"
     t.decimal "latitude", precision: 10, scale: 6
@@ -447,6 +448,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_000001) do
     t.index ["admin"], name: "index_users_on_admin"
     t.index ["banned_at"], name: "index_users_on_banned_at"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["last_location_updated_at"], name: "index_users_on_last_location_updated_at"
     t.index ["latitude", "longitude"], name: "index_users_on_latitude_and_longitude"
     t.index ["plan_id"], name: "index_users_on_plan_id"
     t.index ["premium_until"], name: "index_users_on_premium_until"

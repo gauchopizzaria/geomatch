@@ -33,6 +33,7 @@ class ApplicationController < ActionController::Base
 
     # Redireciona para /discover_3d após o login
   def after_sign_in_path_for(resource)
+    resource.touch(:last_location_updated_at)
     discover_3d_path
   end
 

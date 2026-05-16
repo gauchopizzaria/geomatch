@@ -10,6 +10,7 @@ class DiscoveryService
     return [] unless @user.latitude && @user.longitude
 
     query = User.near([@user.latitude, @user.longitude], radius_km)
+                .online_on_map
                 .where.not(id: @user.id)
                 .where(invisible: [false, nil])
 

@@ -67,7 +67,12 @@ class UsersController < ApplicationController
     lng = params[:longitude].to_f
 
     if lat != 0.0 && lng != 0.0
-      current_user.update(latitude: lat, longitude: lng, last_seen_at: Time.zone.now)
+      current_user.update(
+        latitude: lat,
+        longitude: lng,
+        last_seen_at: Time.zone.now,
+        last_location_updated_at: Time.zone.now
+      )
       head :ok
     else
       head :unprocessable_entity
@@ -169,9 +174,10 @@ class UsersController < ApplicationController
     # Usamos update_columns para gravar direto no banco sem disparar callbacks lentos
     if current_user && !current_user.invisible
       current_user.update_columns(
-        latitude: latitude, 
-        longitude: longitude, 
-        last_seen_at: Time.current
+        latitude: latitude,
+        longitude: longitude,
+        last_seen_at: Time.current,
+        last_location_updated_at: Time.current
       )
     end
 
