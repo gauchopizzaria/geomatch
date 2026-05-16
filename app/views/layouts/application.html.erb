@@ -59,6 +59,9 @@
   </head>
 
   <body class='<%= 'turbo-native' if turbo_native_app? %>' data-turbo-native='<%= turbo_native_app? %>'>
+    <div id="toast-container" class="toast-container">
+      <%= render 'shared/flash' %>
+    </div>
     <% if user_signed_in? %>
       <!-- Estrutura principal com Sidebar e Conteúdo para usuários autenticados -->
       <div class="authenticated-layout">

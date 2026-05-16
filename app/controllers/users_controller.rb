@@ -245,11 +245,7 @@ class UsersController < ApplicationController
   user_update_params = user_params.except(:album_photos)
 
   if @user.update(user_update_params)
-    # 3. Respondemos de forma amigável ao Turbo/HTML
-    respond_to do |format|
-      format.html { redirect_to edit_profile_path, notice: "Perfil atualizado!" }
-      format.turbo_stream { flash.now[:notice] = "Perfil atualizado!" }
-    end
+    redirect_to edit_profile_path, notice: "Perfil atualizado!", status: :see_other
   else
     render :edit, status: :unprocessable_entity
   end
@@ -310,6 +306,7 @@ end
     params.require(:user).permit(
       :avatar, :username, :bio, :birthdate, :gender,
       :share_location, :interested_in, :invisible,
+      :city, :state,
       { hobbies_list: [] },
       album_photos: []
     )

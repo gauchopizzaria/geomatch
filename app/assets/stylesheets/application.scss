@@ -21,6 +21,7 @@
 @use "map_3d";
 @use "gallery";
 @use "map_loading";
+@use "toast";
 
 // Importa os estilos base do Leaflet (se ainda não tiver)
 @import "leaflet/dist/leaflet.css";

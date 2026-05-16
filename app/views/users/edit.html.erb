@@ -98,9 +98,42 @@
           <%= f.select :interested_in, [["Homem", "Homem"], ["Mulher", "Mulher"], ["Não Binário", "Não Binário"]], { include_blank: "Selecione" }, class: "dark-input" %>
         </div>
 
-        <div class="field-group">
-          <%= f.label :address, "Cidade", class: "dark-label" %>
-          <%= f.text_field :address, placeholder: "Ex: São Paulo", class: "dark-input" %>
+        <div data-controller="profile-location">
+          <div class="field-group">
+            <%= f.label :state, "Estado", class: "dark-label" %>
+            <%= f.select :state,
+                  options_for_select([
+                    ["Selecione seu estado", ""],
+                    ["Acre", "AC"], ["Alagoas", "AL"], ["Amapá", "AP"],
+                    ["Amazonas", "AM"], ["Bahia", "BA"], ["Ceará", "CE"],
+                    ["Distrito Federal", "DF"], ["Espírito Santo", "ES"],
+                    ["Goiás", "GO"], ["Maranhão", "MA"], ["Mato Grosso", "MT"],
+                    ["Mato Grosso do Sul", "MS"], ["Minas Gerais", "MG"],
+                    ["Pará", "PA"], ["Paraíba", "PB"], ["Paraná", "PR"],
+                    ["Pernambuco", "PE"], ["Piauí", "PI"],
+                    ["Rio de Janeiro", "RJ"], ["Rio Grande do Norte", "RN"],
+                    ["Rio Grande do Sul", "RS"], ["Rondônia", "RO"],
+                    ["Roraima", "RR"], ["Santa Catarina", "SC"],
+                    ["São Paulo", "SP"], ["Sergipe", "SE"], ["Tocantins", "TO"]
+                  ], @user.state),
+                  {},
+                  class: "dark-input",
+                  data: {
+                    "profile-location-target": "state",
+                    action: "change->profile-location#fetchCities"
+                  } %>
+          </div>
+
+          <div class="field-group">
+            <%= f.label :city, "Cidade", class: "dark-label" %>
+            <%= f.text_field :city,
+                  placeholder: "Digite sua cidade",
+                  class: "dark-input",
+                  list: "profile-cities-list",
+                  autocomplete: "off",
+                  data: { "profile-location-target": "city" } %>
+            <datalist id="profile-cities-list"></datalist>
+          </div>
         </div>
 
         <div class="field-group">

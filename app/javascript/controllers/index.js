@@ -30,3 +30,9 @@ application.register("map-loader", MapLoaderController)
 
 import LocationFilterController from "./location_filter_controller"
 application.register("location-filter", LocationFilterController)
+
+import ProfileLocationController from "./profile_location_controller"
+application.register("profile-location", ProfileLocationController)
+
+import ToastController from "./toast_controller"
+application.register("toast", ToastController)
