@@ -15,8 +15,8 @@ class Discover3dController < ApplicationController
 
     scope = base
     scope = scope.where("LOWER(gender) = ?", @filters[:sexo].downcase) if @filters[:sexo]
-    scope = scope.where("state ILIKE ?", @filters[:state])             if @filters[:state]
-    scope = scope.where("city ILIKE ?", @filters[:city])               if @filters[:city]
+    scope = scope.where("state ILIKE ?", @filters[:state].strip)       if @filters[:state]
+    scope = scope.where("city ILIKE ?", @filters[:city].strip)         if @filters[:city]
 
     if @filters.values.all?(&:blank?)
       # Sem filtros: perfis em destaque (verificados → premium → mais ativos)

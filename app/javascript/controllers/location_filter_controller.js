@@ -1,33 +1,18 @@
 import { Controller } from "@hotwired/stimulus"
 
-// Mapeamento nome completo → UF para a chamada à API do IBGE
-const STATE_UF = {
-  "Acre": "AC", "Alagoas": "AL", "Amapá": "AP", "Amazonas": "AM",
-  "Bahia": "BA", "Ceará": "CE", "Distrito Federal": "DF",
-  "Espírito Santo": "ES", "Goiás": "GO", "Maranhão": "MA",
-  "Mato Grosso": "MT", "Mato Grosso do Sul": "MS", "Minas Gerais": "MG",
-  "Pará": "PA", "Paraíba": "PB", "Paraná": "PR", "Pernambuco": "PE",
-  "Piauí": "PI", "Rio de Janeiro": "RJ", "Rio Grande do Norte": "RN",
-  "Rio Grande do Sul": "RS", "Rondônia": "RO", "Roraima": "RR",
-  "Santa Catarina": "SC", "São Paulo": "SP", "Sergipe": "SE", "Tocantins": "TO"
-}
-
 export default class extends Controller {
   static targets = ["state", "city"]
   static values  = { currentCity: String }
 
   connect() {
-    // Se a página carregar com um estado já selecionado (vindo do servidor),
-    // recarrega as cidades do IBGE e re-seleciona a cidade filtrada.
     if (this.stateTarget.value) this.fetchCities()
   }
 
   async fetchCities() {
-    const stateName = this.stateTarget.value
-    const uf        = STATE_UF[stateName]
+    const uf = this.stateTarget.value  // value já é a sigla UF (ex: "BA")
 
-    this.cityTarget.innerHTML  = '<option value="">Carregando...</option>'
-    this.cityTarget.disabled   = true
+    this.cityTarget.innerHTML = '<option value="">Carregando...</option>'
+    this.cityTarget.disabled  = true
 
     if (!uf) {
       this.cityTarget.innerHTML = '<option value="">Cidade</option>'
