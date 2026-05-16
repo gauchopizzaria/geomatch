@@ -73,6 +73,7 @@ class UsersController < ApplicationController
         last_seen_at: Time.zone.now,
         last_location_updated_at: Time.zone.now
       )
+      broadcast_map_presence(current_user, lat, lng)
       head :ok
     else
       head :unprocessable_entity
@@ -179,6 +180,7 @@ class UsersController < ApplicationController
         last_seen_at: Time.current,
         last_location_updated_at: Time.current
       )
+      broadcast_map_presence(current_user, latitude, longitude)
     end
 
     # Se veio 0.0, 0.0, é bug de GPS, retorna vazio
@@ -307,6 +309,26 @@ end
   #  PRIVATE
   # ==========================================
   private
+
+  def broadcast_map_presence(user, lat, lng)
+    return if user.invisible
+
+    ActionCable.server.broadcast("map_updates", {
+      action:       "update",
+      user_id:      user.id,
+      username:     user.display_name.presence || user.username,
+      lat:          lat,
+      lng:          lng,
+      avatar_url:   user.avatar.attached? ? rails_blob_path(user.avatar, only_path: true) : nil,
+      verified:     user.verified?,
+      bio:          user.bio,
+      city:         user.city,
+      gender:       user.gender,
+      interested_in: user.interested_in,
+      hobbies_list: user.hobbies_list,
+      birthdate:    user.birthdate
+    })
+  end
 
   def user_params
     params.require(:user).permit(

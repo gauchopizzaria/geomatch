@@ -1,4 +1,5 @@
 import { toggleLiveTracking, startLiveTracking, resetTracking, isCurrentlyTracking } from "./live_location";
+import consumer from "./channels/consumer";
 // Turf.js é esperado estar disponível globalmente (ex: via CDN)
 // import * as turf from '@turf/turf'; // Removido para evitar erro de build se não instalado
 
@@ -33,6 +34,8 @@ let currentRangeMeters = parseInt(localStorage.getItem(STORAGE_KEYS.RANGE)) || I
 let currentGenderFilter = localStorage.getItem(STORAGE_KEYS.GENDER_FILTER) || "all";
 let mapboxUserMarkers = {}; // Para gerenciar marcadores de usuários no Mapbox
 let mapboxMarkerDistances = {}; // { userId: distanceKm } — para filtragem client-side por raio
+let mapboxUserData = {}; // { userId: userData } — dados mais recentes por usuário
+let mapSubscription = null; // Subscription do ActionCable para o MapChannel
 let lastUserFetchTime = 0;
 let isUserInvisible = false;
 let rotationAnimId = null;
@@ -363,6 +366,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
           .addTo(map);
         mapboxUserMarkers[user.id] = marker;
         mapboxMarkerDistances[user.id] = user.distance_km || 0;
+        mapboxUserData[user.id] = user;
         el.addEventListener('click', (e) => {
           e.stopPropagation();
           if (activeMarkerEl && activeMarkerEl !== el) activeMarkerEl.style.opacity = '1';
@@ -436,6 +440,108 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
     hideLoadingAnimation();
     if (usersList) usersList.innerHTML = '<li class="text-center loading-text">Erro ao carregar usuários.</li>';
   }
+}
+
+// --- Tempo Real: handler para dados recebidos via MapChannel ---
+function _handleMapRealtime(data) {
+  const currentUserId = document.querySelector('meta[name="current-user-id"]')?.content;
+  if (!map || !window._mapIsReady) return;
+  if (String(data.user_id) === String(currentUserId)) return; // nunca duplicar o próprio usuário
+
+  const uid = data.user_id;
+
+  // --- SAÍDA: remove marcador quando o usuário desconecta ---
+  if (data.action === "leave") {
+    const m = mapboxUserMarkers[uid];
+    if (m) { m.remove(); delete mapboxUserMarkers[uid]; }
+    delete mapboxMarkerDistances[uid];
+    delete mapboxUserData[uid];
+    filterMarkersByRange();
+    return;
+  }
+
+  // --- UPDATE: adiciona ou reposiciona marcador ---
+  if (data.action !== "update") return;
+  if (!fixedUserLat || !fixedUserLng) return;
+
+  // Distância real em metros — respeita o filtro de raio atual
+  const realDistM = haversineDistanceM(fixedUserLat, fixedUserLng, data.lat, data.lng);
+  if (realDistM > currentRangeMeters) {
+    // Saiu do radar: remove se existia
+    const m = mapboxUserMarkers[uid];
+    if (m) { m.remove(); delete mapboxUserMarkers[uid]; }
+    delete mapboxMarkerDistances[uid];
+    delete mapboxUserData[uid];
+    filterMarkersByRange();
+    return;
+  }
+
+  // Remove marcador anterior (se existir) para recriar com nova posição
+  const existing = mapboxUserMarkers[uid];
+  if (existing) { existing.remove(); delete mapboxUserMarkers[uid]; }
+
+  // Aplica scatter de privacidade idêntico ao de loadNearbyUsers
+  let uLat = data.lat;
+  let uLng = data.lng;
+  {
+    const mPerDegLat = 111000;
+    const mPerDegLng  = 111000 * Math.cos(fixedUserLat * Math.PI / 180);
+    const maxScatterM = Math.min(25, currentRangeMeters * 0.12);
+    const angle = Math.random() * 2 * Math.PI;
+    const r     = Math.random() * maxScatterM;
+    uLat += (r * Math.sin(angle)) / mPerDegLat;
+    uLng += (r * Math.cos(angle)) / mPerDegLng;
+    const limitM    = currentRangeMeters - 2;
+    const distCheck = haversineDistanceM(fixedUserLat, fixedUserLng, uLat, uLng);
+    if (distCheck > limitM) {
+      const dLatM  = (uLat - fixedUserLat) * mPerDegLat;
+      const dLngM  = (uLng - fixedUserLng) * mPerDegLng;
+      const vecLen = Math.sqrt(dLatM * dLatM + dLngM * dLngM);
+      if (vecLen > 0) {
+        const scale = limitM / vecLen;
+        uLat = fixedUserLat + (dLatM * scale) / mPerDegLat;
+        uLng = fixedUserLng + (dLngM * scale) / mPerDegLng;
+      }
+    }
+  }
+
+  const distKm = parseFloat((realDistM / 1000).toFixed(1));
+  const userData = {
+    id: uid, username: data.username, latitude: data.lat, longitude: data.lng,
+    avatar_url: data.avatar_url, verified: data.verified, bio: data.bio,
+    city: data.city, gender: data.gender, interested_in: data.interested_in,
+    hobbies_list: data.hobbies_list, birthdate: data.birthdate,
+    distance_km: distKm, online: true
+  };
+  mapboxUserData[uid] = userData;
+
+  const el = document.createElement('div');
+  el.className = 'premium-marker';
+  el.innerHTML = `<img src="${data.avatar_url || '/default-avatar.png'}" class="premium-marker-img" alt="${data.username || ''}">`;
+
+  const marker = new mapboxgl.Marker(el, { anchor: 'center' })
+    .setLngLat([uLng, uLat])
+    .addTo(map);
+  mapboxUserMarkers[uid] = marker;
+  mapboxMarkerDistances[uid] = distKm;
+
+  el.addEventListener('click', (e) => {
+    e.stopPropagation();
+    const latest = mapboxUserData[uid] || userData;
+    if (activeMarkerEl && activeMarkerEl !== el) activeMarkerEl.style.opacity = '1';
+    activeMarkerEl = el;
+    el.style.opacity = '0';
+    isCinematicMode = true;
+    document.body.classList.add('cinematic-mode');
+    stopRotation();
+    map.flyTo({ center: [uLng, uLat], zoom: 18, pitch: 60, duration: 2000, essential: true });
+    openCinematicPopup(latest);
+    map.once('moveend', () => {
+      setTimeout(() => { if (!isCinematicMode) return; startTimedRotation(null); }, 50);
+    });
+  });
+
+  filterMarkersByRange();
 }
 
 function showUserPopup(user) {
@@ -652,6 +758,8 @@ function initializeMapAndLocation() {
 // Libera toda memória de GPU/WebGL antes do Turbo cachear ou navegar — previne crash no iOS
 document.addEventListener("turbo:before-cache", () => {
   stopRotation();
+  // Desconecta do MapChannel antes de cache para evitar listeners duplos
+  if (mapSubscription) { mapSubscription.unsubscribe(); mapSubscription = null; }
   // Limpa estado do GPS para que a próxima visita sempre inicie com rastreamento ligado
   resetTracking(document.getElementById('fab-live-tracking'));
   if (mapResizeObserver) { mapResizeObserver.disconnect(); mapResizeObserver = null; }
@@ -661,6 +769,7 @@ document.addEventListener("turbo:before-cache", () => {
     map = null;
     mapboxUserMarkers = {};
     mapboxMarkerDistances = {};
+    mapboxUserData = {};
     fixedUserLat = null;
     fixedUserLng = null;
   }
@@ -780,6 +889,21 @@ document.addEventListener("turbo:load", () => {
     window._onMapLoaded = () => { mapFired = true; tryReveal(); };
     setTimeout(() => { timerFired = true; tryReveal(); }, 2500);
   }, 300);
+
+  // Inscreve no MapChannel para atualizações em tempo real
+  // Destrói subscription anterior se existir (proteção contra turbo:load duplo)
+  if (mapSubscription) { mapSubscription.unsubscribe(); mapSubscription = null; }
+  mapSubscription = consumer.subscriptions.create("MapChannel", {
+    connected() {
+      console.log('[GeoMatch] MapChannel conectado — presença em tempo real ativa');
+    },
+    disconnected() {
+      console.log('[GeoMatch] MapChannel desconectado');
+    },
+    received(data) {
+      _handleMapRealtime(data);
+    }
+  });
 
   const rangeSlider = document.getElementById("radar-range");
   const rangeValueText = document.getElementById("range-value-text");

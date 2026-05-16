@@ -112,7 +112,13 @@
       "PowerShell(cmd /c \"cd /d \"\"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\"\" && ruby bin/rails db:migrate\" 2>&1)",
       "PowerShell(cmd /c \"cd /d \"\"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\"\" && ruby bin/rails db:migrate:status\" 2>&1)",
       "PowerShell(cmd /c \"cd /d \"\"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\"\" && ruby bin/rails runner \"\"puts Plan.count; Plan.all.each { |p| puts p.inspect }\"\"\" 2>&1)",
-      "PowerShell(cmd /c \"cd /d \"\"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\"\" && ruby bin/rails runner tmp/seed_plans.rb\" 2>&1)"
+      "PowerShell(cmd /c \"cd /d \"\"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\"\" && ruby bin/rails runner tmp/seed_plans.rb\" 2>&1)",
+      "Bash(cat app/channels/application_cable/connection.rb)",
+      "Bash(cat app/channels/application_cable/channel.rb)",
+      "Bash(grep -rn \"from \\\\\"channels/\" app/javascript/)",
+      "Bash(grep -rn \"import \\\\\"channels/\" app/javascript/)",
+      "Bash(grep -v \"^\\\\s*//\")",
+      "Bash(yarn build *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Brendo\\Documents\\DEV\\geomatch ruby\\geomatch"
