@@ -13,6 +13,8 @@ class DiscoveryService
                 .online_on_map
                 .where.not(id: @user.id)
                 .where(invisible: [false, nil])
+                .with_attached_avatar
+                .with_attached_album_photos
 
     if gender_filter.present? && gender_filter != "all"
       mapping = {
@@ -46,9 +48,20 @@ class DiscoveryService
         hobbies_list: u.hobbies_list,
         avatar_url: (u.avatar.attached? ? Rails.application.routes.url_helpers.rails_blob_path(u.avatar, only_path: true) : nil),
         distance_km: distance,
-        last_seen_at: u.last_seen_at, # Adição crucial para o status online
-        verified: u.verified
+        last_seen_at: u.last_seen_at,
+        verified: u.verified,
+        photos_urls: build_photos_urls(u),
+        age: u.birthdate.present? ? ((Date.today - u.birthdate.to_date) / 365.25).floor : nil
       }
     end
+  end
+
+  private
+
+  def build_photos_urls(user)
+    urls = []
+    urls << rails_blob_path(user.avatar, only_path: true) if user.avatar.attached?
+    user.album_photos.each { |p| urls << rails_blob_path(p, only_path: true) }
+    urls
   end
 end

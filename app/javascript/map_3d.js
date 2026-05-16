@@ -545,29 +545,61 @@ function _handleMapRealtime(data) {
 }
 
 function showUserPopup(user) {
-  console.log("Dados do usuário recebidos:", user);
   const userPopup = document.getElementById("user-popup");
   if (!userPopup) return;
 
   userPopup.dataset.userId = user.id;
 
-  const img = userPopup.querySelector("#popup-avatar");
-  if(img) img.src = user.avatar_url || "/default-avatar.png";
-  
-  const name = userPopup.querySelector("#popup-username");
-  if(name) name.textContent = user.username || user.display_name || "Usuário";
+  // --- Carrossel de fotos ---
+  const carousel   = document.getElementById('popup-carousel');
+  const dotsWrap   = document.getElementById('popup-carousel-dots');
+  if (carousel) {
+    const photos = (user.photos_urls && user.photos_urls.length > 0)
+      ? user.photos_urls
+      : [user.avatar_url || '/default-avatar.png'];
 
-  const verifiedBadge = userPopup.querySelector("#popup-verified-badge");
-  if (verifiedBadge) {
-    verifiedBadge.style.display = user.verified ? "block" : "none";
+    carousel.innerHTML = photos
+      .map(url => `<img src="${url}" class="dsc-carousel-slide" loading="lazy" draggable="false">`)
+      .join('');
+    carousel.scrollLeft = 0;
+
+    if (dotsWrap) {
+      dotsWrap.innerHTML = photos.length > 1
+        ? photos.map((_, i) => `<span class="dsc-dot${i === 0 ? ' active' : ''}"></span>`).join('')
+        : '';
+
+      carousel.onscroll = () => {
+        const idx = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+        dotsWrap.querySelectorAll('.dsc-dot').forEach((d, i) =>
+          d.classList.toggle('active', i === idx)
+        );
+      };
+    }
   }
 
+  // --- Nome ---
+  const nameEl = userPopup.querySelector("#popup-username");
+  if (nameEl) nameEl.textContent = user.username || user.display_name || "Usuário";
+
+  // --- Idade ---
+  const ageEl = userPopup.querySelector("#popup-age");
+  if (ageEl) {
+    const age = user.age ?? (user.birthdate ? calculateAge(user.birthdate) : null);
+    ageEl.textContent = age ? `, ${age}` : '';
+  }
+
+  // --- Verificado ---
+  const verifiedBadge = userPopup.querySelector("#popup-verified-badge");
+  if (verifiedBadge) verifiedBadge.style.display = user.verified ? "inline-block" : "none";
+
+  // --- Localização ---
   const loc = userPopup.querySelector("#popup-location");
-  if(loc) loc.textContent = user.city || "Localização desconhecida";
-  
-  const distBadge = userPopup.querySelector("#popup-distance");
+  if (loc) loc.textContent = user.city || "Localização desconhecida";
+
+  // --- Distância ---
+  const distEl = userPopup.querySelector("#popup-distance");
   const distVal = user.distance_km || user.distance;
-  if(distBadge) distBadge.textContent = distVal ? `${distVal} km` : "";
+  if (distEl) distEl.textContent = distVal ? `${distVal} km` : "";
 
   const bio = userPopup.querySelector("#popup-bio");
   if(bio) bio.textContent = user.bio || "Não informado!";

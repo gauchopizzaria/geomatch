@@ -126,20 +126,21 @@
       <%# CONTEÚDO SCROLLÁVEL %>
       <div class="dsc-scroll-content">
         
-        <%# TOPO: FOTO IMERSIVA %>
+        <%# TOPO: FOTO IMERSIVA — slides injetados via JS %>
         <div class="dsc-carousel-wrapper">
-          <div class="dsc-main-carousel">
-            <img id="popup-avatar" src="" class="dsc-carousel-img">
-          </div>
-          
+          <div id="popup-carousel" class="dsc-main-carousel"></div>
+
+          <div class="dsc-carousel-indicators" id="popup-carousel-dots"></div>
+
           <div class="dsc-cover-overlay">
             <div class="dsc-cover-info">
-              <h2 class="dsc-cover-name" style="display: flex; align-items: center; justify-content: center; gap: 5px;">
-                <span id="popup-username"></span>
-                <img id="popup-verified-badge" src="<%= image_path('icone-verificar.png') %>" style="display:none; width: 20px; height: 20px;" title="Perfil Verificado">
+              <h2 class="dsc-cover-name">
+                <span id="popup-username"></span><span id="popup-age" class="dsc-cover-age"></span>
+                <img id="popup-verified-badge" src="<%= image_path('icone-verificar.png') %>" style="display:none; width:18px; height:18px; flex-shrink:0;" title="Perfil Verificado">
               </h2>
               <p class="dsc-cover-distance">
-                <i class="fas fa-location-arrow"></i> a <span id="popup-distance-val">0.0</span> km de distância
+                <i class="fas fa-location-arrow"></i>
+                <span id="popup-distance">0.0 km</span> de distância
               </p>
             </div>
           </div>
@@ -190,7 +191,7 @@
                 </div>
                 <div class="dsc-basic-item">
                   <span class="dsc-basic-icon"><i class="fas fa-map-marker-alt"></i></span>
-                  <span id="popup-city" class="dsc-basic-text">BA</span>
+                  <span id="popup-location" class="dsc-basic-text"></span>
                 </div>
              </div>
           </div>

@@ -517,76 +517,59 @@
   &::-webkit-scrollbar { display: none; }
 }
 
-/* 1. FOTO IMERSIVA (CORRIGIDO) */
-.dsc-carousel-wrapper {
-  position: relative;
-  width: 100%;
-  // Alteramos de 70vh para uma altura que preencha melhor o topo do modal
-  height: 500px; 
-  // Em dispositivos menores, garantimos que não ultrapasse a tela
-  max-height: 70vh; 
-  margin: 0;
-  padding: 0;
-  background-color: #000; // Fundo preto caso a foto demore a carregar
+/* 1. FOTO IMERSIVA */
+.dsc-cover-overlay {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 55%;
+  background: linear-gradient(to top, rgba(0,0,0,0.92) 0%, rgba(0,0,0,0.6) 40%, transparent 100%);
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 0 20px 70px 20px;
+  pointer-events: none;
 
-  .dsc-main-carousel {
-    height: 100%;
-    width: 100%;
+  .dsc-cover-info {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
   }
 
-  .dsc-carousel-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover; // Mantém o enquadramento sem distorcer
-    display: block;
+  .dsc-cover-name {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 1.7rem;
+    font-weight: 700;
+    color: #fff;
+    margin: 0 0 4px 0;
+    text-align: left;
+    text-shadow: 0 2px 8px rgba(0,0,0,0.7);
+    line-height: 1.2;
+
+    span { color: #fff; }
+  }
+
+  .dsc-cover-age {
+    font-weight: 400;
+    color: rgba(255,255,255,0.9);
+  }
+
+  .dsc-cover-distance {
+    font-size: 0.9rem;
+    color: rgba(255,255,255,0.85);
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.6);
+
+    i { font-size: 0.8rem; }
+    span { color: rgba(255,255,255,0.85); }
   }
 }
-
-// Ajuste o gradiente para começar exatamente de onde a foto termina
-  .dsc-cover-overlay {
-    position: absolute;
-    bottom: 0; 
-    left: 0; 
-    right: 0;
-    height: 60%; // Aumentamos um pouco a área do gradiente para suavizar
-    // O gradiente deve ir do preto sólido (fundo do app) para o transparente
-    background: linear-gradient(to top, #000 0%, rgba(0,0,0,0.8) 20%, transparent 100%);
-    display: flex;
-    flex-direction: column; // Garante que nome e distância fiquem empilhados
-    justify-content: flex-end;
-    padding: 0 20px 65px 20px; // Aumentamos o padding inferior para não bater nos botões
-    pointer-events: none; // Evita que o overlay bloqueie cliques se necessário
-
-    .dsc-cover-name {
-      font-size: 2.5rem;
-      font-weight: 700;
-      color: #ffffff !important; // Força a cor branca
-      margin: 0;
-      // Sombra projetada para garantir leitura em fotos muito claras:
-      text-shadow: 2px 2px 10px rgba(0, 0, 0, 0.8), 0px 0px 5px rgba(0, 0, 0, 0.5);
-      
-      span {
-        color: #ffffff !important; // Garante que o span interno também seja branco
-      }
-    }
-
-    .dsc-cover-distance {
-      font-size: 1.1rem;
-      color: #ffffff !important; // Força a cor branca (ou #eeeeee para um leve contraste)
-      margin-top: 5px;
-      font-weight: 400; // Um pouco mais grosso para facilitar a leitura
-      text-shadow: 1px 1px 5px rgba(0, 0, 0, 0.8);
-      
-      i {
-        color: #ffffff; // Cor do ícone de localização
-        margin-right: 5px;
-      }
-      
-      span {
-        color: #ffffff !important;
-      }
-    }
-  }
 
 /* 2. BOTÕES DE AÇÃO (ESTILO CIRCULAR PREMIUM) */
 .dsc-action-container {
@@ -723,7 +706,7 @@
   .dsc-safety-divider { height: 1px; background: #222; margin: 10px 20%; }
 }
 
-/* AJUSTES DO CARROSSEL DSC */
+/* CARROSSEL DSC — swipe nativo CSS scroll-snap */
 .dsc-carousel-wrapper {
   position: relative;
   width: 100%;
@@ -732,64 +715,61 @@
   overflow: hidden;
   background: #000;
 
+  // Trilho de fotos: scroll horizontal nativo sem barra visível
   .dsc-main-carousel {
-    display: flex; /* Coloca as fotos lado a lado */
+    display: flex;
     width: 100%;
     height: 100%;
-    transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    -webkit-overflow-scrolling: touch;
+    &::-webkit-scrollbar { display: none; }
   }
 
-  .dsc-carousel-item {
-    min-width: 100%; /* Cada slide ocupa a largura total */
-    height: 100%;
-  }
-
-  .dsc-carousel-img {
+  // Cada slide ocupa exatamente a largura do container
+  .dsc-carousel-slide {
+    flex-shrink: 0;
     width: 100%;
     height: 100%;
     object-fit: cover;
+    scroll-snap-align: start;
+    display: block;
+    user-select: none;
+    -webkit-user-drag: none;
   }
 
-  /* Setas de navegação */
-  .dsc-carousel-nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-    z-index: 20;
-    padding: 20px;
-    color: white;
-    font-size: 1.5rem;
-    cursor: pointer;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.5);
-    opacity: 0.6;
-    &:active { opacity: 1; transform: translateY(-50%) scale(0.9); }
-    &.prev { left: 0; }
-    &.next { right: 0; }
-  }
-
-  /* Pontinhos Indicadores */
+  // Pontinhos indicadores
   .dsc-carousel-indicators {
     position: absolute;
-    bottom: 90px; /* Acima do nome do usuário */
+    bottom: 74px;
     left: 50%;
     transform: translateX(-50%);
     display: flex;
-    gap: 6px;
-    z-index: 20;
+    gap: 5px;
+    z-index: 25;
+    pointer-events: none;
 
     .dsc-dot {
-      width: 6px;
-      height: 6px;
-      background: rgba(255,255,255,0.4);
+      width: 5px;
+      height: 5px;
+      background: rgba(255,255,255,0.45);
       border-radius: 50%;
-      transition: all 0.3s ease;
-      &.active { 
-        background: #fff; 
-        width: 18px; 
-        border-radius: 10px; 
+      transition: all 0.25s ease;
+
+      &.active {
+        background: #fff;
+        width: 16px;
+        border-radius: 8px;
       }
     }
   }
+}
+
+// Oculta scrollbar em qualquer elemento com .no-scrollbar
+.no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar { display: none; }
 }
 
 .dot-online {

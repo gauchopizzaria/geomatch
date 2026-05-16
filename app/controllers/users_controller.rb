@@ -222,6 +222,8 @@ class UsersController < ApplicationController
         u.as_json(only: [:id, :username, :latitude, :longitude, :distance_km, :city, :bio, :gender, :interested_in, :hobbies_list]).merge({
           verified: u.verified?,
           avatar_url: u.avatar.attached? ? rails_blob_path(u.avatar, only_path: true) : nil,
+          photos_urls: build_user_photos_urls(u),
+          age: u.birthdate.present? ? ((Date.today - u.birthdate.to_date) / 365.25).floor : nil,
           online: is_online
         })
       end
@@ -310,23 +312,35 @@ end
   # ==========================================
   private
 
+  def build_user_photos_urls(user)
+    urls = []
+    urls << rails_blob_path(user.avatar, only_path: true) if user.avatar.attached?
+    user.album_photos.each { |p| urls << rails_blob_path(p, only_path: true) }
+    urls
+  rescue => e
+    Rails.logger.error "build_user_photos_urls error for User##{user.id}: #{e.message}"
+    []
+  end
+
   def broadcast_map_presence(user, lat, lng)
     return if user.invisible
 
     ActionCable.server.broadcast("map_updates", {
-      action:       "update",
-      user_id:      user.id,
-      username:     user.display_name.presence || user.username,
-      lat:          lat,
-      lng:          lng,
-      avatar_url:   user.avatar.attached? ? rails_blob_path(user.avatar, only_path: true) : nil,
-      verified:     user.verified?,
-      bio:          user.bio,
-      city:         user.city,
-      gender:       user.gender,
+      action:        "update",
+      user_id:       user.id,
+      username:      user.display_name.presence || user.username,
+      lat:           lat,
+      lng:           lng,
+      avatar_url:    user.avatar.attached? ? rails_blob_path(user.avatar, only_path: true) : nil,
+      photos_urls:   build_user_photos_urls(user),
+      verified:      user.verified?,
+      bio:           user.bio,
+      city:          user.city,
+      gender:        user.gender,
       interested_in: user.interested_in,
-      hobbies_list: user.hobbies_list,
-      birthdate:    user.birthdate
+      hobbies_list:  user.hobbies_list,
+      birthdate:     user.birthdate,
+      age:           user.birthdate.present? ? ((Date.today - user.birthdate.to_date) / 365.25).floor : nil
     })
   end
 
