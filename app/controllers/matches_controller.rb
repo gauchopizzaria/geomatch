@@ -57,7 +57,7 @@ class MatchesController < ApplicationController
                  partial: "shared/upgrade_modal", 
                  locals: { type: 'messages' }) 
         }
-        format.html { redirect_to lead_path, alert: "Limite atingido! Pague R$ 1,99 ou faça upgrade." }
+        format.html { redirect_to lead_path, alert: "Limite atingido! Pague #{Setting.one_off_message_price_formatted} ou faça upgrade." }
       end
       return
     end

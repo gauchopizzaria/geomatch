@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_16_000002) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_18_000001) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -256,6 +256,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_16_000002) do
     t.index ["category"], name: "index_reports_on_category"
     t.index ["reporter_id"], name: "index_reports_on_reporter_id"
     t.index ["resolved_at"], name: "index_reports_on_resolved_at"
+  end
+
+  create_table "settings", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "key", null: false
+    t.datetime "updated_at", null: false
+    t.integer "value", null: false
+    t.index ["key"], name: "index_settings_on_key", unique: true
   end
 
   create_table "solid_cable_messages", force: :cascade do |t|

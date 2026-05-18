@@ -50,6 +50,16 @@
       <% end %>
 
     <% end %>
+
+    <% if current_user&.admin? %>
+      <%= link_to admin_settings_path, class: "nav-item #{'active' if request.path.start_with?('/admin')}", data: { turbo_native: "ignore" } do %>
+        <div class="icon-container">
+          <i class="fa-solid fa-sliders nav-icon-fa"></i>
+        </div>
+        <span class="nav-text">Admin</span>
+      <% end %>
+    <% end %>
+
   </nav>
 </aside>
 <% end %>

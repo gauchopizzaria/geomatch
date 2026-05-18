@@ -118,7 +118,9 @@
       "Bash(grep -rn \"from \\\\\"channels/\" app/javascript/)",
       "Bash(grep -rn \"import \\\\\"channels/\" app/javascript/)",
       "Bash(grep -v \"^\\\\s*//\")",
-      "Bash(yarn build *)"
+      "Bash(yarn build *)",
+      "PowerShell(Get-ChildItem -Path \"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\\\\app\\\\controllers\\\\api\\\\v1\" -Force | Where-Object {$_.Extension -eq '.rb'})",
+      "Bash(bin/rails dartsass:build)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Brendo\\Documents\\DEV\\geomatch ruby\\geomatch"

@@ -1,0 +1,58 @@
+<div class="admin-settings-page">
+
+  <div class="admin-settings-header">
+    <div class="admin-settings-title">
+      <i class="fa-solid fa-sliders"></i>
+      <div>
+        <h1>Configurações do Sistema</h1>
+        <p>Gerencie os parâmetros dinâmicos do GeoMatch.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="admin-settings-list">
+    <% @settings.each do |item| %>
+      <% s = item[:setting] %>
+      <div class="admin-setting-card">
+
+        <div class="admin-setting-info">
+          <div class="admin-setting-meta">
+            <h3 class="admin-setting-label"><%= item[:label] %></h3>
+            <p class="admin-setting-description"><%= item[:description] %></p>
+          </div>
+
+          <div class="admin-setting-current">
+            <span class="admin-setting-badge">
+              <% if item[:type] == :price %>
+                R$ <%= format('%.2f', s.value / 100.0).tr('.', ',') %>
+              <% else %>
+                <%= s.value %>
+              <% end %>
+            </span>
+          </div>
+        </div>
+
+        <%= form_with url: admin_setting_path(s), method: :patch do |f| %>
+          <div class="admin-setting-form-row">
+            <div class="admin-setting-input-group">
+              <% if item[:type] == :price %>
+                <span class="admin-input-prefix">R$</span>
+              <% end %>
+              <%= f.text_field :value,
+                    value: item[:type] == :price \
+                             ? format('%.2f', s.value / 100.0).tr('.', ',') \
+                             : s.value,
+                    class: "admin-setting-input",
+                    placeholder: item[:type] == :price ? "Ex: 1,99" : "Valor",
+                    autocomplete: "off",
+                    inputmode: item[:type] == :price ? "decimal" : "numeric" %>
+            </div>
+            <%= f.submit "💾 Salvar", class: "btn-admin-save" %>
+          </div>
+        <% end %>
+
+      </div>
+    <% end %>
+  </div>
+
+</div>

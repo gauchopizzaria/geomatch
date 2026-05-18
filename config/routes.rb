@@ -137,7 +137,14 @@ Rails.application.routes.draw do
   # ----------------------------------------
 
   # =================================================================
-  # 8. PUSH SUBSCRIPTIONS
+  # 8. PAINEL ADMIN WEB (Devise auth + admin? check)
+  # =================================================================
+  namespace :admin do
+    resources :settings, only: [:index, :update]
+  end
+
+  # =================================================================
+  # 9. PUSH SUBSCRIPTIONS
   # =================================================================
   resources :push_subscriptions, only: [:create, :destroy] do
     collection do
@@ -191,6 +198,9 @@ Rails.application.routes.draw do
 
         # Gestão de Planos SaaS
         resources :plans, except: [:new, :edit]
+
+        # Configurações dinâmicas (preços avulsos, etc.)
+        resources :settings, only: [:index, :update]
 
         # Moderação de Fotos e Verificação de Identidade
         resources :moderation, only: [:index] do

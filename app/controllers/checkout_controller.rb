@@ -26,7 +26,7 @@ class CheckoutController < ApplicationController
   end
 
   def create_one_off_message
-    amount_cents = 199
+    amount_cents = Setting.one_off_message_price
 
     payment = MercadoPago::OneOffMessageService.call(
       user:         current_user,
