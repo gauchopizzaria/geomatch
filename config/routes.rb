@@ -140,6 +140,7 @@ Rails.application.routes.draw do
   # 8. PAINEL ADMIN WEB (Devise auth + admin? check)
   # =================================================================
   namespace :admin do
+    root to: 'settings#index'
     resources :settings, only: [:index, :update]
   end
 
