@@ -8,22 +8,46 @@ class Admin::SettingsController < Admin::BaseController
   }.freeze
 
   def index
-    @settings = Setting.order(:key).map do |s|
-      meta = SETTING_META[s.key] || { label: s.key.humanize, description: '', type: :integer }
-      { setting: s, label: meta[:label], description: meta[:description], type: meta[:type] }
-    end
+    @settings = Setting.order(:key).map { |s| build_item(s) }
+  end
+
+  def edit
+    @setting = Setting.find(params[:id])
+    @meta    = SETTING_META[@setting.key] || { label: @setting.key.humanize, description: '', type: :integer }
+  rescue ActiveRecord::RecordNotFound
+    redirect_to admin_settings_path, alert: "Configuração não encontrada."
   end
 
   def update
-    @setting = Setting.find(params[:id])
-    meta      = SETTING_META[@setting.key] || { type: :integer }
+    @setting  = Setting.find(params[:id])
+    meta      = SETTING_META[@setting.key] || { label: @setting.key.humanize, description: '', type: :integer }
     raw       = params.dig(:setting, :value).to_s.strip
     new_value = meta[:type] == :price ? parse_price_to_cents(raw) : raw.to_i
 
     if @setting.update(value: new_value)
-      redirect_to admin_settings_path, notice: "Configuração atualizada com sucesso!"
+      respond_to do |format|
+        format.turbo_stream do
+          flash.now[:notice] = "Configuração atualizada com sucesso!"
+          render turbo_stream: [
+            turbo_stream.replace(
+              "setting_#{@setting.id}",
+              partial: "admin/settings/setting",
+              locals:  { item: build_item(@setting) }
+            ),
+            turbo_stream.prepend("toast-container", partial: "shared/flash")
+          ]
+        end
+        format.html { redirect_to admin_settings_path, notice: "Configuração atualizada com sucesso!" }
+      end
     else
-      redirect_to admin_settings_path, alert: "Erro: #{@setting.errors.full_messages.join(', ')}"
+      respond_to do |format|
+        format.turbo_stream do
+          flash.now[:alert] = "Erro: #{@setting.errors.full_messages.join(', ')}"
+          render turbo_stream: turbo_stream.prepend("toast-container", partial: "shared/flash"),
+                 status: :unprocessable_entity
+        end
+        format.html { redirect_to admin_settings_path, alert: "Erro ao salvar." }
+      end
     end
   rescue ActiveRecord::RecordNotFound
     redirect_to admin_settings_path, alert: "Configuração não encontrada."
@@ -31,8 +55,12 @@ class Admin::SettingsController < Admin::BaseController
 
   private
 
+  def build_item(setting)
+    meta = SETTING_META[setting.key] || { label: setting.key.humanize, description: '', type: :integer }
+    { setting: setting, label: meta[:label], description: meta[:description], type: meta[:type] }
+  end
+
   def parse_price_to_cents(raw)
-    # Accepts Brazilian format: "1,99" → 199
     (raw.tr(',', '.').to_f * 100).round
   end
 end

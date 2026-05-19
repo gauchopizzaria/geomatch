@@ -141,7 +141,7 @@ Rails.application.routes.draw do
   # =================================================================
   namespace :admin do
     root to: 'settings#index'
-    resources :settings, only: [:index, :update]
+    resources :settings, only: [:index, :edit, :update]
   end
 
   # =================================================================
