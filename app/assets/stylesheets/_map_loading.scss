@@ -1,4 +1,4 @@
-.map-loading { --gm-speed: 1; --gm-c1: #F4DFC4; --gm-c2: #C9A079; --gm-c3: #6E4F38; position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; background: radial-gradient(ellipse at 50% 45%, #0c0a08 0%, #050505 65%, #000 100%); overflow: hidden; font-family: 'Outfit', system-ui, -apple-system, sans-serif; color: #fff; transition: opacity .45s ease, visibility .45s ease; }
+.map-loading { --gm-speed: 1; --gm-c1: #F4DFC4; --gm-c2: #C9A079; --gm-c3: #6E4F38; position: fixed; inset: 0; z-index: 99999; display: flex; align-items: center; justify-content: center; background: var(--map-loading-bg); overflow: hidden; font-family: 'Outfit', system-ui, -apple-system, sans-serif; color: var(--color-text); transition: opacity .45s ease, visibility .45s ease; }
 .map-loading.is-loaded, .map-loading.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
 .map-loading__stage { position: relative; width: 100%; height: 100%; display: grid; place-items: center; }
 .map-loading__radar-stack { position: absolute; left: 50%; top: 50%; transform: translate(-50%, calc(-50% - 18px)); width: 1px; height: 1px; pointer-events: none; }
@@ -13,7 +13,7 @@
 @keyframes gmHeartbeat { 0%, 70%, 100% { transform: scale(1); } 8% { transform: scale(1.22); } 18% { transform: scale(0.94); } 28% { transform: scale(1.14); } 45% { transform: scale(1.00); } }
 .map-loading__shimmer { animation: gmShimmer calc(3.4s * var(--gm-speed)) cubic-bezier(0.45, 0, 0.25, 1) infinite; }
 @keyframes gmShimmer { 0% { transform: translateX(-90px); opacity: 0; } 18% { opacity: 1; } 65% { opacity: 1; } 100% { transform: translateX(140px); opacity: 0; } }
-.map-loading__caption { position: absolute; bottom: 38%; left: 0; right: 0; margin: 0; text-align: center; color: rgba(232, 200, 160, 0.70); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 500; }
+.map-loading__caption { position: absolute; bottom: 38%; left: 0; right: 0; margin: 0; text-align: center; color: var(--map-loading-caption-color); font-size: 12px; letter-spacing: 0.22em; text-transform: uppercase; font-weight: 500; }
 .map-loading__dots { position: absolute; bottom: calc(38% - 25px); left: 50%; transform: translateX(-50%); display: flex; gap: 7px; }
 .map-loading__dots span { width: 5px; height: 5px; border-radius: 50%; background: var(--gm-c2); opacity: 0.25; animation: gmDotPulse calc(1.5s * var(--gm-speed)) ease-in-out infinite; }
 .map-loading__dots span:nth-child(2) { animation-delay: calc(0.18s * var(--gm-speed)); }

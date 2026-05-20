@@ -3,9 +3,9 @@
 // =========================================================
 
 .matches-screen-wrapper {
-  background-color: #0e0e10;
+  background-color: var(--color-background);
   width: 100%;
-  color: #ffffff;
+  color: var(--color-text);
   font-family: 'Poppins', sans-serif;
   overflow-x: hidden;
 }
@@ -44,12 +44,12 @@
 }
 
 .icons-pill {
-  background-color: #1c1c1e; /* Cinza escuro */
+  background-color: var(--color-section-light);
   border-radius: 20px;
   padding: 6px 14px;
   display: flex;
   gap: 15px;
-  border: 1px solid #333;
+  border: 1px solid var(--color-border);
 }
 
 .icon-btn {
@@ -62,7 +62,7 @@
   justify-content: center;
   opacity: 0.8;
   transition: opacity 0.2s;
-  color: #e0e0e0;
+  color: var(--color-text);
 
   &:hover { opacity: 1; }
 }
@@ -136,7 +136,7 @@
 
 .match-name {
   font-size: 0.8rem;
-  color: #ffffff;
+  color: var(--color-text);
   font-weight: 500;
   white-space: nowrap;
   overflow: hidden;
@@ -152,7 +152,7 @@
   width: 64px;
   height: 64px;
   border-radius: 50%;
-  background: #222;
+  background: var(--color-section-gray);
   border: 2px solid hsl(46, 57%, 78%);
 }
 
@@ -243,7 +243,7 @@
   transform: translateX(0);
   transition: transform 0.22s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   will-change: transform;
-  background-color: #0e0e10; /* mesmo fundo da página — tampa os botões por baixo */
+  background-color: var(--color-background);
 }
 
 .swipe-content.is-swiped {
@@ -274,8 +274,8 @@
   width: 60px;
   height: 60px;
   border-radius: 50%;
-  background: #333;
-  color: #fff;
+  background: var(--color-section-gray);
+  color: var(--color-text);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -298,7 +298,7 @@
 }
 
 .conv-name {
-  color: #ffffff;
+  color: var(--color-text);
   font-size: 1rem;
   font-weight: 600;
 }
@@ -310,7 +310,7 @@
 }
 
 .conv-last-message {
-  color: #999;
+  color: var(--color-text-secondary);
   font-size: 0.85rem;
   margin: 0;
   white-space: nowrap;
@@ -319,7 +319,7 @@
   max-width: 160px;
 }
 
-.msg-prefix { color: #ccc; margin-right: 4px; }
+.msg-prefix { color: var(--color-text-secondary); margin-right: 4px; }
 
 .badge-your-turn {
   background-color: #fff;
@@ -333,6 +333,6 @@
 
 .empty-conversations {
   text-align: center;
-  color: #555;
+  color: var(--color-text-secondary);
   padding: 20px;
 }

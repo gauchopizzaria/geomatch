@@ -49,14 +49,14 @@
 // =========================================================
 
 .profile-dashboard-wrapper {
-  background-color: #0e0e10;
+  background-color: var(--color-background);
   min-height: 100vh;
   width: 100%;
   max-width: 100vw;
   overflow-x: hidden;
   padding-bottom: 100px;
   font-family: 'Poppins', sans-serif;
-  color: #fff;
+  color: var(--color-text);
   // Safe area já aplicada pelo .authenticated-layout — padding fixo aqui
   padding-top: 20px;
 }
@@ -65,14 +65,25 @@
 .profile-header-container {
   display: flex;
   align-items: center;
-  padding: 0 20px 10px 20px; /* Reduzi padding inferior pois a hero já tem */
+  justify-content: space-between;
+  padding: 0 20px 10px 20px;
 }
 
 .header-title-sm {
   height: 20px;
   width: auto;
   display: block;
-  opacity: 0.8; /* Levemente mais escuro como na img */
+  opacity: 0.8;
+}
+
+.profile-header-container .header-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  img { width: 24px; height: 24px; filter: var(--nav-icon-filter); }
 }
 
 /* 2. Hero Section (Avatar | Info | Ajuda) */
@@ -188,8 +199,8 @@
 /* 3. Banner Verificação */
 .verification-banner {
   margin: 0 20px 25px 20px;
-  background-color: #0e0e10;
-  border: 1px solid #222;
+  background-color: var(--color-section-light);
+  border: 1px solid var(--color-border);
   border-radius: 24px;
   padding: 20px;
   display: flex;
@@ -215,7 +226,7 @@
 
 .banner-description {
   font-size: 0.75rem;
-  color: #aaa;
+  color: var(--color-text-secondary);
   margin: 0 0 12px 0;
   line-height: 1.4;
   max-width: 95%;
@@ -304,9 +315,9 @@
    ========================================================= */
 
 .v-view-sheet {
-  background-color: #000;
+  background-color: var(--color-background);
   min-height: 100vh;
-  color: #fff;
+  color: var(--color-text);
   position: relative;
   font-family: 'Poppins', sans-serif;
 }
@@ -385,11 +396,11 @@
 
 .v-view-body-container {
   padding: 15px;
-  background-color: #000;
+  background-color: var(--color-background);
 }
 
 .v-view-info-card {
-  background-color: #161618;
+  background-color: var(--color-section-light);
   border-radius: 20px;
   padding: 24px 20px;
   margin-bottom: 12px;
@@ -397,7 +408,7 @@
   .v-view-card-header {
     font-size: 0.85rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--color-text);
     margin-bottom: 20px;
     letter-spacing: 0.8px;
     text-transform: uppercase;
@@ -411,7 +422,7 @@
     .v-view-bio-text {
       font-size: 1.05rem;
       line-height: 1.5;
-      color: #fff;
+      color: var(--color-text);
       font-weight: 400;
     }
   }
@@ -426,7 +437,7 @@
 
     .v-view-basic-icon {
       width: 22px;
-      color: #777;
+      color: var(--color-text-secondary);
       font-size: 1.1rem;
       text-align: center;
     }
@@ -434,7 +445,7 @@
     .v-view-basic-text {
       font-size: 1.1rem;
       font-weight: 500;
-      color: #eee;
+      color: var(--color-text);
     }
   }
 }
@@ -445,14 +456,14 @@
 
   .v-view-safety-divider {
     height: 1px;
-    background-color: #222;
+    background-color: var(--color-border);
     margin: 20px 10%;
   }
 
   .v-view-btn-safety {
     background: none;
     border: none;
-    color: #444;
+    color: var(--color-text-secondary);
     font-weight: 700;
     font-size: 0.85rem;
     padding: 15px;

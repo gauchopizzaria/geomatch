@@ -85,6 +85,17 @@
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --color-dark-lighten-10: #333333;
   --shadow-primary: 0 6px 20px rgba(212, 175, 55, 0.2); /* Fallback para sombra colorida */
+
+  /* Sidebar / Nav */
+  --nav-icon-filter: brightness(0);
+  --nav-icon-active-filter: brightness(0);
+  --nav-text-color: #222121;
+  --sidebar-border: rgba(0, 0, 0, 0.1);
+
+  /* Mapa / Discover */
+  --map-spotlight-color: rgba(248, 242, 231, 0.35);
+  --map-loading-bg: radial-gradient(ellipse at 50% 45%, #f5f0e8 0%, #ece6d8 65%, #e0d8cc 100%);
+  --map-loading-caption-color: rgba(160, 120, 70, 0.80);
 }
 
 // 🌙 Modo Escuro
@@ -120,8 +131,19 @@
   --shadow-sm: 0 2px 8px rgba(255, 255, 255, 0.1);
   --shadow-md: 0 8px 24px rgba(255, 255, 255, 0.15);
   --shadow-lg: 0 16px 48px rgba(255, 255, 255, 0.2);
-  --color-dark-lighten-10: #444444; 
+  --color-dark-lighten-10: #444444;
   --shadow-primary: 0 6px 20px rgba(0, 0, 0, 0.4);
+
+  /* Sidebar / Nav */
+  --nav-icon-filter: brightness(0) invert(1);
+  --nav-icon-active-filter: brightness(0) invert(1) drop-shadow(0 0 3px rgba(255,255,255,0.5));
+  --nav-text-color: #ffffff;
+  --sidebar-border: rgba(255, 255, 255, 0.1);
+
+  /* Mapa / Discover */
+  --map-spotlight-color: rgba(14, 14, 16, 0.35);
+  --map-loading-bg: radial-gradient(ellipse at 50% 45%, #0c0a08 0%, #050505 65%, #000 100%);
+  --map-loading-caption-color: rgba(232, 200, 160, 0.70);
 }
 
 /* *= require markercluster/MarkerCluster
@@ -990,7 +1012,7 @@ html, body {
 .sidebar {
   height: auto;
   min-height: 70px;
-  background-color: #0e0e10;
+  background-color: var(--color-background);
   display: flex;
   justify-content: center;
   align-items: center;
@@ -1003,7 +1025,7 @@ html, body {
   width: 100%;
   z-index: 1000;
 
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-top: 1px solid var(--sidebar-border);
 
   /* Empurra os ícones acima do Home Indicator do iPhone */
   padding-top: 10px;
@@ -1045,16 +1067,16 @@ html, body {
     }
 
     .nav-icon {
-      width: 24px; 
+      width: 24px;
       height: 24px;
       object-fit: contain;
-      filter: brightness(0) invert(1); 
+      filter: var(--nav-icon-filter);
     }
 
     .nav-text {
       font-size: 0.65rem;
       font-weight: 500;
-      color: #ffffff;
+      color: var(--nav-text-color);
       font-family: 'Poppins', sans-serif;
       margin-top: 2px;
     }
@@ -1062,7 +1084,7 @@ html, body {
     &.active {
       opacity: 1;
       .nav-text { color: var(--color-primary); font-weight: 700; }
-      .nav-icon { filter: brightness(0) invert(1) drop-shadow(0 0 3px rgba(255,255,255,0.5)); }
+      .nav-icon { filter: var(--nav-icon-active-filter); }
     }
   }
 
@@ -1086,7 +1108,7 @@ html, body {
     color: #000000;
     font-size: 0.65rem;
     font-weight: 800;
-    border: 2px solid #0e0e10;
+    border: 2px solid var(--color-background);
     box-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
 

@@ -274,7 +274,7 @@ input[type="submit"] {
 
   padding: 10px 20px 120px 20px;
 
-  background-color: #000000;
+  background-color: var(--color-background);
 
   /* Largura natural — sem margens negativas que causam overflow horizontal */
   margin-left: 0;
@@ -297,10 +297,9 @@ input[type="submit"] {
   max-width: 200px;      
   padding: 14px 20px;
   
-  /* Fundo cinza chumbo para destacar do fundo preto total */
-  background-color: #1a1a1a; 
-  color: #ffffff;            
-  border: 1px solid #333333; 
+  background-color: var(--color-section-light);
+  color: var(--color-text);
+  border: 1px solid var(--color-border); 
   border-radius: 50px;       
   
   font-weight: 600;
@@ -357,8 +356,8 @@ input[type="submit"] {
 }
 
 .logout-modal-content {
-  background: #1c1c1e;
-  border: 1px solid #333;
+  background: var(--color-section-light);
+  border: 1px solid var(--color-border);
   width: 90%; max-width: 320px;
   padding: 25px;
   border-radius: 20px;
@@ -378,13 +377,13 @@ input[type="submit"] {
 }
 
 .logout-modal-content h3 {
-  color: #fff;
+  color: var(--color-text);
   font-size: 1.2rem;
   margin-bottom: 10px;
 }
 
 .logout-modal-content p {
-  color: #aaa;
+  color: var(--color-text-secondary);
   font-size: 0.95rem;
   margin-bottom: 25px;
 }
@@ -400,8 +399,8 @@ input[type="submit"] {
   padding: 12px;
   border-radius: 12px;
   background: transparent;
-  border: 1px solid #555;
-  color: #fff;
+  border: 1px solid var(--color-border);
+  color: var(--color-text);
   font-size: 1rem;
   cursor: pointer;
 }

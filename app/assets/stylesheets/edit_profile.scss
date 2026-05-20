@@ -3,10 +3,10 @@
 // =========================================================
 
 .edit-profile-wrapper {
-  background-color: #0e0e10; /* Fundo Preto */
+  background-color: var(--color-background);
   min-height: 100vh;
   width: 100%;
-  color: #fff;
+  color: var(--color-text);
   font-family: 'Poppins', sans-serif;
   display: flex;
   flex-direction: column;
@@ -19,7 +19,7 @@
   align-items: center;
   padding: 10px 20px; /* Padding vertical reduzido */
   padding-top: calc(10px + env(safe-area-inset-top));
-  background-color: #0e0e10;
+  background-color: var(--color-background);
   z-index: 10;
 }
 
@@ -72,7 +72,7 @@
 /* --- 2. ABAS --- */
 .edit-tabs {
   display: flex;
-  border-bottom: 1px solid #222;
+  border-bottom: 1px solid var(--color-border);
   margin-bottom: 20px;
 }
 
@@ -83,16 +83,16 @@
   font-size: 0.9rem;
   font-weight: 600;
   cursor: pointer;
-  color: #666;
+  color: var(--color-text-secondary);
   text-decoration: none;
 
   &.active {
-    color: #fff;
-    border-bottom: 2px solid #aa9b67; /* Dourado sutil */
+    color: var(--color-text);
+    border-bottom: 2px solid #aa9b67;
   }
-  
+
   &.inactive:hover {
-    color: #999;
+    color: var(--color-text-secondary);
   }
 }
 
@@ -113,9 +113,9 @@
   display: block;
   font-size: 0.9rem;
   font-weight: 700;
-  color: #bbac7b; /* Dourado no label */
+  color: #bbac7b;
   margin-bottom: 10px;
-  border-bottom: 1px solid #333;
+  border-bottom: 1px solid var(--color-border);
   padding-bottom: 5px;
 }
 
@@ -131,15 +131,15 @@
   aspect-ratio: 3 / 4; /* Formato retrato igual Stories */
   border-radius: 12px;
   overflow: hidden;
-  background-color: #1c1c1e;
-  border: 1px dashed #333;
+  background-color: var(--color-section-light);
+  border: 1px dashed var(--color-border);
   display: flex;
   align-items: center;
   justify-content: center;
   
   &.filled {
     border: none;
-    border: 1px solid #333;
+    border: 1px solid var(--color-border);
   }
   
   &.empty, &.empty-placeholder {
@@ -156,7 +156,7 @@
 /* Botão + */
 .plus-icon {
   font-size: 1.5rem;
-  color: #555;
+  color: var(--color-text-secondary);
   font-weight: 300;
 }
 
@@ -205,28 +205,28 @@
 .dark-label {
   font-size: 0.9rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text);
   margin-left: 2px;
 }
 
 .dark-input {
-  background-color: #0e0e10; /* Cinza escuro */
-  border: 1px solid #333; /* Borda sutil */
+  background-color: var(--color-input-bg);
+  border: 1px solid var(--color-border);
   border-radius: 12px;
   padding: 12px 15px;
-  color: #fff;
+  color: var(--color-text);
   font-size: 0.95rem;
   font-family: inherit;
   outline: none;
   width: 100%;
   box-sizing: border-box;
-  
+
   &:focus {
     border-color: #aa9d73;
   }
-  
+
   &::placeholder {
-    color: #666;
+    color: var(--color-text-secondary);
   }
 }
 
@@ -237,7 +237,7 @@
 
 .field-hint {
   font-size: 0.75rem;
-  color: #666;
+  color: var(--color-text-secondary);
   margin: 2px 0 0 5px;
 }
 
@@ -266,8 +266,8 @@
   border-radius: 25px;
   position: relative;
   overflow: hidden;
-  border: 2px solid #c5b47d; /* Garante a borda dourada */
-  background-color: #1a1a1a; /* Fundo de segurança */
+  border: 2px solid #c5b47d;
+  background-color: var(--color-section-light);
 }
 
 /* Garante que o container dos slides ocupe tudo */

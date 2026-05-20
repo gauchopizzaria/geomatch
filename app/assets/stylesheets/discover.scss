@@ -10,7 +10,7 @@
   /* Cobre toda a tela: top/left/right/bottom é mais robusto que width/height em fixed */
   position: fixed; top: 0; left: 0; right: 0; bottom: 0;
   width: 100%; height: 100dvh;
-  background: #0e0e10; overflow: hidden;
+  background: var(--color-background); overflow: hidden;
   pointer-events: none; // Importante: deixa o clique passar para o mapa
 
   // --- VARIÁVEIS DINÂMICAS ---
@@ -24,7 +24,7 @@
     pointer-events: none; z-index: 80;
     
     // O gradiente agora segue as coordenadas X e Y do usuário
-    background: radial-gradient(circle at var(--radar-x) var(--radar-y), transparent 0px, transparent var(--radar-radius), rgba(14, 14, 16, 0.35) calc(var(--radar-radius) + 1px));
+    background: radial-gradient(circle at var(--radar-x) var(--radar-y), transparent 0px, transparent var(--radar-radius), var(--map-spotlight-color) calc(var(--radar-radius) + 1px));
   }
 
   /* Círculo Dourado (Borda) */
@@ -114,13 +114,13 @@
 
 // 5. BOTTOM SHEET
 .users-bottom-sheet {
-  position: absolute; left: 0; right: 0; bottom: 0; 
+  position: absolute; left: 0; right: 0; bottom: 0;
   height: 25vh; min-height: 120px; max-height: 85vh;
-  z-index: 600; background: #111; 
+  z-index: 600; background: var(--color-section-light);
   border-top-left-radius: 25px; border-top-right-radius: 25px;
   box-shadow: 0 -5px 30px rgba(0,0,0,0.8);
   display: flex; flex-direction: column;
-  border-top: 1px solid #222;
+  border-top: 1px solid var(--color-border);
   pointer-events: auto;
   transition: height 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   &.dragging { transition: none; }
@@ -128,8 +128,8 @@
 
 .bottom-sheet-handle {
   display: flex; justify-content: center; padding: 15px;
-  cursor: grab; touch-action: none; 
-  .handle-bar { width: 40px; height: 5px; background: #444; border-radius: 3px; }
+  cursor: grab; touch-action: none;
+  .handle-bar { width: 40px; height: 5px; background: var(--color-border); border-radius: 3px; }
 }
 
 .bottom-sheet-content {
@@ -141,24 +141,24 @@
 .icon-users-header { height: 22px; width: auto; }
 .text-users-header { height: 14px; width: auto; } 
 .nearby-count {
-  background: #333; color: #dbc88a; width: 28px; height: 28px;
+  background: var(--color-section-gray); color: #dbc88a; width: 28px; height: 28px;
   border-radius: 50%; display: flex; align-items: center; justify-content: center;
-  font-size: 0.8rem; font-weight: 700; border: 1px solid #444;
+  font-size: 0.8rem; font-weight: 700; border: 1px solid var(--color-border);
 }
 
 .users-list-fullscreen {
   
   list-style: none; padding: 0; margin: 0; overflow-y: auto; flex: 1;
   &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #333; border-radius: 2px; }
+  &::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
 
   .user-list-item {
-    display: flex;       // <--- ACRESCENTE ESTA LINHA
-    align-items: center; // <--- ACRESCENTE ESTA LINHA
-    gap: 12px;           // <--- ACRESCENTE ESTA LINHA (para dar espaço entre foto e nome)
-    
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
     padding: 10px 0;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid var(--color-border);
     cursor: pointer;
 
     // ... restante das regras ...
@@ -209,9 +209,9 @@
 }
 
 .user-list-info { display: flex; flex-direction: column; gap: 2px; }
-.user-list-name { color: #fff; font-weight: 700; font-size: 1.1rem; }
-.user-list-distance { color: #888; font-size: 0.85rem; }
-.loading-text { text-align: center; color: #666; padding: 20px; }
+.user-list-name { color: var(--color-text); font-weight: 700; font-size: 1.1rem; }
+.user-list-distance { color: var(--color-text-secondary); font-size: 0.85rem; }
+.loading-text { text-align: center; color: var(--color-text-secondary); padding: 20px; }
 
 // 6. POPUP (AJUSTADO E UNIFICADO)
 // 6. POPUP (UNIFIED AND CORRECTED)
@@ -241,21 +241,21 @@
   pointer-events: auto; /* Ensures clicking background closes it */
 }
 
-.popup-content-fullscreen { 
-  position: relative; 
-  width: 100%; 
-  max-width: 600px; /* Prevents it from being too wide on desktop */
-  background: #1c1c1e; 
-  
+.popup-content-fullscreen {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  background: var(--color-section-light);
+
   /* Initial State (Compact) */
-  height: 450px; 
+  height: 450px;
   max-height: 85vh;
-  
-  border-top-left-radius: 30px; 
-  border-top-right-radius: 30px; 
-  overflow: hidden; 
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.8); 
-  border: 1px solid #333; 
+
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+  border: 1px solid var(--color-border); 
   
   display: flex;
   flex-direction: column;
@@ -338,22 +338,22 @@
   pointer-events: auto; /* Garante que clicar no fundo fecha */
 }
 
-.popup-content-fullscreen { 
-  position: relative; 
-  width: 100%; 
-  max-width: 600px; /* Limite para não ficar gigante no PC */
-  background: #1c1c1e; 
-  
+.popup-content-fullscreen {
+  position: relative;
+  width: 100%;
+  max-width: 600px;
+  background: var(--color-section-light);
+
   /* --- CORREÇÃO DE ALTURA --- */
-  height: 45vh; /* Ocupa 45% da tela inicialmente (melhor que px fixo) */
-  min-height: 400px; /* Altura mínima de segurança */
+  height: 45vh;
+  min-height: 400px;
   max-height: 85vh;
-  
-  border-top-left-radius: 30px; 
-  border-top-right-radius: 30px; 
-  overflow: hidden; 
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.8); 
-  border: 1px solid #333; 
+
+  border-top-left-radius: 30px;
+  border-top-right-radius: 30px;
+  overflow: hidden;
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.8);
+  border: 1px solid var(--color-border); 
   
   display: flex;
   flex-direction: column;
@@ -422,7 +422,7 @@
 
 .popup-gradient-overlay {
   position: absolute; bottom: 0; left: 0; width: 100%; height: 60%;
-  background: linear-gradient(to top, #1c1c1e 10%, transparent 100%);
+  background: linear-gradient(to top, var(--color-section-light) 10%, transparent 100%);
   pointer-events: none;
 }
 
@@ -449,19 +449,18 @@
 
 /* --- CONTEÚDO SCROLLÁVEL (PERFIL COMPLETO) --- */
 .popup-details-container {
-  flex: 1; /* Ocupa todo o espaço restante */
-  background: #1c1c1e;
-  overflow-y: auto; /* Permite rolar se o conteúdo for grande */
+  flex: 1;
+  background: var(--color-section-light);
+  overflow-y: auto;
   padding: 20px;
   padding-top: 10px;
-  
-  opacity: 0; /* Invisível no início */
+
+  opacity: 0;
   transition: opacity 0.2s ease;
   pointer-events: none;
 
-  /* Barra de rolagem estilizada */
   &::-webkit-scrollbar { width: 4px; }
-  &::-webkit-scrollbar-thumb { background: #444; border-radius: 2px; }
+  &::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 2px; }
 }
 
 /* Quando expandido, mostra o conteúdo */
@@ -500,12 +499,12 @@
 .dsc-sheet {
   position: relative;
   width: 100%;
-  height: 100%; // Ocupa a altura total disponível
-  background-color: #000;
+  height: 100%;
+  background-color: var(--color-background);
   display: flex;
   flex-direction: column;
   overflow: hidden;
-  border: none; // Remove bordas que causam linhas brancas
+  border: none;
 }
 
 // Área de Scroll
@@ -585,7 +584,7 @@
 }
 
 .dsc-action-btn {
-  background-color: #111; // Fundo do círculo
+  background-color: var(--color-section-light); // Fundo do círculo
   border: 2px solid #d4be91; // Borda dourada
   border-radius: 50% !important;
   width: 70px;
@@ -604,7 +603,7 @@
     object-fit: contain;
   }
 
-  &:active { transform: scale(0.85); background-color: #222; }
+  &:active { transform: scale(0.85); background-color: var(--color-section-gray); }
 
   // Botão de Chat (centro) levemente menor para harmonia visual
   &.btn-chat {
@@ -617,20 +616,20 @@
 /* 3. CONTEÚDO DO PERFIL (CARDS) */
 .dsc-body-container {
   padding: 10px 20px;
-  background-color: #000;
+  background-color: var(--color-background);
 }
 
 .dsc-info-card {
-  background-color: #161618;
+  background-color: var(--color-section-light);
   border-radius: 20px;
   padding: 25px;
   margin-bottom: 15px;
-  border: 1px solid #222;
+  border: 1px solid var(--color-border);
 
   .dsc-card-header {
     font-size: 0.9rem;
     font-weight: 800;
-    color: #fff;
+    color: var(--color-text);
     margin-bottom: 15px;
     letter-spacing: 1px;
     text-transform: uppercase;
@@ -639,7 +638,7 @@
   .dsc-bio-text {
     font-size: 1.1rem;
     line-height: 1.6;
-    color: #ccc;
+    color: var(--color-text-secondary);
     text-align: center;
   }
 }
@@ -650,11 +649,11 @@
     align-items: center;
     gap: 15px;
     padding: 12px 0;
-    border-bottom: 1px solid #222;
+    border-bottom: 1px solid var(--color-border);
     &:last-child { border-bottom: none; }
-    
+
     .dsc-basic-icon { color: #d4be91; font-size: 1.2rem; width: 25px; text-align: center; }
-    .dsc-basic-text { color: #fff; font-size: 1.1rem; }
+    .dsc-basic-text { color: var(--color-text); font-size: 1.1rem; }
   }
 }
 
@@ -697,13 +696,13 @@
   margin-top: 30px;
   text-align: center;
   .dsc-btn-safety {
-    background: none; border: none; color: #555;
+    background: none; border: none; color: var(--color-text-secondary);
     font-weight: 700; text-transform: uppercase;
     font-size: 0.8rem; letter-spacing: 2px;
     padding: 15px; width: 100%;
-    &:hover { color: #888; }
+    &:hover { color: var(--color-text); }
   }
-  .dsc-safety-divider { height: 1px; background: #222; margin: 10px 20%; }
+  .dsc-safety-divider { height: 1px; background: var(--color-border); margin: 10px 20%; }
 }
 
 /* CARROSSEL DSC — swipe nativo CSS scroll-snap */
