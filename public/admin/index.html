@@ -1968,23 +1968,14 @@ async function banFromModeration(userId) {
 
 window.reanalyzePhoto = async function(userId) {
   if (!confirm('Deseja enviar esta foto novamente para análise da Inteligência Artificial?')) return;
-
-  const token = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('adminToken');
-
   try {
-    const res = await fetch(`/api/v1/admin/moderation/${userId}/reanalyze`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': token ? `Bearer ${token}` : ''
-      }
-    });
+    const res = await api(`/api/v1/admin/moderation/${userId}/reanalyze`, { method: 'POST' });
     const data = await res.json();
     if (res.ok) {
       alert('Reanálise iniciada! Aguarde alguns segundos e a página será atualizada.');
       setTimeout(() => loadData(), 2000);
     } else {
-      alert(data.error || 'Erro ao reanalisar. Token ausente ou inválido.');
+      alert(data.error || 'Erro ao reanalisar.');
     }
   } catch (err) {
     console.error(err);
