@@ -2,6 +2,7 @@ class ApplicationController < ActionController::Base
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :disable_cache_for_auth, if: :devise_controller?
   before_action :update_last_seen, if: :user_signed_in?
+  before_action :require_onboarding!, if: :user_signed_in?
 
   rescue_from ActionController::InvalidAuthenticityToken, with: :redirect_and_refresh_token
 
@@ -38,6 +39,14 @@ class ApplicationController < ActionController::Base
   end
 
   private
+
+  def require_onboarding!
+    return if current_user.onboarding_completed?
+    return if devise_controller?
+    return if controller_name == 'users' && action_name.in?(%w[onboarding complete_onboarding])
+    return if controller_name == 'pages'
+    redirect_to onboarding_path
+  end
 
   def disable_cache_for_auth
     response.headers["Cache-Control"] = "no-store, no-cache, must-revalidate, max-age=0"

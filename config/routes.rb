@@ -98,6 +98,8 @@ Rails.application.routes.draw do
   get "/safety_center/history", to: "users#safety_history",  as: :safety_history
   get "/report_incident",       to: "users#report_incident", as: :report_incident
   get "/meu-perfil",      to: "users#me_profile",      as: :my_profile
+  get  "/onboarding",    to: "users#onboarding",          as: :onboarding
+  patch "/onboarding",   to: "users#complete_onboarding"
   get '/verificacao', to: 'users#verification', as: :verification
   patch '/verificacao', to: 'users#send_verification', as: :send_verification
 

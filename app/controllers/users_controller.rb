@@ -282,6 +282,38 @@ end
   end
 
   # Exibe a tela de solicitação
+  def onboarding
+    redirect_to lead_path if current_user.onboarding_completed?
+    @hide_sidebar = true
+  end
+
+  def complete_onboarding
+    @hide_sidebar = true
+    permitted = params.require(:user).permit(:gender, :education_level, :birthdate, :phone, :zip_code, :street, :neighborhood, :city, :state)
+
+    @errors = []
+    @errors << "Selecione seu gênero"                 if permitted[:gender].blank?
+    @errors << "Selecione sua escolaridade"           if permitted[:education_level].blank?
+    @errors << "Data de nascimento é obrigatória"     if permitted[:birthdate].blank?
+    @errors << "Telefone é obrigatório"               if permitted[:phone].blank?
+    @errors << "Informe o CEP para localizarmos você" if permitted[:zip_code].blank?
+
+    if @errors.any?
+      render :onboarding, status: :unprocessable_entity
+      return
+    end
+
+    current_user.assign_attributes(permitted)
+    current_user.onboarding_completed = true
+
+    if current_user.save
+      redirect_to lead_path, notice: "Perfil completado! Bem-vindo ao GeoMatch 🎉"
+    else
+      @errors = current_user.errors.full_messages
+      render :onboarding, status: :unprocessable_entity
+    end
+  end
+
   def verification
     # Se o usuário já enviou uma foto antes, podemos mostrar um aviso ou status
   end

@@ -10,9 +10,6 @@ class User < ApplicationRecord
   validates :terms_of_use, acceptance: { message: 'devem ser aceitos para prosseguir.' }
   validates :data_policy, acceptance: { message: 'deve ser aceita para prosseguir.' }
 
-  # Campos obrigatórios no cadastro
-  validates :education_level, presence: { message: 'deve ser selecionada' }, on: :create
-
   # --- Associações ---
   belongs_to :plan
   validates :plan, presence: true

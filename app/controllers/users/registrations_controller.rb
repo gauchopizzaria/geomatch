@@ -12,6 +12,15 @@ class Users::RegistrationsController < Devise::RegistrationsController
     end
   end
 
+  # Novos usuários vão para onboarding antes de entrar no app
+  def after_sign_up_path_for(_resource)
+    onboarding_path
+  end
+
+  def after_inactive_sign_up_path_for(_resource)
+    onboarding_path
+  end
+
   private
 
   def set_google_session_flag
