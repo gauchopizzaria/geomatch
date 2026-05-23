@@ -211,6 +211,7 @@ Rails.application.routes.draw do
             patch :verify_user
             patch :reject_photo
             patch :ban_user
+            post  :reanalyze
           end
         end
       end

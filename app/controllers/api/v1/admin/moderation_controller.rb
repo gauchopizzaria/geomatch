@@ -55,6 +55,26 @@ module Api
           api_not_found('Usuário não encontrado.')
         end
 
+        # Reenfileira a foto para reanálise pela IA
+        def reanalyze
+          user = User.find(params[:id])
+
+          unless user.verification_photo.attached?
+            return render json: { success: false, error: "Usuário não possui foto de verificação." },
+                          status: :unprocessable_entity
+          end
+
+          user.update_columns(
+            ai_moderation_status:  "pending",
+            ai_moderation_score:   nil,
+            ai_moderation_details: nil
+          )
+          AnalyzeVerificationPhotoJob.perform_later(user.id)
+          render json: { success: true, message: "Reanálise enfileirada com sucesso." }
+        rescue ActiveRecord::RecordNotFound
+          api_not_found("Usuário não encontrado.")
+        end
+
         # Bane a conta e remove a foto de verificação
         def ban_user
           user = User.find(params[:id])

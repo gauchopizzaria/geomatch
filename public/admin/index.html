@@ -1867,12 +1867,14 @@ function renderModerationCard(u, tab = 'pending') {
     : `<span style="font-size:.6875rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;color:#f59e0b;background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25)">Pendente</span>`;
 
   const actions = tab === 'verified'
-    ? `<div style="display:flex;gap:.625rem">
+    ? `<div style="display:flex;gap:.625rem;flex-wrap:wrap">
+        <button onclick="reanalyzePhoto(${u.id})" style="flex:1;padding:.5rem;border-radius:.75rem;font-size:.8125rem;font-weight:600;color:#fff;background:#3b82f6;border:1px solid #2563eb;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.25rem"><svg style="width:.875rem;height:.875rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Reanalisar IA</button>
         <button onclick="banFromModeration(${u.id})" style="flex:1;padding:.5rem;border-radius:.75rem;font-size:.8125rem;font-weight:600;color:#f87171;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);cursor:pointer">Banir</button>
        </div>`
-    : `<div style="display:flex;gap:.625rem">
+    : `<div style="display:flex;gap:.625rem;flex-wrap:wrap">
         <button onclick="approveVerification(${u.id})" style="flex:1;padding:.5rem;border-radius:.75rem;font-size:.8125rem;font-weight:700;color:#fff;background:#16a34a;border:none;cursor:pointer">✓ Aprovar</button>
         <button onclick="rejectVerificationPhoto(${u.id})" style="flex:1;padding:.5rem;border-radius:.75rem;font-size:.8125rem;font-weight:600;color:#f59e0b;background:rgba(245,158,11,.1);border:1px solid rgba(245,158,11,.25);cursor:pointer">⚠ Recusar Foto</button>
+        <button onclick="reanalyzePhoto(${u.id})" style="flex:1;padding:.5rem;border-radius:.75rem;font-size:.8125rem;font-weight:600;color:#fff;background:#3b82f6;border:1px solid #2563eb;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:.25rem"><svg style="width:.875rem;height:.875rem;flex-shrink:0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>Reanalisar IA</button>
         <button onclick="banFromModeration(${u.id})" style="flex:1;padding:.5rem;border-radius:.75rem;font-size:.8125rem;font-weight:600;color:#f87171;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.25);cursor:pointer">🚫 Banir</button>
        </div>`;
 
@@ -1963,6 +1965,26 @@ async function banFromModeration(userId) {
   if (!res?.ok) return;
   removeModerationCard(userId);
 }
+
+window.reanalyzePhoto = async function(userId) {
+  if (!confirm('Deseja enviar esta foto novamente para análise da Inteligência Artificial?')) return;
+  try {
+    const res = await fetch(`/api/v1/admin/moderation/${userId}/reanalyze`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Admin-Token': adminToken }
+    });
+    const data = await res.json();
+    if (res.ok) {
+      alert('Reanálise iniciada! Aguarde alguns segundos e a página será atualizada.');
+      setTimeout(() => loadData(), 2000);
+    } else {
+      alert(data.error || 'Erro ao reanalisar.');
+    }
+  } catch (err) {
+    console.error(err);
+    alert('Erro de conexão.');
+  }
+};
 
 // ─────────────────────────────────────────────
 //  CSV EXPORT

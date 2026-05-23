@@ -9,10 +9,7 @@ class AnalyzeVerificationPhotoJob < ApplicationJob
       return
     end
 
-    image_url = Rails.application.routes.url_helpers.rails_blob_url(
-      user.verification_photo,
-      host: ENV.fetch("APP_BASE_URL", "http://localhost:3000")
-    )
+    image_url = user.verification_photo.url
 
     result = ImageModerationService.analyze_image(image_url, user.display_name)
 
