@@ -385,3 +385,15 @@ html, body {
   width: 100%; padding: 16px; margin-top: 10px; background: var(--gold-primary); color: #000; border: none; border-radius: 30px; font-weight: 800; font-size: 1.1rem; cursor: pointer; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
 }
 
+// =========================================
+// 6. iOS SAFARI VIEWPORT FIX
+// =========================================
+// O .site-content do layout tem padding-bottom: calc(90px + safe-area-inset-bottom).
+// Somado à altura do .geomatch-screen-wrapper (100dvh - safe-area-inset-top),
+// o total ultrapassa 100dvh no iPhone, fazendo o iOS Safari reduzir o dvh e
+// encolher o card. Zeramos esse padding apenas nesta rota.
+.site-content:has(.geomatch-screen-wrapper) {
+  padding-bottom: 0 !important;
+  overflow: hidden;
+}
+
