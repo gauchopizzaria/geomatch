@@ -9,14 +9,20 @@ class ImageModerationService
 
     image_content = URI.open(image_url) { |f| f.read }
 
-    response = image_annotator.annotate_image(
-      image:    { content: image_content },
-      features: [
-        { type: :SAFE_SEARCH_DETECTION },
-        { type: :FACE_DETECTION },
-        { type: :TEXT_DETECTION }
+    vision_response = image_annotator.batch_annotate_images(
+      requests: [
+        {
+          image:    { content: image_content },
+          features: [
+            { type: :SAFE_SEARCH_DETECTION },
+            { type: :FACE_DETECTION },
+            { type: :TEXT_DETECTION }
+          ]
+        }
       ]
     )
+
+    response = vision_response.responses.first
 
     # --- 1. Conteúdo explícito ---
     safe = response.safe_search_annotation

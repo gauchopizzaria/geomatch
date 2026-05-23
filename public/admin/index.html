@@ -1968,13 +1968,15 @@ async function banFromModeration(userId) {
 
 window.reanalyzePhoto = async function(userId) {
   if (!confirm('Deseja enviar esta foto novamente para análise da Inteligência Artificial?')) return;
-  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+
+  const token = localStorage.getItem('token') || sessionStorage.getItem('token') || localStorage.getItem('adminToken');
+
   try {
     const res = await fetch(`/api/v1/admin/moderation/${userId}/reanalyze`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'X-CSRF-Token': csrfToken
+        'Authorization': token ? `Bearer ${token}` : ''
       }
     });
     const data = await res.json();
@@ -1982,7 +1984,7 @@ window.reanalyzePhoto = async function(userId) {
       alert('Reanálise iniciada! Aguarde alguns segundos e a página será atualizada.');
       setTimeout(() => loadData(), 2000);
     } else {
-      alert(data.error || 'Erro ao reanalisar.');
+      alert(data.error || 'Erro ao reanalisar. Token ausente ou inválido.');
     }
   } catch (err) {
     console.error(err);
