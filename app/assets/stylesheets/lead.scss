@@ -21,9 +21,9 @@ html, body {
 
 .geomatch-screen-wrapper {
   background-color: var(--bg-dark);
-  // .authenticated-layout já empurra o conteúdo env(safe-area-inset-top) para baixo,
-  // então subtraímos esse valor para que a tela não ultrapasse o fundo do viewport.
-  height: calc(100dvh - env(safe-area-inset-top, 0px));
+  // Subtraímos safe-area-top (status bar) E safe-area-bottom (tab bar + home indicator
+  // no Turbo Native), para que o wrapper não se estenda sob a UITabBar nativa.
+  height: calc(100dvh - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   width: 100%;
   display: flex;
   flex-direction: column;
@@ -63,9 +63,9 @@ html, body {
   flex: 1;
   display: flex;
   flex-direction: column;
-  padding: 10px 15px 0 15px; 
-  /* Espaço para os botões flutuantes não cobrirem o card */
-  padding-bottom: calc(100px + env(safe-area-inset-bottom));
+  padding: 10px 15px 0 15px;
+  /* Valor fixo — o wrapper já subtrai env(safe-area-inset-bottom) na altura */
+  padding-bottom: 100px;
   
   position: relative;
   max-width: 600px;
