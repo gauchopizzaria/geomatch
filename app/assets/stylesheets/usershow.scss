@@ -83,7 +83,12 @@
   cursor: pointer;
   display: flex;
   align-items: center;
-  img { width: 24px; height: 24px; filter: var(--nav-icon-filter); }
+  img { width: 30px; height: 30px; }
+}
+
+html.dark-mode .profile-header-container .header-btn img {
+  width: 22px;
+  height: 22px;
 }
 
 /* 2. Hero Section (Avatar | Info | Ajuda) */

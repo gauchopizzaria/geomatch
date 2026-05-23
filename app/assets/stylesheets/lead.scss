@@ -53,6 +53,8 @@ html, body {
   .header-right { 
     display: flex; gap: 15px; 
     .header-btn { background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; img { width: 24px; height: 24px; } }
+    // Sol: 30px. Lua é forma sólida e aparece maior, por isso fica em 22px.
+    .header-btn:last-child img { width: 30px; height: 30px; }
   }
 }
 
@@ -414,5 +416,16 @@ body.turbo-native {
     // user-info está em bottom: 110px, então ~7px de espaço entre eles
     bottom: 70px;
   }
+}
+
+// =========================================
+// 8. TEMA — TAMANHO ÍCONES HEADER
+// =========================================
+// Sol (luz) tem raios finos com muito espaço negativo → 30px.
+// Lua (escuro) é forma sólida e aparece visualmente maior → 22px.
+// Os dois ficam com peso visual equivalente.
+html.dark-mode .geomatch-header .header-btn:last-child img {
+  width: 22px;
+  height: 22px;
 }
 
