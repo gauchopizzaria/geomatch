@@ -43,6 +43,14 @@
       <div class="gold-card-frame" data-lead-swipe-target="card" data-user-id="<%= @next_user.id %>">
         
         <div class="card-gallery">
+          <%# --- OVERLAYS DE SWIPE (ícone puro, sem texto) --- %>
+          <div class="swipe-overlay swipe-like" data-lead-swipe-target="like">
+            <i class="fas fa-heart"></i>
+          </div>
+          <div class="swipe-overlay swipe-nope" data-lead-swipe-target="nope">
+            <i class="fas fa-times"></i>
+          </div>
+
           <%# Barra de Progresso %>
           <div class="progress-bar-container">
             <% album_photos = @next_user.album_photos.attached? ? @next_user.album_photos : [] %>
@@ -107,15 +115,20 @@
       
       <%# --- BOTÕES DE AÇÃO (Floating) --- %>
       <div class="action-buttons-container">
-        <%= button_to reject_user_path(user_id: @next_user.id), method: :post, class: "action-btn btn-reject", form_class: "btn-form" do %>
+        <%= button_to reject_user_path(user_id: @next_user.id), method: :post,
+              class: "action-btn btn-reject", form_class: "btn-form",
+              data: { lead_swipe_target: "btnReject" } do %>
           <%= image_tag "botao-rejeitar.svg", alt: "Rejeitar" %>
         <% end %>
 
-        <%= button_to start_chat_path(user_id: @next_user.id), method: :post, class: "action-btn btn-chat", form_class: "btn-form" do %>
+        <%= button_to start_chat_path(user_id: @next_user.id), method: :post,
+              class: "action-btn btn-chat", form_class: "btn-form" do %>
           <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
         <% end %>
 
-        <%= button_to likes_path(user_id: @next_user.id), method: :post, class: "action-btn btn-like", form_class: "btn-form" do %>
+        <%= button_to likes_path(user_id: @next_user.id), method: :post,
+              class: "action-btn btn-like", form_class: "btn-form",
+              data: { lead_swipe_target: "btnLike" } do %>
           <div class="heart-icon-wrapper">
              <%= image_tag "coracao-chapada.png", alt: "Curtir" %>
           </div>

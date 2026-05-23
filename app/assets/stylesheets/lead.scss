@@ -89,15 +89,52 @@ html, body {
   
   touch-action: none;
   user-select: none;
+  -webkit-user-select: none;
   cursor: grab;
-  margin-bottom: 0; 
+  margin-bottom: 0;
 
   &:active { cursor: grabbing; }
+
+  // Impede drag nativo de imagens e seleção de texto
+  img { -webkit-user-drag: none; user-select: none; pointer-events: none; }
 }
 
 // --- Galeria Interna do Card ---
 .card-gallery { width: 100%; height: 100%; position: relative; }
 .slides-container { width: 100%; height: 100%; }
+
+// --- Overlays de Swipe — ícone puro centralizado ---
+.swipe-overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 50;
+  opacity: 0;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  will-change: opacity;
+
+  i {
+    // ~40% da largura do card
+    font-size: clamp(140px, 42vw, 220px);
+    line-height: 1;
+  }
+}
+
+.swipe-like {
+  i {
+    color: var(--gold-primary);
+    filter: drop-shadow(0 0 40px rgba(180, 167, 122, 0.95));
+  }
+}
+
+.swipe-nope {
+  i {
+    color: #ff4b4b;
+    filter: drop-shadow(0 0 40px rgba(255, 75, 75, 0.95));
+  }
+}
 
 .slide-item {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
@@ -174,17 +211,58 @@ html, body {
 .btn-form { margin: 0; padding: 0; display: flex; }
 
 .action-btn {
-  background: var(--color-section-light); border: 2px solid var(--gold-primary); border-radius: 50%;
+  background: var(--color-section-light);
+  border: 2px solid var(--gold-primary);
+  border-radius: 50%;
   display: flex; justify-content: center; align-items: center;
-  cursor: pointer; box-shadow: 0 5px 15px rgba(0,0,0,0.6);
-  transition: transform 0.1s; position: relative;
+  cursor: pointer;
+  box-shadow: 0 5px 15px rgba(0,0,0,0.6);
+  position: relative;
+  // Transição suave para o destaque dinâmico
+  transition: transform 0.2s ease,
+              box-shadow 0.2s ease,
+              border-color 0.2s ease,
+              border-width 0.2s ease,
+              background-color 0.2s ease;
   img { width: 50%; height: 50%; object-fit: contain; }
-  &:active { transform: scale(0.95); }
+  &:active:not(.btn-highlight) { transform: scale(0.95); }
 }
 
-.btn-reject { width: 65px; height: 65px; border-color: #ff4b4b; border: 2px solid var(--gold-primary); img { width: 26px; } }
-.btn-chat { width: 50px; height: 50px; border-color: #998c61; background: rgba(20, 20, 20, 0.95); img { width: 22px; } }
-.btn-like { width: 65px; height: 65px; border: 2px solid var(--gold-primary); .heart-icon-wrapper { width: 100%; height: 100%; display: flex; justify-content: center; align-items: center; img { width: 32px; } } }
+.btn-reject {
+  width: 78px; height: 78px;
+  border: 2px solid var(--gold-primary);
+  img { width: 32px; }
+}
+.btn-chat {
+  width: 62px; height: 62px;
+  border-color: #998c61;
+  background: rgba(20, 20, 20, 0.95);
+  img { width: 26px; }
+}
+.btn-like {
+  width: 78px; height: 78px;
+  border: 2px solid var(--gold-primary);
+  .heart-icon-wrapper {
+    width: 100%; height: 100%;
+    display: flex; justify-content: center; align-items: center;
+    img { width: 38px; }
+  }
+}
+
+// Destaque dinâmico durante o swipe
+.btn-reject.btn-highlight {
+  border: 3px solid #ff4b4b !important;
+  background-color: rgba(255, 75, 75, 0.18) !important;
+  box-shadow: 0 0 28px rgba(255, 75, 75, 0.75), 0 5px 15px rgba(0,0,0,0.6) !important;
+  transform: scale(1.22) !important;
+}
+
+.btn-like.btn-highlight {
+  border: 3px solid var(--gold-primary) !important;
+  background-color: rgba(180, 167, 122, 0.18) !important;
+  box-shadow: 0 0 28px rgba(180, 167, 122, 0.75), 0 5px 15px rgba(0,0,0,0.6) !important;
+  transform: scale(1.22) !important;
+}
 
 // Estado Vazio
 .empty-state {
