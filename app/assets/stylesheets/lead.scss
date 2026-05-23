@@ -397,3 +397,22 @@ html, body {
   overflow: hidden;
 }
 
+// =========================================
+// 7. TURBO NATIVE iOS — OVERRIDES
+// =========================================
+// No app nativo (Turbo Native), env(safe-area-inset-bottom) inclui a UITabBar
+// nativa (~49px) + home indicator (~34px) ≈ 83px total. O padding-bottom e o
+// posicionamento dos botões precisam ignorar essa safe area, pois o wrapper já
+// a subtrai da altura. O card deve preencher todo o espaço até a UITabBar.
+body.turbo-native {
+  .geomatch-main-area {
+    padding-bottom: 0 !important;
+  }
+
+  .action-buttons-container {
+    // 70px from card bottom → buttons center ≈ 37px above card bottom
+    // user-info está em bottom: 110px, então ~7px de espaço entre eles
+    bottom: 70px;
+  }
+}
+
