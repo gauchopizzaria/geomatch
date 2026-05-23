@@ -41,11 +41,19 @@ class ApplicationController < ActionController::Base
   private
 
   def require_onboarding!
-    return if current_user.onboarding_completed?
+    # Não bloquear requests JSON/API (ex: stories, notificações, localização)
+    return if request.format.json?
+    return if request.path.start_with?('/api/')
     return if devise_controller?
     return if controller_name == 'users' && action_name.in?(%w[onboarding complete_onboarding])
     return if controller_name == 'pages'
+
+    # Rescue: se a coluna ainda não existe no banco (migração pendente), não travar
+    completed = current_user.onboarding_completed?
+    return if completed
     redirect_to onboarding_path
+  rescue => e
+    Rails.logger.warn "[require_onboarding!] #{e.class}: #{e.message}"
   end
 
   def disable_cache_for_auth

@@ -304,9 +304,12 @@ end
     end
 
     current_user.assign_attributes(permitted)
-    current_user.onboarding_completed = true
 
     if current_user.save
+      # update_column vai direto no banco, sem validações/callbacks
+      # garante que onboarding_completed persiste mesmo que geocoder ou outra
+      # callback interfira no save principal
+      current_user.update_column(:onboarding_completed, true)
       redirect_to lead_path, notice: "Perfil completado! Bem-vindo ao GeoMatch 🎉"
     else
       @errors = current_user.errors.full_messages
