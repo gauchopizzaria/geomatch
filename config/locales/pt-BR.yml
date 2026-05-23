@@ -4,13 +4,38 @@
       messages:
         record_invalid: "A validação falhou: %{errors}"
         required: "é obrigatório"
+        taken: "já está em uso"
+        blank: "não pode ficar em branco"
+        too_short: "é muito curto (mínimo: %{count} caracteres)"
+        too_long: "é muito longo (máximo: %{count} caracteres)"
+        invalid: "não é válido"
+        confirmation: "não coincide com %{attribute}"
+        inclusion: "não está incluído na lista"
       models:
+        user:
+          attributes:
+            email:
+              taken: "já está cadastrado. Tente fazer login ou use outro e-mail."
+              blank: "não pode ficar em branco"
+              invalid: "não é um endereço de e-mail válido"
+            password:
+              too_short: "deve ter no mínimo %{count} caracteres"
+              blank: "não pode ficar em branco"
+            name:
+              blank: "não pode ficar em branco"
         payment:
           attributes:
             plan:
               required: "é obrigatório"
             user:
               required: "é obrigatório"
+    attributes:
+      user:
+        email: "E-mail"
+        password: "Senha"
+        password_confirmation: "Confirmação de senha"
+        name: "Nome completo"
+        current_password: "Senha atual"
 
 # Adicione o bloco abaixo mantendo este alinhamento:
   datetime:
