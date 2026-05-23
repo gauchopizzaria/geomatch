@@ -1968,10 +1968,14 @@ async function banFromModeration(userId) {
 
 window.reanalyzePhoto = async function(userId) {
   if (!confirm('Deseja enviar esta foto novamente para análise da Inteligência Artificial?')) return;
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
   try {
     const res = await fetch(`/api/v1/admin/moderation/${userId}/reanalyze`, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'X-Admin-Token': adminToken }
+      headers: {
+        'Content-Type': 'application/json',
+        'X-CSRF-Token': csrfToken
+      }
     });
     const data = await res.json();
     if (res.ok) {
