@@ -90,7 +90,10 @@ module Api
             email:                    user.email,
             created_at:               user.created_at.iso8601,
             avatar_url:               blob_path(user.avatar),
-            verification_photo_url:   blob_path(user.verification_photo)
+            verification_photo_url:   blob_path(user.verification_photo),
+            ai_moderation_status:     user.ai_moderation_status,
+            ai_moderation_score:      user.ai_moderation_score,
+            ai_moderation_details:    user.ai_moderation_details
           }
         end
 

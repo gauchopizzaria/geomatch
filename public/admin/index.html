@@ -1894,12 +1894,30 @@ function renderModerationCard(u, tab = 'pending') {
         </div>
        </div>`;
 
+  const aiStatusBadge = (() => {
+    const pct = u.ai_moderation_score != null ? Math.round(u.ai_moderation_score * 100) : null;
+    const base = 'font-size:.6875rem;font-weight:700;padding:.2rem .6rem;border-radius:9999px;border:1px solid;display:inline-block;margin-top:.375rem';
+    switch (u.ai_moderation_status) {
+      case 'approved':
+        return `<span style="${base};color:#22c55e;background:rgba(34,197,94,.08);border-color:rgba(34,197,94,.25)">Análise IA: Aprovado (${pct}%)</span>`;
+      case 'rejected':
+        return `<span style="${base};color:#f87171;background:rgba(239,68,68,.08);border-color:rgba(239,68,68,.25)">Análise IA: Recusado (${pct}%)</span>`;
+      case 'manual_review':
+        return `<span style="${base};color:#f97316;background:rgba(249,115,22,.08);border-color:rgba(249,115,22,.25)">Análise IA: Revisão Manual (${pct}%)</span>`;
+      case 'error':
+        return `<span style="${base};color:#fca5a5;background:rgba(239,68,68,.05);border-color:rgba(239,68,68,.15)">Análise IA: Erro</span>`;
+      default:
+        return `<span style="${base};color:#94a3b8;background:rgba(148,163,184,.08);border-color:rgba(148,163,184,.2)">Análise IA: Pendente</span>`;
+    }
+  })();
+
   return `
 <div id="mod-card-${u.id}" style="background:#0f172a;border:1px solid #1e293b;border-radius:1rem;padding:1.25rem">
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem">
     <div>
       <div style="font-weight:600;font-size:.9375rem;color:#f1f5f9">${esc(u.name)}</div>
       <div style="font-size:.75rem;color:#64748b;margin-top:.125rem">${esc(u.email)} · ${fmtDate(u.created_at)}</div>
+      ${aiStatusBadge}
     </div>
     ${statusBadge}
   </div>

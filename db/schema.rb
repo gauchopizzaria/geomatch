@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_23_125548) do
+ActiveRecord::Schema[8.1].define(version: 2026_05_23_144754) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -412,6 +412,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_23_125548) do
   create_table "users", force: :cascade do |t|
     t.string "address"
     t.boolean "admin", default: false, null: false
+    t.jsonb "ai_moderation_details"
+    t.float "ai_moderation_score"
+    t.string "ai_moderation_status"
     t.string "apns_token"
     t.datetime "banned_at"
     t.text "bio"

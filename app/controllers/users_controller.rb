@@ -327,6 +327,12 @@ end
       Rails.logger.info "[send_verification] Recebendo foto de verificação para o usuário #{current_user.id}"
       begin
         current_user.verification_photo.attach(params[:verification_photo])
+        current_user.update_columns(
+          ai_moderation_status:  "pending",
+          ai_moderation_score:   nil,
+          ai_moderation_details: nil
+        )
+        AnalyzeVerificationPhotoJob.perform_later(current_user.id)
         flash[:notice] = "Solicitação enviada com sucesso! Nossa equipe analisará seu perfil."
         redirect_to my_profile_path
       rescue => e
