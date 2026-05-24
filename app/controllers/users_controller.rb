@@ -358,14 +358,15 @@ end
 
   def complete_onboarding
     @hide_sidebar = true
-    permitted = params.require(:user).permit(:gender, :education_level, :birthdate, :phone, :zip_code, :street, :neighborhood, :city, :state)
+    permitted = params.require(:user).permit(:gender, :interested_in, :education_level, :birthdate, :phone, :zip_code, :street, :neighborhood, :city, :state)
 
     @errors = []
-    @errors << "Selecione seu gênero"                 if permitted[:gender].blank?
-    @errors << "Selecione sua escolaridade"           if permitted[:education_level].blank?
-    @errors << "Data de nascimento é obrigatória"     if permitted[:birthdate].blank?
-    @errors << "Telefone é obrigatório"               if permitted[:phone].blank?
-    @errors << "Informe o CEP para localizarmos você" if permitted[:zip_code].blank?
+    @errors << "Selecione seu gênero"                    if permitted[:gender].blank?
+    @errors << "Selecione quem você quer conhecer"       if permitted[:interested_in].blank?
+    @errors << "Selecione sua escolaridade"              if permitted[:education_level].blank?
+    @errors << "Data de nascimento é obrigatória"        if permitted[:birthdate].blank?
+    @errors << "Telefone é obrigatório"                  if permitted[:phone].blank?
+    @errors << "Informe o CEP para localizarmos você"    if permitted[:zip_code].blank?
 
     if @errors.any?
       render :onboarding, status: :unprocessable_entity

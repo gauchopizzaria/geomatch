@@ -38,13 +38,30 @@
       <label class="ob-label">
         Gênero <span class="ob-required">*</span>
       </label>
-      <div class="ob-gender-options">
+      <div class="ob-radio-group" data-radio-group="gender">
         <% [['Homem','👨'],['Mulher','👩'],['Não Binário','🏳️‍🌈']].each do |valor, emoji| %>
           <label class="ob-gender-btn <%= 'selected' if current_user.gender == valor %>">
             <input type="radio" name="user[gender]" value="<%= valor %>"
                    <%= 'checked' if current_user.gender == valor %>>
             <span class="gender-emoji"><%= emoji %></span>
             <span><%= valor %></span>
+          </label>
+        <% end %>
+      </div>
+    </div>
+
+    <%# --- Quero conhecer --- %>
+    <div class="ob-field-group">
+      <label class="ob-label">
+        Quero conhecer <span class="ob-required">*</span>
+      </label>
+      <div class="ob-radio-group" data-radio-group="interested_in">
+        <% [['Mulheres','👩','Mulher'],['Homens','👨','Homem'],['Todos','💛','Todos']].each do |label, emoji, valor| %>
+          <label class="ob-gender-btn <%= 'selected' if current_user.interested_in == valor %>">
+            <input type="radio" name="user[interested_in]" value="<%= valor %>"
+                   <%= 'checked' if current_user.interested_in == valor %>>
+            <span class="gender-emoji"><%= emoji %></span>
+            <span><%= label %></span>
           </label>
         <% end %>
       </div>
@@ -147,12 +164,14 @@
 </div>
 
 <script>
-  document.querySelectorAll('.ob-gender-btn input[type="radio"]').forEach(function(radio) {
-    radio.addEventListener('change', function() {
-      document.querySelectorAll('.ob-gender-btn').forEach(function(btn) {
-        btn.classList.remove('selected');
+  document.querySelectorAll('.ob-radio-group').forEach(function(group) {
+    group.querySelectorAll('input[type="radio"]').forEach(function(radio) {
+      radio.addEventListener('change', function() {
+        group.querySelectorAll('.ob-gender-btn').forEach(function(btn) {
+          btn.classList.remove('selected');
+        });
+        this.closest('.ob-gender-btn').classList.add('selected');
       });
-      this.closest('.ob-gender-btn').classList.add('selected');
     });
   });
 </script>

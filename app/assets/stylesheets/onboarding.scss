@@ -173,8 +173,9 @@
   margin-left: 4px;
 }
 
-/* --- SELEÇÃO DE GÊNERO --- */
-.ob-gender-options {
+/* --- GRUPOS DE SELEÇÃO (gênero, interesse, etc.) --- */
+.ob-gender-options,
+.ob-radio-group {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 10px;

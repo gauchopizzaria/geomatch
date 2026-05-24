@@ -95,7 +95,9 @@
 
         <div class="field-group">
           <%= f.label :interested_in, "Quero conhecer", class: "dark-label" %>
-          <%= f.select :interested_in, [["Homem", "Homem"], ["Mulher", "Mulher"], ["Não Binário", "Não Binário"]], { include_blank: "Selecione" }, class: "dark-input" %>
+          <%= f.select :interested_in,
+                options_for_select([["Mulheres", "Mulher"], ["Homens", "Homem"], ["Todos", "Todos"]], current_user.interested_in),
+                { include_blank: "Selecione" }, class: "dark-input" %>
         </div>
 
         <div data-controller="profile-location">
