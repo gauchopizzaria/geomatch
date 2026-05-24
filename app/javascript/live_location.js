@@ -91,13 +91,21 @@ function startTracking(buttonElement, onLocationChange) {
       if (onLocationChange) onLocationChange(lat, lng);
     },
     (error) => {
-      console.warn("⚠️ Erro no rastreamento contínuo:", error.message);
-      stopTracking(buttonElement);
+      // PERMISSION_DENIED (1): utilizador negou acesso — para o rastreamento definitivamente.
+      // POSITION_UNAVAILABLE (2) e TIMEOUT (3): condições temporárias (ecrã bloqueado,
+      // GPS a aquecer, app em segundo plano) — apenas regista e continua.
+      // O watchPosition continuará a receber posições assim que o GPS recuperar.
+      if (error.code === 1) {
+        console.warn("⚠️ GPS: permissão negada — a parar rastreamento.");
+        stopTracking(buttonElement);
+      } else {
+        console.warn(`⚠️ GPS temporariamente indisponível (código ${error.code}): ${error.message} — a aguardar recuperação.`);
+      }
     },
     {
       enableHighAccuracy: true,
       maximumAge: 10000, // aceita posição de até 10s atrás — reduz chamadas redundantes ao GPS
-      timeout: 5000      // falha rápido se o GPS não responder
+      timeout:    30000  // 30s para acomodar GPS a arrancar após desbloqueio do ecrã ou volta ao primeiro plano
     }
   );
 }

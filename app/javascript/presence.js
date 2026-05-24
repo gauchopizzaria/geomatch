@@ -34,10 +34,25 @@ function ensureSubscribed() {
   _sub = consumer.subscriptions.create("MapChannel", {
     connected() {
       console.log('[Presence] MapChannel conectado globalmente');
+      // Re-transmite a posição imediatamente ao (re)conectar.
+      // Garante que o utilizador reaparece no mapa dos outros assim que o
+      // WebSocket reconecta (ex: após desbloqueio do ecrã ou volta ao primeiro plano).
+      const lat  = window._presenceLat;
+      const lng  = window._presenceLng;
+      if (!lat || !lng) return;
+      const csrf = document.querySelector('meta[name="csrf-token"]')?.content ?? '';
+      fetch('/users/update_location', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': csrf },
+        body:    JSON.stringify({ latitude: lat, longitude: lng })
+      }).catch(() => {});
     },
     disconnected() {
-      console.log('[Presence] MapChannel desconectado — aguardando reconexão automática do ActionCable');
-      _sub = null; // permite reentrância no próximo turbo:load
+      console.log('[Presence] MapChannel desconectado — ActionCable reconectará automaticamente');
+      // NÃO limpar _sub aqui.
+      // O ActionCable gere a reconexão internamente na mesma subscrição.
+      // Limpar _sub causaria subscrições duplicadas no próximo turbo:load e impediria
+      // o teardown correto no logout (o unsubscribe() nunca seria chamado).
     },
     received(data) {
       // Delega para o handler da página do mapa (se ativo)

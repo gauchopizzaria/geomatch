@@ -35,6 +35,7 @@ let mapboxUserMarkers = {}; // Para gerenciar marcadores de usuários no Mapbox
 let mapboxMarkerDistances = {}; // { userId: distanceKm } — para filtragem client-side por raio
 let mapboxUserData = {}; // { userId: userData } — dados mais recentes por usuário
 let lastUserFetchTime = 0;
+let isFetchingNearby = false;
 let isUserInvisible = false;
 let rotationAnimId = null;
 let rotationTimer = null;
@@ -281,6 +282,8 @@ function filterMarkersByRange() {
 }
 
 async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
+  if (isFetchingNearby) return;
+  isFetchingNearby = true;
   showLoadingAnimation();
   const usersList = document.getElementById("users-list");
   const usersCountElement = document.getElementById("nearby-count");
@@ -437,6 +440,8 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
     console.error("Erro ao carregar usuários próximos:", error);
     hideLoadingAnimation();
     if (usersList) usersList.innerHTML = '<li class="text-center loading-text">Erro ao carregar usuários.</li>';
+  } finally {
+    isFetchingNearby = false;
   }
 }
 
@@ -1098,13 +1103,9 @@ document.addEventListener("turbo:load", () => {
     const now = Date.now();
     if (now - lastUserFetchTime > FETCH_COOLDOWN_MS) {
       lastUserFetchTime = now;
+      // /users/nearby already updates location in the DB + broadcasts; presence.js
+      // handles the background heartbeat — no need to call update_location separately.
       loadNearbyUsers(newLat, newLng, currentRangeMeters, currentGenderFilter);
-      if (window._mapIsReady && !isUserInvisible) {
-        fetch(`/users/update_location?latitude=${newLat}&longitude=${newLng}`, {
-          method: 'POST',
-          headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
-        });
-      }
     }
   };
 
@@ -1290,21 +1291,26 @@ document.addEventListener("turbo:load", () => {
   }, 1000);
 
   document.addEventListener("visibilitychange", () => {
-    if (document.visibilityState === "visible") {
-      if ("geolocation" in navigator) {
-        navigator.geolocation.getCurrentPosition(
-          (position) => {
-            fixedUserLat = position.coords.latitude;
-            fixedUserLng = position.coords.longitude;
-            window.presenceSetLocation?.(fixedUserLat, fixedUserLng);
-            updateRadarVisuals();
-            loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
-          },
-          (error) => { console.warn("⚠️ Localização erro:", error.message); },
-          { enableHighAccuracy: true, maximumAge: 0, timeout: 10000 }
-        );
-      }
-    }
+    if (document.visibilityState !== "visible") return;
+    if (!("geolocation" in navigator)) return;
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        fixedUserLat = position.coords.latitude;
+        fixedUserLng = position.coords.longitude;
+        window.presenceSetLocation?.(fixedUserLat, fixedUserLng);
+        updateRadarVisuals();
+        const now = Date.now();
+        if (now - lastUserFetchTime > FETCH_COOLDOWN_MS) {
+          lastUserFetchTime = now;
+          loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
+        }
+      },
+      (error) => { console.warn("⚠️ Localização após desbloqueio:", error.message); },
+      // maximumAge: 30000 → aceita posição de até 30s atrás.
+      // Evita falha imediata enquanto o GPS aquece após desbloqueio do ecrã.
+      // timeout: 15000 → aguarda até 15s por um fix fresco antes de usar posição em cache.
+      { enableHighAccuracy: true, maximumAge: 30000, timeout: 15000 }
+    );
   });
 
   const style = document.createElement("style");
