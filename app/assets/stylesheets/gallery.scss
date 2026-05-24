@@ -55,6 +55,9 @@
 
 .dark-mode .gallery-header { background: rgba(18, 18, 18, 0.85); border-bottom-color: rgba(212, 175, 55, 0.25); }
 
+// No app nativo iOS o wrapper nativo já gerencia o safe area — remove o inset extra
+body.turbo-native .gallery-header { padding-top: 14px; }
+
 // ----- FILTROS -----
 .gallery-filters {
   padding: 18px 20px 12px;
