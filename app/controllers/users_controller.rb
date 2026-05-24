@@ -261,14 +261,11 @@ class UsersController < ApplicationController
   end
 end
 
-  # AÇÃO CORRIGIDA
   def reject
-    # Cria o registro de 'pass'
-    current_user.likes.create(liked_id: params[:user_id], is_like: false) 
-    
-    # --- CORREÇÃO AQUI ---
+    current_user.likes.create(liked_id: params[:user_id], is_like: false)
+
     if params[:source] == "map"
-      head :ok # Fica na tela do mapa
+      head :ok
     else
       redirect_to lead_path
     end
@@ -278,6 +275,45 @@ end
       head :not_found
     else
       redirect_to lead_path
+    end
+  end
+
+  def rewind
+    last_reject = current_user.likes
+                               .where(is_like: false)
+                               .order(created_at: :desc)
+                               .first
+
+    unless last_reject
+      respond_to do |format|
+        format.turbo_stream {
+          render turbo_stream: turbo_stream.update("rewind-flash",
+            "<span class='rewind-empty-msg'>Nenhum perfil para voltar</span>")
+        }
+        format.html { redirect_to lead_path, alert: "Nenhum perfil para voltar." }
+      end
+      return
+    end
+
+    @next_user = User.find_by(id: last_reject.liked_id)
+    last_reject.destroy
+
+    @distance = if @next_user && current_user.latitude && current_user.longitude &&
+                   @next_user.latitude && @next_user.longitude
+      Geocoder::Calculations.distance_between(
+        [current_user.latitude, current_user.longitude],
+        [@next_user.latitude, @next_user.longitude],
+        units: :km
+      ).round(1)
+    end
+
+    respond_to do |format|
+      format.turbo_stream {
+        render turbo_stream: turbo_stream.update("swipe-area",
+          partial: "users/swipe_area",
+          locals: { next_user: @next_user, distance: @distance })
+      }
+      format.html { redirect_to lead_path }
     end
   end
 

@@ -228,6 +228,36 @@ html, body {
   &:active:not(.btn-highlight) { transform: scale(0.95); }
 }
 
+.btn-rewind {
+  width: 58px; height: 58px;
+  border: 2px solid #d4a832;
+  color: #d4a832;
+  svg {
+    width: 24px; height: 24px;
+    stroke: #d4a832;
+  }
+  &:active { transform: scale(0.93) rotate(-30deg); }
+}
+
+.rewind-flash-container {
+  position: absolute;
+  bottom: calc(185px + env(safe-area-inset-bottom));
+  left: 50%; transform: translateX(-50%);
+  z-index: 2002;
+  pointer-events: none;
+  .rewind-empty-msg {
+    background: rgba(20,20,20,0.88);
+    color: #d4a832;
+    border: 1px solid #d4a832;
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    white-space: nowrap;
+    animation: gmFadeIn 0.2s ease, gmFadeOut 0.3s ease 2s forwards;
+  }
+}
+
 .btn-reject {
   width: 78px; height: 78px;
   border: 2px solid var(--gold-primary);

@@ -1,7 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["card", "slide", "indicator", "like", "nope", "profileModal", "btnLike", "btnReject"]
+  static targets = ["card", "slide", "indicator", "like", "nope", "profileModal",
+                    "btnLike", "btnReject", "btnRewind"]
 
   static values = {
     currentSlide: { type: Number, default: 0 },
@@ -12,50 +13,67 @@ export default class extends Controller {
   // LIFECYCLE
   // ============================================================
   connect() {
-    this.slideCountValue = this.slideTargets.length
-    this.isDragging  = false
-    this.pointerId   = null
-    this.startX      = 0
-    this.startY      = 0
-    this.currentX    = 0
-    this.currentY    = 0
-    this._thrown = false  // guard contra duplo envio
+    this._thrown  = false
+    this.isDragging = false
+    this.pointerId  = null
+    this.startX = this.startY = this.currentX = this.currentY = 0
 
-    // Bindings salvos para remoção limpa no disconnect
-    this._onDown        = this.handleStart.bind(this)
-    this._onMove        = this.handleMove.bind(this)
-    this._onUp          = this.handleEnd.bind(this)
-    this._onLikeClick   = (e) => { e.preventDefault(); this._throwCard('like') }
-    this._onRejectClick = (e) => { e.preventDefault(); this._throwCard('reject') }
+    this._onMove = this.handleMove.bind(this)
+    this._onUp   = this.handleEnd.bind(this)
 
-    if (this.hasBtnLikeTarget)   this.btnLikeTarget.addEventListener('click',   this._onLikeClick)
-    if (this.hasBtnRejectTarget) this.btnRejectTarget.addEventListener('click',  this._onRejectClick)
-
-    if (this.hasCardTarget) {
-      this.cardTarget.style.cursor = 'grab'
-      this.cardTarget.style.touchAction = 'none'
-      this.cardTarget.addEventListener('pointerdown',  this._onDown)
-      this.cardTarget.addEventListener('dragstart',    e => e.preventDefault())
-    }
-
-    // Move/Up no window para capturar quando o ponteiro sai do card
-    window.addEventListener('pointermove',  this._onMove)
-    window.addEventListener('pointerup',    this._onUp)
-    window.addEventListener('pointercancel',this._onUp)
+    window.addEventListener('pointermove',   this._onMove)
+    window.addEventListener('pointerup',     this._onUp)
+    window.addEventListener('pointercancel', this._onUp)
 
     this.updateGallery()
   }
 
   disconnect() {
-    if (this.hasBtnLikeTarget)   this.btnLikeTarget.removeEventListener('click',  this._onLikeClick)
-    if (this.hasBtnRejectTarget) this.btnRejectTarget.removeEventListener('click', this._onRejectClick)
-    if (this.hasCardTarget) {
-      this.cardTarget.removeEventListener('pointerdown', this._onDown)
-    }
     window.removeEventListener('pointermove',   this._onMove)
     window.removeEventListener('pointerup',     this._onUp)
     window.removeEventListener('pointercancel', this._onUp)
   }
+
+  // ============================================================
+  // TARGET CALLBACKS — reconectam automaticamente após Turbo Stream
+  // ============================================================
+  cardTargetConnected(el) {
+    this._thrown = false
+    this.isDragging = false
+    el.style.cursor     = 'grab'
+    el.style.touchAction = 'none'
+    el._leadSwipeDown = this.handleStart.bind(this)
+    el.addEventListener('pointerdown', el._leadSwipeDown)
+    el.addEventListener('dragstart', e => e.preventDefault())
+    this.slideCountValue  = this.slideTargets.length
+    this.currentSlideValue = 0
+    this.updateGallery()
+  }
+
+  cardTargetDisconnected(el) {
+    if (el._leadSwipeDown) el.removeEventListener('pointerdown', el._leadSwipeDown)
+  }
+
+  btnLikeTargetConnected(el) {
+    el._leadSwipeClick = (e) => { e.preventDefault(); this._throwCard('like') }
+    el.addEventListener('click', el._leadSwipeClick)
+  }
+
+  btnLikeTargetDisconnected(el) {
+    if (el._leadSwipeClick) el.removeEventListener('click', el._leadSwipeClick)
+  }
+
+  btnRejectTargetConnected(el) {
+    el._leadSwipeClick = (e) => { e.preventDefault(); this._throwCard('reject') }
+    el.addEventListener('click', el._leadSwipeClick)
+  }
+
+  btnRejectTargetDisconnected(el) {
+    if (el._leadSwipeClick) el.removeEventListener('click', el._leadSwipeClick)
+  }
+
+  // Botão rewind não precisa de lógica especial — submete o form normalmente via Turbo
+  // O Turbo Stream response atualiza #swipe-area e cardTargetConnected reinicializa tudo
 
   // ============================================================
   // MODAL DE PERFIL COMPLETO
@@ -80,20 +98,16 @@ export default class extends Controller {
   // POINTER EVENTS — DRAG
   // ============================================================
   handleStart(event) {
-    // Ignora se o perfil estiver aberto
     if (this.hasProfileModalTarget && this.profileModalTarget.classList.contains("open")) return
-    // Ignora cliques em botões e na área de info clicável
     if (event.target.closest('button') || event.target.closest('.clickable-info')) return
-    // Ignora toques adicionais enquanto já está arrastando
     if (this.isDragging) return
 
     this.isDragging = true
     this.pointerId  = event.pointerId
-
-    this.startX   = event.clientX
-    this.startY   = event.clientY
-    this.currentX = event.clientX
-    this.currentY = event.clientY
+    this.startX     = event.clientX
+    this.startY     = event.clientY
+    this.currentX   = event.clientX
+    this.currentY   = event.clientY
 
     if (this.hasCardTarget) {
       this.cardTarget.style.transition = 'none'
@@ -107,7 +121,6 @@ export default class extends Controller {
     const deltaX = event.clientX - this.startX
     const deltaY = event.clientY - this.startY
 
-    // Bloqueia scroll vertical nativo durante arrasto horizontal
     if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 5) {
       event.preventDefault()
     }
@@ -146,22 +159,21 @@ export default class extends Controller {
     const lift     = deltaY * 0.25
     this.cardTarget.style.transform = `translateX(${deltaX}px) translateY(${lift}px) rotate(${rotation}deg)`
 
-    // Opacidade proporcional à distância — máximo 1 a partir de 100px
     const progress = Math.min(1, Math.abs(deltaX) / 100)
 
     if (deltaX > 0) {
-      if (this.hasLikeTarget) this.likeTarget.style.opacity = progress
-      if (this.hasNopeTarget) this.nopeTarget.style.opacity = 0
+      if (this.hasLikeTarget)      this.likeTarget.style.opacity = progress
+      if (this.hasNopeTarget)      this.nopeTarget.style.opacity = 0
       if (this.hasBtnLikeTarget)   this.btnLikeTarget.classList.toggle('btn-highlight', progress > 0.3)
       if (this.hasBtnRejectTarget) this.btnRejectTarget.classList.remove('btn-highlight')
     } else if (deltaX < 0) {
-      if (this.hasNopeTarget) this.nopeTarget.style.opacity = progress
-      if (this.hasLikeTarget) this.likeTarget.style.opacity = 0
+      if (this.hasNopeTarget)      this.nopeTarget.style.opacity = progress
+      if (this.hasLikeTarget)      this.likeTarget.style.opacity = 0
       if (this.hasBtnRejectTarget) this.btnRejectTarget.classList.toggle('btn-highlight', progress > 0.3)
       if (this.hasBtnLikeTarget)   this.btnLikeTarget.classList.remove('btn-highlight')
     } else {
-      if (this.hasLikeTarget) this.likeTarget.style.opacity = 0
-      if (this.hasNopeTarget) this.nopeTarget.style.opacity = 0
+      if (this.hasLikeTarget)      this.likeTarget.style.opacity = 0
+      if (this.hasNopeTarget)      this.nopeTarget.style.opacity = 0
       if (this.hasBtnLikeTarget)   this.btnLikeTarget.classList.remove('btn-highlight')
       if (this.hasBtnRejectTarget) this.btnRejectTarget.classList.remove('btn-highlight')
     }
@@ -188,7 +200,6 @@ export default class extends Controller {
     const isLike = type === 'like'
     const endX   = isLike ? window.innerWidth * 1.6 : -window.innerWidth * 1.6
 
-    // Overlay no máximo durante o voo
     if (isLike  && this.hasLikeTarget) this.likeTarget.style.opacity = 1
     if (!isLike && this.hasNopeTarget) this.nopeTarget.style.opacity = 1
 
@@ -223,7 +234,7 @@ export default class extends Controller {
   currentSlideValueChanged() { this.updateGallery() }
 
   updateGallery() {
-    this.slideTargets.forEach((s, i)   => s.classList.toggle('active', i === this.currentSlideValue))
+    this.slideTargets.forEach((s, i)     => s.classList.toggle('active', i === this.currentSlideValue))
     this.indicatorTargets.forEach((d, i) => d.classList.toggle('active', i === this.currentSlideValue))
   }
 }

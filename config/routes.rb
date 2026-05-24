@@ -49,6 +49,7 @@ Rails.application.routes.draw do
   get  "/lead",        to: "users#lead",   as: :lead
   post "/lead",        to: "users#lead"
   post "/lead/reject", to: "users#reject", as: :reject_user
+  post "/lead/rewind", to: "users#rewind", as: :rewind_lead
 
   # Iniciar chat direto
   post 'start_chat/:user_id', to: 'matches#start_chat', as: :start_chat
