@@ -139,7 +139,8 @@
       "Bash(Select-Object -Last 40)",
       "Bash(powershell -Command \"\\(Get-Content app/assets/builds/application.js -Raw\\).Contains\\('throwLike'\\)\")",
       "Bash(powershell -Command \"Select-String -Path 'app/assets/builds/application.css' -Pattern 'gm-match' | Select-Object -First 5\")",
-      "Bash(del \"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\\\\app\\\\assets\\\\stylesheets\\\\match_modal.css\")"
+      "Bash(del \"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\\\\app\\\\assets\\\\stylesheets\\\\match_modal.css\")",
+      "Bash(grep -v \"//\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\Brendo\\Documents\\DEV\\geomatch ruby\\geomatch"
