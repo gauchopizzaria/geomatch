@@ -550,22 +550,32 @@ html, body {
     }
   }
 
-  // Modo responsivo
+  // Modo responsivo — mantém uma linha horizontal compacta no mobile
   @media (max-width: 900px) {
+    padding-top: env(safe-area-inset-top, 0px);
+
     .header-inner {
-      flex-direction: column;
-      gap: 0.8rem;
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      padding: 0.55rem 1rem;
+      gap: 0;
+    }
+
+    .brand-logo {
+      height: 30px;
     }
 
     .nav {
-      flex-wrap: wrap;
-      justify-content: center;
-      gap: 0.6rem;
+      flex-wrap: nowrap;
+      gap: 0.45rem;
     }
 
     .btn {
-      font-size: 0.9rem;
-      padding: 0.4rem 0.8rem;
+      font-size: 0.78rem;
+      padding: 0.38rem 0.85rem;
+      border-radius: 8px;
+      white-space: nowrap;
     }
   }
 }
