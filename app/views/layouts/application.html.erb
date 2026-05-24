@@ -161,8 +161,11 @@
     <!-- JS principal -->
     <%= javascript_include_tag "application", type: "module", "data-turbo-track": "reload" %>
 
-   
-   
+    <!-- Presença global: mantém o usuário visível no mapa ao trocar de aba -->
+    <% if user_signed_in? %>
+      <%= javascript_include_tag "presence", type: "module" %>
+    <% end %>
+
     <%= javascript_include_tag "chat_logic", type: "module" %>
 
    <script>

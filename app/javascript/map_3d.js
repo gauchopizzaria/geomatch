@@ -1,5 +1,4 @@
 import { toggleLiveTracking, startLiveTracking, resetTracking, isCurrentlyTracking } from "./live_location";
-import consumer from "./channels/consumer";
 // Turf.js é esperado estar disponível globalmente (ex: via CDN)
 // import * as turf from '@turf/turf'; // Removido para evitar erro de build se não instalado
 
@@ -35,7 +34,6 @@ let currentGenderFilter = localStorage.getItem(STORAGE_KEYS.GENDER_FILTER) || "a
 let mapboxUserMarkers = {}; // Para gerenciar marcadores de usuários no Mapbox
 let mapboxMarkerDistances = {}; // { userId: distanceKm } — para filtragem client-side por raio
 let mapboxUserData = {}; // { userId: userData } — dados mais recentes por usuário
-let mapSubscription = null; // Subscription do ActionCable para o MapChannel
 let lastUserFetchTime = 0;
 let isUserInvisible = false;
 let rotationAnimId = null;
@@ -757,6 +755,7 @@ function initializeMapAndLocation() {
     if (coords && coords.lat && coords.lng) {
       fixedUserLat = coords.lat;
       fixedUserLng = coords.lng;
+      window.presenceSetLocation?.(coords.lat, coords.lng);
 
       // jumpTo (sem animação): o loader ainda está visível, então não há "pulo" para o usuário.
       // flyTo causaria o salto visível porque anima desde a posição errada até a correta.
@@ -790,8 +789,9 @@ function initializeMapAndLocation() {
 // Libera toda memória de GPU/WebGL antes do Turbo cachear ou navegar — previne crash no iOS
 document.addEventListener("turbo:before-cache", () => {
   stopRotation();
-  // Desconecta do MapChannel antes de cache para evitar listeners duplos
-  if (mapSubscription) { mapSubscription.unsubscribe(); mapSubscription = null; }
+  // Desregistra o handler de tempo real — a subscrição ao canal permanece viva
+  // (gerenciada por presence.js) para o usuário não desaparecer do mapa de outros.
+  window.setMapRealtimeHandler?.(null);
   // Limpa estado do GPS para que a próxima visita sempre inicie com rastreamento ligado
   resetTracking(document.getElementById('fab-live-tracking'));
   if (mapResizeObserver) { mapResizeObserver.disconnect(); mapResizeObserver = null; }
@@ -922,20 +922,9 @@ document.addEventListener("turbo:load", () => {
     setTimeout(() => { timerFired = true; tryReveal(); }, 2500);
   }, 300);
 
-  // Inscreve no MapChannel para atualizações em tempo real
-  // Destrói subscription anterior se existir (proteção contra turbo:load duplo)
-  if (mapSubscription) { mapSubscription.unsubscribe(); mapSubscription = null; }
-  mapSubscription = consumer.subscriptions.create("MapChannel", {
-    connected() {
-      console.log('[GeoMatch] MapChannel conectado — presença em tempo real ativa');
-    },
-    disconnected() {
-      console.log('[GeoMatch] MapChannel desconectado');
-    },
-    received(data) {
-      _handleMapRealtime(data);
-    }
-  });
+  // Registra o handler de tempo real na camada global de presença (presence.js).
+  // A subscrição ao MapChannel é gerenciada globalmente — não criamos uma nova aqui.
+  window.setMapRealtimeHandler?.(_handleMapRealtime);
 
   const rangeSlider = document.getElementById("radar-range");
   const rangeValueText = document.getElementById("range-value-text");
@@ -1104,6 +1093,7 @@ document.addEventListener("turbo:load", () => {
   const trackingCallback = (newLat, newLng) => {
     fixedUserLat = newLat;
     fixedUserLng = newLng;
+    window.presenceSetLocation?.(newLat, newLng);
     updateRadarVisuals();
     const now = Date.now();
     if (now - lastUserFetchTime > FETCH_COOLDOWN_MS) {
@@ -1285,15 +1275,6 @@ document.addEventListener("turbo:load", () => {
       popupContent.addEventListener("touchend", onTouchEnd);
   }
 
-  setInterval(() => {
-    if (window._mapIsReady && fixedUserLat && fixedUserLng && !isUserInvisible) {
-      fetch(`/users/update_location?latitude=${fixedUserLat}&longitude=${fixedUserLng}`, {
-        method: 'POST',
-        headers: { 'X-CSRF-Token': document.querySelector('meta[name="csrf-token"]').content }
-      });
-    }
-  }, 120000);
-
   // Liga rastreamento automaticamente ao abrir o mapa — sempre ligado por padrão,
   // sem depender do estado anterior da sessão ou de qualquer storage.
   setTimeout(() => {
@@ -1315,6 +1296,7 @@ document.addEventListener("turbo:load", () => {
           (position) => {
             fixedUserLat = position.coords.latitude;
             fixedUserLng = position.coords.longitude;
+            window.presenceSetLocation?.(fixedUserLat, fixedUserLng);
             updateRadarVisuals();
             loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
           },

@@ -143,7 +143,9 @@
       "Bash(grep -v \"//\")",
       "Bash(Get-Item \"C:\\\\Users\\\\Brendo\\\\.claude\\\\projects\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\3131c302-b39e-4b1a-ad19-6118f29f32aa.jsonl\")",
       "Bash(Select-Object Length)",
-      "PowerShell(\\(Get-Item \"C:\\\\Users\\\\Brendo\\\\.claude\\\\projects\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\3131c302-b39e-4b1a-ad19-6118f29f32aa.jsonl\"\\).Length)"
+      "PowerShell(\\(Get-Item \"C:\\\\Users\\\\Brendo\\\\.claude\\\\projects\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\3131c302-b39e-4b1a-ad19-6118f29f32aa.jsonl\"\\).Length)",
+      "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\\\\app\\\\channels\" -File -Recurse)",
+      "Bash(Select-Object FullName)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Brendo\\Documents\\DEV\\geomatch ruby\\geomatch"
