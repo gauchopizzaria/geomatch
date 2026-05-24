@@ -25,6 +25,7 @@
 @use "toast";
 @use "onboarding";
 @use "match_modal";
+@use "profile_carousel";
 
 // Importa os estilos base do Leaflet (se ainda não tiver)
 @import "leaflet/dist/leaflet.css";

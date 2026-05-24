@@ -92,7 +92,7 @@ class UsersController < ApplicationController
 
 
   def show
-    @user = User.find(params[:id])
+    @user = User.with_attached_avatar.with_attached_album_photos.find(params[:id])
 
     # SEGURANÇA: Verifica bloqueios antes de mostrar o perfil
     if current_user.excluded_user_ids.include?(@user.id)

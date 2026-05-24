@@ -9,22 +9,8 @@
     
     <%# --- TOPO: CARROSSEL IMERSIVO --- %>
     <div class="v-view-carousel-wrapper">
-      <div class="v-view-main-carousel">
-        <%# Foto de Perfil %>
-        <div class="v-view-carousel-item">
-          <%= image_tag @user.avatar_or_default, class: "v-view-carousel-img" %>
-        </div>
-        
-        <%# Fotos do Álbum %>
-        <% if @user.album_photos.attached? %>
-          <% @user.album_photos.each do |photo| %>
-            <div class="v-view-carousel-item">
-              <%= image_tag photo, class: "v-view-carousel-img" %>
-            </div>
-          <% end %>
-        <% end %>
-      </div>
-      
+      <%= render "shared/profile_carousel", user: @user, show_gradient: false %>
+
       <%# Overlay de Informações %>
       <div class="v-view-cover-overlay">
         <div class="v-view-cover-info">

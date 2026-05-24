@@ -1,13 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
-  static targets = ["card", "slide", "indicator", "like", "nope", "profileModal",
+  static targets = ["card", "like", "nope", "profileModal",
                     "btnLike", "btnReject", "btnRewind"]
-
-  static values = {
-    currentSlide: { type: Number, default: 0 },
-    slideCount:   { type: Number, default: 0 }
-  }
 
   // ============================================================
   // LIFECYCLE
@@ -24,8 +19,6 @@ export default class extends Controller {
     window.addEventListener('pointermove',   this._onMove)
     window.addEventListener('pointerup',     this._onUp)
     window.addEventListener('pointercancel', this._onUp)
-
-    this.updateGallery()
   }
 
   disconnect() {
@@ -45,9 +38,6 @@ export default class extends Controller {
     el._leadSwipeDown = this.handleStart.bind(this)
     el.addEventListener('pointerdown', el._leadSwipeDown)
     el.addEventListener('dragstart', e => e.preventDefault())
-    this.slideCountValue  = this.slideTargets.length
-    this.currentSlideValue = 0
-    this.updateGallery()
   }
 
   cardTargetDisconnected(el) {
@@ -216,25 +206,4 @@ export default class extends Controller {
     }
   }
 
-  // ============================================================
-  // GALERIA DE FOTOS
-  // ============================================================
-  nextSlide(event) {
-    if (event) { event.preventDefault(); event.stopPropagation() }
-    if (this.slideCountValue <= 1) return
-    this.currentSlideValue = (this.currentSlideValue + 1) % this.slideCountValue
-  }
-
-  prevSlide(event) {
-    if (event) { event.preventDefault(); event.stopPropagation() }
-    if (this.slideCountValue <= 1) return
-    this.currentSlideValue = (this.currentSlideValue - 1 + this.slideCountValue) % this.slideCountValue
-  }
-
-  currentSlideValueChanged() { this.updateGallery() }
-
-  updateGallery() {
-    this.slideTargets.forEach((s, i)     => s.classList.toggle('active', i === this.currentSlideValue))
-    this.indicatorTargets.forEach((d, i) => d.classList.toggle('active', i === this.currentSlideValue))
-  }
 }

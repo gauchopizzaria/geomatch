@@ -39,3 +39,6 @@ application.register("toast", ToastController)
 
 import MatchModalController from "./match_modal_controller"
 application.register("match-modal", MatchModalController)
+
+import CarouselController from "./carousel_controller"
+application.register("carousel", CarouselController)

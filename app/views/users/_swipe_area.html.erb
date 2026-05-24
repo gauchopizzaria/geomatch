@@ -11,31 +11,7 @@
         <i class="fas fa-times"></i>
       </div>
 
-      <div class="progress-bar-container">
-        <% album_photos = next_user.album_photos.attached? ? next_user.album_photos : [] %>
-        <% avatar = next_user.avatar.attached? %>
-        <% photos = [] %>
-        <% photos << { url: rails_blob_url(next_user.avatar) } if avatar %>
-        <% album_photos.each { |p| photos << { url: rails_blob_url(p) } } %>
-
-        <% photos.each_with_index do |_, index| %>
-          <div class="progress-step <%= 'active' if index == 0 %>" data-lead-swipe-target="indicator"></div>
-        <% end %>
-      </div>
-
-      <div class="slides-container">
-        <% photos.each_with_index do |photo, index| %>
-          <div class="slide-item <%= 'active' if index == 0 %>" data-lead-swipe-target="slide">
-            <img src="<%= photo[:url] %>" class="slide-img no-drag">
-            <div class="slide-gradient"></div>
-          </div>
-        <% end %>
-      </div>
-
-      <div class="tap-nav-overlay">
-        <div class="tap-left" data-action="click->lead-swipe#prevSlide"></div>
-        <div class="tap-right" data-action="click->lead-swipe#nextSlide"></div>
-      </div>
+      <%= render "shared/profile_carousel", user: next_user %>
 
       <div class="card-user-info clickable-info" data-action="click->lead-swipe#openProfile">
         <div class="info-header">
@@ -113,8 +89,7 @@
     <div class="profile-scroll-content">
 
       <div class="profile-cover-section">
-        <% cover_url = next_user.avatar.attached? ? url_for(next_user.avatar) : (next_user.album_photos.attached? ? url_for(next_user.album_photos.first) : 'default-avatar.png') %>
-        <%= image_tag cover_url, class: "profile-cover-img" %>
+        <%= render "shared/profile_carousel", user: next_user, show_gradient: false %>
         <div class="profile-cover-overlay">
           <div class="cover-info">
             <h2 class="cover-name">
@@ -167,17 +142,6 @@
                 <span class="tag-pill"><%= hobby %></span>
               <% end %>
             </div>
-          </div>
-        <% end %>
-
-        <% if next_user.album_photos.attached? %>
-          <div class="profile-gallery-grid">
-            <% photos_to_show = next_user.avatar.attached? ? next_user.album_photos : next_user.album_photos.drop(1) %>
-            <% photos_to_show.each do |photo| %>
-              <div class="gallery-item">
-                <%= image_tag photo, class: "gallery-img" %>
-              </div>
-            <% end %>
           </div>
         <% end %>
 
