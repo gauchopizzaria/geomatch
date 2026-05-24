@@ -49,16 +49,21 @@ export default class extends Controller {
     this.element.classList.add("is-closing")
     document.body.style.overflow = ""
     setTimeout(() => {
-      this.element.setAttribute("hidden", "")
-      this.element.classList.remove("is-closing")
-      if (this.dismissPathValue && this.dismissPathValue !== "#" && event) {
-        window.location.href = this.dismissPathValue
+      this.element.remove()
+      const path = this.dismissPathValue
+      if (path && path !== "#") {
+        if (window.Turbo) {
+          Turbo.visit(path, { action: "replace" })
+        } else {
+          window.location.href = path
+        }
       }
     }, 300)
   }
 
-  sendMessage(event) {
+  sendMessage(_event) {
     document.body.style.overflow = ""
+    this.element.remove()
   }
 
   setAvatar(el, url, name) {
