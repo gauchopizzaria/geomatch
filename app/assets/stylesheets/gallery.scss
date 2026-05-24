@@ -93,7 +93,7 @@
 .gender-pill {
   flex: 1 1 0;
   min-width: 90px;
-  padding: 11px 14px;
+  padding: 7px 12px;
   border-radius: 999px;
   background: var(--color-section-light);
   border: 1.5px solid var(--color-border);
@@ -154,7 +154,7 @@
 
 .gallery-select {
   width: 100%;
-  padding: 12px 36px 12px 14px;
+  padding: 8px 36px 8px 12px;
   border: 1.5px solid var(--color-border);
   border-radius: 12px;
   background: var(--color-section-light);
@@ -188,7 +188,7 @@
 
 .filter-apply-btn {
   flex: 2;
-  padding: 13px 16px;
+  padding: 9px 16px;
   border: none;
   border-radius: 12px;
   background: linear-gradient(135deg, #d4be91, #b8975a);
@@ -206,7 +206,7 @@
 
 .filter-clear-btn {
   flex: 1;
-  padding: 13px 16px;
+  padding: 9px 16px;
   border-radius: 12px;
   background: transparent;
   border: 1.5px solid var(--color-border);
@@ -398,7 +398,7 @@
 // Botão Ver Favoritos (ao lado de Aplicar e Limpar)
 .filter-favorites-btn {
   flex: 1;
-  padding: 13px 12px;
+  padding: 9px 12px;
   border-radius: 12px;
   background: transparent;
   border: 1.5px solid rgba(212, 175, 55, 0.55);
