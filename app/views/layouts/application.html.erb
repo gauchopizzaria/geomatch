@@ -39,7 +39,7 @@
 
     <!-- Fonte: Poppins -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Nunito:wght@900&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Nunito:wght@900&family=Outfit:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@1,500&display=swap" rel="stylesheet">
 
     <!-- 🚨 NOVO: Link do Font Awesome para os ícones da Sidebar -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
@@ -47,7 +47,6 @@
     <!-- CSS principal -->
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
 
-     <%= csrf_meta_tags %>
   <meta name="vapid-public-key" content="<%= ENV["VAPID_PUBLIC_KEY"] %>">
 
   <script src="https://cdn.jsdelivr.net/npm/@turf/turf@7/turf.min.js"></script>
@@ -58,7 +57,7 @@
 
   </head>
 
-  <body class='<%= 'turbo-native' if turbo_native_app? %>' data-turbo-native='<%= turbo_native_app? %>'>
+  <body id="body" class='<%= 'turbo-native' if turbo_native_app? %>' data-turbo-native='<%= turbo_native_app? %>'>
     <div id="toast-container" class="toast-container">
       <%= render 'shared/flash' %>
     </div>

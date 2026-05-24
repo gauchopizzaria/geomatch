@@ -38,9 +38,14 @@ class MatchesController < ApplicationController
   end
 
   def show
-    # @match já definido pelo before_action de forma segura
     @messages = @match.messages.order(created_at: :asc)
-    @message = Message.new
+    @message  = Message.new
+    @other_user = @match.other_user(current_user)
+
+    if @other_user.nil?
+      redirect_to matches_path, alert: "Usuário não encontrado."
+      return
+    end
   end
 
   def start_chat

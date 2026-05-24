@@ -36,3 +36,6 @@ application.register("profile-location", ProfileLocationController)
 
 import ToastController from "./toast_controller"
 application.register("toast", ToastController)
+
+import MatchModalController from "./match_modal_controller"
+application.register("match-modal", MatchModalController)

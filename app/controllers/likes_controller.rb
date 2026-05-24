@@ -50,7 +50,7 @@ class LikesController < ApplicationController
         unless existing_match
           user_id = [current_user.id, liked_user.id].min
           matched_user_id = [current_user.id, liked_user.id].max
-          match = Match.create(user_id: user_id, matched_user_id: matched_user_id, status: "matched")
+          match = Match.create!(user_id: user_id, matched_user_id: matched_user_id, status: "matched")
         end
 
         # 🔔 Notificação de MATCH
@@ -65,11 +65,23 @@ class LikesController < ApplicationController
 
         # --- LÓGICA DE RETORNO DO MATCH ---
         if params[:source] == "map"
-          # Se veio do mapa e deu Match, redireciona para a conversa
           redirect_to match_path(match)
         else
-          # Se veio do swipe, mostra o popup de match
-          redirect_to lead_path(match: true, match_id: match.id)
+          respond_to do |format|
+            format.turbo_stream do
+              render turbo_stream: turbo_stream.append("body",
+                partial: "shared/match_modal",
+                locals: {
+                  left_name:    current_user.display_name,
+                  right_name:   liked_user.display_name,
+                  left_avatar:  current_user.avatar.attached? ? url_for(current_user.avatar) : nil,
+                  right_avatar: liked_user.avatar.attached?   ? url_for(liked_user.avatar)   : nil,
+                  message_path: match_path(match),
+                  dismiss_path: lead_path
+                })
+            end
+            format.html { redirect_to lead_path, notice: "Deu match! 🎉" }
+          end
         end
 
       else

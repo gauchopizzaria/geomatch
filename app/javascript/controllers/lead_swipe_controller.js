@@ -19,11 +19,17 @@ export default class extends Controller {
     this.startY      = 0
     this.currentX    = 0
     this.currentY    = 0
+    this._thrown = false  // guard contra duplo envio
 
     // Bindings salvos para remoção limpa no disconnect
-    this._onDown   = this.handleStart.bind(this)
-    this._onMove   = this.handleMove.bind(this)
-    this._onUp     = this.handleEnd.bind(this)
+    this._onDown        = this.handleStart.bind(this)
+    this._onMove        = this.handleMove.bind(this)
+    this._onUp          = this.handleEnd.bind(this)
+    this._onLikeClick   = (e) => { e.preventDefault(); this._throwCard('like') }
+    this._onRejectClick = (e) => { e.preventDefault(); this._throwCard('reject') }
+
+    if (this.hasBtnLikeTarget)   this.btnLikeTarget.addEventListener('click',   this._onLikeClick)
+    if (this.hasBtnRejectTarget) this.btnRejectTarget.addEventListener('click',  this._onRejectClick)
 
     if (this.hasCardTarget) {
       this.cardTarget.style.cursor = 'grab'
@@ -41,6 +47,8 @@ export default class extends Controller {
   }
 
   disconnect() {
+    if (this.hasBtnLikeTarget)   this.btnLikeTarget.removeEventListener('click',  this._onLikeClick)
+    if (this.hasBtnRejectTarget) this.btnRejectTarget.removeEventListener('click', this._onRejectClick)
     if (this.hasCardTarget) {
       this.cardTarget.removeEventListener('pointerdown', this._onDown)
     }
@@ -174,6 +182,8 @@ export default class extends Controller {
   // ============================================================
   _throwCard(type) {
     if (!this.hasCardTarget) return
+    if (this._thrown) return
+    this._thrown = true
 
     const isLike = type === 'like'
     const endX   = isLike ? window.innerWidth * 1.6 : -window.innerWidth * 1.6
@@ -186,9 +196,10 @@ export default class extends Controller {
     this.cardTarget.style.transform  = `translateX(${endX}px) rotate(${isLike ? 35 : -35}deg)`
     this.cardTarget.style.opacity    = '0'
 
-    const btn = document.querySelector(isLike ? '.btn-like' : '.btn-reject')
-    if (btn) {
-      setTimeout(() => btn.click(), 250)
+    const target = isLike ? this.btnLikeTarget : this.btnRejectTarget
+    const form   = target ? target.closest('form') : null
+    if (form) {
+      setTimeout(() => form.requestSubmit(target), 250)
     } else {
       setTimeout(() => location.reload(), 600)
     }

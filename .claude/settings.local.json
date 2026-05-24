@@ -126,7 +126,20 @@
       "Bash(bin/rails generate *)",
       "Bash(geomatch\" | head -10)",
       "Bash(cat app/views/shared/_flash.html.erb)",
-      "Bash(cat app/views/shared/_flash.erb)"
+      "Bash(cat app/views/shared/_flash.erb)",
+      "Bash(powershell -Command \"\\(Get-Content app/assets/builds/application.css\\) | Select-String 'gm-match' | Measure-Object | Select-Object -ExpandProperty Count\")",
+      "Bash(powershell -Command \"\\(Get-Content app/assets/builds/application.js\\) | Select-String 'match-modal|match_modal' | Select-Object -First 5\")",
+      "Bash(powershell -Command \"\\(Get-Content app/assets/builds/application.css -Raw\\) | Select-String '\\(?s\\)\\\\.gm-match__title' | Select-Object -First 1\")",
+      "Bash(powershell -Command \"Get-Content log/development.log -Tail 60\")",
+      "Bash(powershell -Command \"\\(Get-Content app/assets/builds/application.css -Raw\\).Contains\\('.gm-match__title'\\)\")",
+      "Bash(powershell -Command \"\\(Get-Content app/assets/builds/application.css -Raw\\).Contains\\('gm-match__stage'\\)\")",
+      "Bash(powershell -Command \"\\(Get-Content app/assets/stylesheets/_match_modal.scss -Raw\\).Contains\\('.gm-match__stage'\\)\")",
+      "Bash(powershell -Command \"Get-Content log/development.log -Tail 120\")",
+      "Bash(Select-String -Pattern \"likes|match|turbo|format|Rendered shared/_match\")",
+      "Bash(Select-Object -Last 40)",
+      "Bash(powershell -Command \"\\(Get-Content app/assets/builds/application.js -Raw\\).Contains\\('throwLike'\\)\")",
+      "Bash(powershell -Command \"Select-String -Path 'app/assets/builds/application.css' -Pattern 'gm-match' | Select-Object -First 5\")",
+      "Bash(del \"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\\\\app\\\\assets\\\\stylesheets\\\\match_modal.css\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\Brendo\\Documents\\DEV\\geomatch ruby\\geomatch"

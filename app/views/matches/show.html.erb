@@ -6,8 +6,6 @@
       <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
     <% end %>
 
-    <% @other_user = @match.other_user(current_user) %>
-    
     <div class="header-user-info">
       <%= link_to user_path(@other_user), class: "header-avatar-link" do %>
         <% if @other_user.avatar.attached? %>

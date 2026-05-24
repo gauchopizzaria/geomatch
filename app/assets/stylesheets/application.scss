@@ -24,6 +24,7 @@
 @use "map_loading";
 @use "toast";
 @use "onboarding";
+@use "match_modal";
 
 // Importa os estilos base do Leaflet (se ainda não tiver)
 @import "leaflet/dist/leaflet.css";
@@ -984,27 +985,6 @@ html, body {
 }
 
 
-.match-popup {
-  background: var(--color-section-light);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  text-align: center;
-  margin-bottom: 20px;
-  animation: fadeIn 0.4s ease-out;
-}
-
-.match-popup-actions {
-  margin-top: 15px;
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-10px); }
-  to   { opacity: 1; transform: translateY(0); }
-}
 
 // --------------------------------------------------
 // SIDEBAR (CORREÇÃO DEFINITIVA PARA GESTOS)

@@ -19,22 +19,6 @@
     </div>
   </div>
 
-  <%# --- 2. POPUP DE MATCH (Se houver) --- %>
-  <% if @match %>
-    <div class="match-popup" data-match-popup>
-      <div class="match-popup-content">
-        <div class="match-animation"><span class="match-icon">💕</span></div>
-        <h2 class="match-title">Deu Match!</h2>
-        <p class="match-subtitle">Você e <strong><%= @next_user.display_name %></strong> curtiram um ao outro!</p>
-        <div class="match-actions">
-          <%= link_to "💬 Conversar Agora", match_path(@match), class: "btn btn-match btn-primary" %>
-          <%= link_to "➡ Continuar", lead_path, class: "btn btn-match btn-secondary" %>
-        </div>
-      </div>
-      <div class="match-overlay"></div>
-    </div>
-  <% end %>
-
   <%# --- 3. ÁREA PRINCIPAL (Cards) --- %>
   <div class="geomatch-main-area">
     <% if @next_user %>
