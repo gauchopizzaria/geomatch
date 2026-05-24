@@ -55,6 +55,7 @@
   <style>[data-hide-in-app] { display: none !important; }</style>
   <% end %>
 
+  <%= yield :head if content_for?(:head) %>
   </head>
 
   <body id="body" class='<%= 'turbo-native' if turbo_native_app? %>' data-turbo-native='<%= turbo_native_app? %>'>
