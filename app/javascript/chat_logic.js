@@ -132,38 +132,11 @@ document.addEventListener('turbo:load', () => {
         if (response.ok) {
           const itemsToRemove = chatWindow.querySelectorAll('.message-row, .date-separator');
           itemsToRemove.forEach(m => m.remove());
-          const menu = document.getElementById('chat-options-menu');
-          if (menu) menu.classList.add('hidden');
+          const menu = document.querySelector('[data-chat-menu-target="menu"]');
+          if (menu) menu.hidden = true;
         }
       })
       .catch(err => console.error("Erro ao limpar:", err));
-    });
-  }
-
-  // =======================================================
-  //   DROPDOWN MENU
-  // =======================================================
-  const menuBtn = document.getElementById('chat-options-btn');
-  const menuDropdown = document.getElementById('chat-options-menu');
-
-  if (menuBtn && menuDropdown) {
-    const newBtn = menuBtn.cloneNode(true);
-    menuBtn.parentNode.replaceChild(newBtn, menuBtn);
-
-    newBtn.addEventListener('click', (e) => {
-      e.preventDefault();
-      e.stopPropagation();
-      menuDropdown.classList.toggle('hidden');
-    });
-
-    document.addEventListener('click', (e) => {
-      const clickedInsideMenu = menuDropdown.contains(e.target);
-      const clickedOnBtn = newBtn.contains(e.target);
-      if (!clickedInsideMenu && !clickedOnBtn) {
-        if (!menuDropdown.classList.contains('hidden')) {
-          menuDropdown.classList.add('hidden');
-        }
-      }
     });
   }
 

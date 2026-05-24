@@ -388,62 +388,7 @@
   &:active { transform: scale(0.9); }
 }
 
-/* --- 4. DROPDOWN MENU --- */
-.dropdown-wrapper {
-  position: relative;
-  display: inline-block;
-  overflow: visible !important;
-  z-index: 1001;
-}
-
-.chat-dropdown-menu {
-  position: absolute;
-  top: calc(100% + 5px);
-  right: 0;
-  background-color: var(--color-section-light);
-  border: 1px solid var(--color-border);
-  border-radius: 12px;
-  width: 210px;
-  padding: 8px;
-  box-shadow: 0 12px 40px rgba(0,0,0,0.8);
-  z-index: 1000;
-
-  &.hidden { display: none; }
-}
-
-.dropdown-item {
-  width: 100%;
-  margin-bottom: 2px;
-
-  button {
-    display: flex !important;
-    align-items: center !important;
-    gap: 12px;
-    width: 100%;
-    padding: 10px 14px;
-    background: none !important;
-    color: var(--color-text) !important;
-    font-family: inherit;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    text-align: left;
-    transition: background 0.2s;
-
-    svg {
-      flex-shrink: 0;
-      stroke: #888;
-    }
-
-    &:hover {
-      background-color: var(--color-hover-bg) !important;
-      svg { stroke: var(--color-text); }
-    }
-  }
-
-  &.warning:hover button { color: #ffd60a !important; svg { stroke: #ffd60a !important; } }
-  &.danger:hover button { color: #ff453a !important; svg { stroke: #ff453a !important; } }
-}
+/* --- 4. DROPDOWN MENU — moved to chat_menu.scss (gm-* namespace) --- */
 
 // =========================================================
 // CONTEXT MENU — LONG PRESS

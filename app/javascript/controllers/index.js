@@ -42,3 +42,6 @@ application.register("match-modal", MatchModalController)
 
 import CarouselController from "./carousel_controller"
 application.register("carousel", CarouselController)
+
+import ChatMenuController from "./chat_menu_controller"
+application.register("chat-menu", ChatMenuController)
