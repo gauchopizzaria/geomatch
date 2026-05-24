@@ -4,9 +4,14 @@ class MapChannel < ApplicationCable::Channel
   end
 
   def unsubscribed
-    ActionCable.server.broadcast("map_updates", {
-      action:  "leave",
-      user_id: current_user.id
-    })
+    # Intencionalmente vazio.
+    #
+    # A visibilidade no mapa é PERSISTENTE — uma desconexão de WebSocket
+    # (tela bloqueada, app em segundo plano, queda de rede) NÃO remove o
+    # usuário do mapa de outros. Ele continua aparecendo na sua última
+    # localização conhecida enquanto tiver coordenadas válidas no banco.
+    #
+    # O broadcast "leave" só é disparado em logout explícito,
+    # via Users::SessionsController#destroy.
   end
 end

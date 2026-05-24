@@ -1,14 +1,21 @@
 class Users::SessionsController < Devise::SessionsController
   def destroy
-    # Broadcast explícito de "leave" antes de destruir a sessão, garantindo que
-    # o marcador do usuário desapareça imediatamente do mapa de todos ao fazer logout.
-    # (O MapChannel#unsubscribed faria isso, mas pode ter um delay de reconexão do AC.)
     if current_user
+      # 1. Remove o marcador do mapa de todos os clientes conectados imediatamente.
       ActionCable.server.broadcast("map_updates", {
         action:  "leave",
         user_id: current_user.id
       })
+
+      # 2. Apaga as coordenadas do banco para que o usuário não reapareça em
+      #    localização antiga caso outro usuário recarregue o mapa antes de logar novamente.
+      current_user.update_columns(
+        latitude:                 nil,
+        longitude:                nil,
+        last_location_updated_at: nil
+      )
     end
+
     super
   end
 end

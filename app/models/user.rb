@@ -98,6 +98,8 @@ class User < ApplicationRecord
   }
 
   scope :visible,       -> { where(invisible: [false, nil]) }
+  # Usado apenas para o indicador visual (dot verde/cinza) — NÃO filtra visibilidade no mapa.
+  # A presença no mapa é persistente; o usuário só sai ao fazer logout explícito.
   scope :online_on_map, -> { where('last_location_updated_at >= ?', 3.minutes.ago) }
   
   # --- Callbacks ---
