@@ -262,12 +262,45 @@ class UsersController < ApplicationController
 end
 
   def reject
+    target_user = User.find_by(id: params[:user_id])
+
+    # Detecta "lost match": o alvo já curtiu o current_user antes de levarmos um nope
+    lost_match = target_user &&
+                 Like.where(liker_id: target_user.id, liked_id: current_user.id)
+                     .where.not(is_like: false)
+                     .exists?
+
     current_user.likes.create(liked_id: params[:user_id], is_like: false)
 
     if params[:source] == "map"
-      head :ok
-    else
-      redirect_to lead_path
+      return head :ok
+    end
+
+    respond_to do |format|
+      format.turbo_stream do
+        ignored_ids  = current_user.likes.pluck(:liked_id) + current_user.excluded_user_ids
+        @next_user, @distance = AdvancedDiscoveryService.new(current_user)
+                                  .find_next_eligible_user(
+                                    ignored_ids,
+                                    { distance: 500, min_age: 18, max_age: 60 }
+                                  )
+
+        streams = []
+        if lost_match
+          streams << turbo_stream.prepend("toast-container",
+            partial: "shared/toast",
+            locals: { message: "Você acabou de perder um match! 💔", type: "alert" })
+        end
+        streams << turbo_stream.update("swipe-area",
+          partial: "users/swipe_area",
+          locals: { next_user: @next_user, distance: @distance })
+
+        render turbo_stream: streams
+      end
+      format.html do
+        flash[:alert] = "Você acabou de perder um match! 💔" if lost_match
+        redirect_to lead_path
+      end
     end
 
   rescue ActiveRecord::RecordNotFound

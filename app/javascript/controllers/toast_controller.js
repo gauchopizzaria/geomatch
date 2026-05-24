@@ -2,7 +2,6 @@ import { Controller } from "@hotwired/stimulus"
 
 export default class extends Controller {
   connect() {
-    console.log("Toast carregado no DOM!")
     this._timer = setTimeout(() => this._dismiss(), 4000)
   }
 
