@@ -145,7 +145,22 @@
       "Bash(Select-Object Length)",
       "PowerShell(\\(Get-Item \"C:\\\\Users\\\\Brendo\\\\.claude\\\\projects\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\3131c302-b39e-4b1a-ad19-6118f29f32aa.jsonl\"\\).Length)",
       "Bash(Get-ChildItem -Path \"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\\\\app\\\\channels\" -File -Recurse)",
-      "Bash(Select-Object FullName)"
+      "Bash(Select-Object FullName)",
+      "Bash(yarn add *)",
+      "Bash(yarn remove *)",
+      "Bash(del \"c:\\\\Users\\\\Brendo\\\\Documents\\\\DEV\\\\geomatch ruby\\\\geomatch\\\\app\\\\javascript\\\\controllers\\\\image_cropper_controller.js\")",
+      "Bash(powershell -Command \"Get-Content 'C:\\\\Users\\\\Brendo\\\\.claude\\\\projects\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\3131c302-b39e-4b1a-ad19-6118f29f32aa.jsonl' | Select-String 'crop_screen_controller' -Context 0,5 | Select-Object -First 10\")",
+      "Bash(python3 -c ' *)",
+      "Bash(ruby -e \"require 'image_processing/mini_magick'; puts 'ok'\")",
+      "Bash(node_modules/.bin/sass app/assets/stylesheets/application.scss app/assets/builds/application.css --no-source-map)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(where magick *)",
+      "Bash(where mogrify *)",
+      "Bash(where convert *)",
+      "Bash(dir \"C:\\\\Program Files\\\\ImageMagick*\")",
+      "Bash(dir \"C:\\\\Program Files \\(x86\\)\\\\ImageMagick*\")",
+      "Bash(where vips *)",
+      "Bash(where vipsthumbnail *)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Brendo\\Documents\\DEV\\geomatch ruby\\geomatch"

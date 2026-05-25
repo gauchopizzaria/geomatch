@@ -45,3 +45,6 @@ application.register("carousel", CarouselController)
 
 import ChatMenuController from "./chat_menu_controller"
 application.register("chat-menu", ChatMenuController)
+
+import CropScreenController from "./crop_screen_controller"
+application.register("crop-screen", CropScreenController)

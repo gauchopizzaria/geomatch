@@ -107,7 +107,10 @@ Rails.application.routes.draw do
 
   # Edição do próprio perfil
   resource :profile, controller: 'users', only: [:edit, :update] do
-    get "preview", on: :collection
+    get  "preview",      on: :collection
+    post "upload_avatar", on: :collection
+    get  "crop_avatar",  on: :collection
+    post "apply_crop",   on: :collection
   end
 
   # Fotos do álbum

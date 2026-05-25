@@ -27,6 +27,7 @@
 @use "match_modal";
 @use "profile_carousel";
 @use "chat_menu";
+@use "crop_screen";
 
 // Importa os estilos base do Leaflet (se ainda não tiver)
 @import "leaflet/dist/leaflet.css";

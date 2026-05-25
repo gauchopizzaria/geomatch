@@ -1,0 +1,15 @@
+<%= render "shared/crop_screen",
+     image_url:    "",
+     form_url:     apply_crop_profile_path,
+     cancel_path:  edit_profile_path,
+     title:        "Ajustar foto",
+     aspect_ratio: "3/4" %>
+
+<script>
+(function() {
+  var src = sessionStorage.getItem('gm_avatar_src');
+  if (!src) { window.location.href = '<%= edit_profile_path %>'; return; }
+  var img = document.querySelector('[data-crop-screen-target="photo"]');
+  if (img) img.src = src;
+})();
+</script>

@@ -35,17 +35,19 @@
         <label class="photos-label">Adicionar fotos</label>
         
         <div class="photos-grid">
-          
+
           <%# Variável para contar slots usados (Limite 6) %>
           <% slots_used = 0 %>
 
-          <%# SLOT 1: AVATAR (Sempre o primeiro) %>
+          <%# SLOT 1: AVATAR — FileReader armazena no sessionStorage e navega para crop %>
           <div class="photo-slot filled">
             <%= image_tag @user.avatar_or_default, class: "slot-img", id: "avatar-preview" %>
-            <label class="edit-badge" for="user_avatar">
+            <label class="edit-badge" for="avatar_upload_field">
               <i class="fas fa-pen"></i>
             </label>
-            <%= f.file_field :avatar, id: "user_avatar", class: "hidden-input", onchange: "previewAvatar(event)" %>
+            <input type="file" id="avatar_upload_field" class="hidden-input" accept="image/*"
+                   data-crop-path="<%= crop_avatar_profile_path %>"
+                   onchange="gmAvatarSelected(this)">
           </div>
           <% slots_used += 1 %>
 
@@ -65,7 +67,8 @@
           <% if slots_used < 6 %>
             <label class="photo-slot empty">
               <div class="plus-icon">+</div>
-              <%= f.file_field :album_photos, multiple: true, class: "hidden-input", onchange: "form.submit()" %>
+              <%= f.file_field :album_photos, multiple: true, class: "hidden-input",
+                    onchange: "this.form.submit()" %>
             </label>
             <% slots_used += 1 %>
           <% end %>
@@ -153,14 +156,6 @@
 </div>
 
 <script>
-function previewAvatar(event) {
-  const reader = new FileReader();
-  reader.onload = function() {
-    document.getElementById("avatar-preview").src = reader.result;
-  };
-  reader.readAsDataURL(event.target.files[0]);
-}
-
 document.addEventListener("turbo:load", function() {
   document.querySelectorAll('.delete-badge').forEach(link => {
     link.addEventListener('click', function(e) {
@@ -170,4 +165,15 @@ document.addEventListener("turbo:load", function() {
     });
   });
 });
+
+function gmAvatarSelected(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    sessionStorage.setItem('gm_avatar_src', e.target.result);
+    window.location.href = input.dataset.cropPath;
+  };
+  reader.readAsDataURL(file);
+}
 </script>

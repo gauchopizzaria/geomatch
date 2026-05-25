@@ -262,6 +262,35 @@ class UsersController < ApplicationController
   end
 end
 
+  def upload_avatar
+    @user = current_user
+    file = params[:avatar]
+    unless file
+      redirect_to edit_profile_path, alert: "Nenhuma foto selecionada.", status: :see_other
+      return
+    end
+    @user.avatar_original.attach(file)
+    redirect_to crop_avatar_profile_path, status: :see_other
+  end
+
+  def crop_avatar
+    @user = current_user
+    unless @user.avatar_original.attached?
+      redirect_to edit_profile_path
+    end
+  end
+
+  def apply_crop
+    @user = current_user
+    file  = params[:avatar]
+    unless file
+      render json: { error: "arquivo ausente" }, status: :unprocessable_entity
+      return
+    end
+    @user.avatar.attach(file)
+    render json: { ok: true }
+  end
+
   def reject
     target_user = User.find_by(id: params[:user_id])
 

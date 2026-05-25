@@ -17,18 +17,18 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 10px 20px; /* Padding vertical reduzido */
+  padding: 10px 20px;
   padding-top: calc(10px + env(safe-area-inset-top));
   background-color: var(--color-background);
   z-index: 10;
 }
 
 .header-btn-left {
-  color: #aaa; /* Cor mais suave (cinza claro) */
+  color: #aaa;
   text-decoration: none;
-  font-size: 0.8rem; /* Tamanho reduzido */
+  font-size: 0.8rem;
   font-weight: 500;
-  
+
   span {
     display: block;
   }
@@ -40,7 +40,7 @@
   align-items: center;
 
   .title-img {
-    height: 18px; /* Altura reduzida para ficar delicado */
+    height: 18px;
     width: auto;
     display: block;
   }
@@ -61,10 +61,10 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   svg {
     stroke: #000;
-    width: 16px; 
+    width: 16px;
     height: 16px;
   }
 }
@@ -121,14 +121,14 @@
 
 .photos-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr); /* 3 Colunas iguais */
+  grid-template-columns: repeat(3, 1fr);
   gap: 10px;
 }
 
 /* Slot da Foto */
 .photo-slot {
   position: relative;
-  aspect-ratio: 3 / 4; /* Formato retrato igual Stories */
+  aspect-ratio: 3 / 4;
   border-radius: 12px;
   overflow: hidden;
   background-color: var(--color-section-light);
@@ -136,12 +136,12 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  
+
   &.filled {
     border: none;
     border: 1px solid var(--color-border);
   }
-  
+
   &.empty, &.empty-placeholder {
     cursor: pointer;
   }
@@ -153,14 +153,14 @@
   object-fit: cover;
 }
 
-/* Botão + */
+/* Botao + */
 .plus-icon {
   font-size: 1.5rem;
   color: var(--color-text-secondary);
   font-weight: 300;
 }
 
-/* Badges (Lápis e Delete) */
+/* Badges (Lapis e Delete) */
 .edit-badge, .delete-badge {
   position: absolute;
   bottom: 6px;
@@ -181,7 +181,7 @@
 }
 
 .delete-badge {
-  background-color: #ff3b30; /* Vermelho para deletar */
+  background-color: #ff3b30;
   color: #fff;
 }
 
@@ -242,14 +242,12 @@
 }
 
 /* =========================================================
-   PREVIEW CARD STYLES (CORREÇÃO DA TELA PRETA)
+   PREVIEW CARD STYLES
 ========================================================= */
 
-/* Container principal da área de preview */
 .preview-container {
   flex: 1;
-  /* Ocupa toda a altura disponível abaixo das abas */
-  height: calc(100vh - 130px); 
+  height: calc(100vh - 130px);
   padding: 15px 20px 30px 20px;
   display: flex;
   justify-content: center;
@@ -257,12 +255,11 @@
   overflow: hidden;
 }
 
-/* Força o cartão a ter tamanho e estrutura corretos */
 .preview-container .gold-card-frame {
   width: 100%;
-  height: 100%; /* Ocupa toda a altura do container pai */
-  max-width: 400px; /* Limite de largura para não ficar gigante */
-  aspect-ratio: 3 / 5; 
+  height: 100%;
+  max-width: 400px;
+  aspect-ratio: 3 / 5;
   border-radius: 25px;
   position: relative;
   overflow: hidden;
@@ -270,7 +267,6 @@
   background-color: var(--color-section-light);
 }
 
-/* Garante que o container dos slides ocupe tudo */
 .preview-container .slides-container,
 .preview-container .card-gallery {
   width: 100%;
@@ -278,18 +274,16 @@
   position: relative;
 }
 
-/* CORREÇÃO PRINCIPAL: Força a imagem a preencher tudo */
 .preview-container .slide-img {
   width: 100% !important;
   height: 100% !important;
-  object-fit: cover !important; 
+  object-fit: cover !important;
   position: absolute;
   top: 0;
   left: 0;
-  z-index: 0; /* Atrás do gradiente */
+  z-index: 0;
 }
 
-/* Garante que o gradiente fique por cima da imagem */
 .preview-container .slide-gradient {
   position: absolute;
   bottom: 0;
@@ -301,18 +295,16 @@
   pointer-events: none;
 }
 
-/* Informações do usuário por cima de tudo */
 .preview-container .card-user-info {
-  position: absolute; /* Assegura posição absoluta */
+  position: absolute;
   z-index: 10;
-  bottom: 30px; 
+  bottom: 30px;
   left: 20px;
   right: 20px;
   color: #fff;
   text-align: left;
 }
 
-/* Ícones decorativos da direita */
 .preview-actions-right {
   position: absolute;
   bottom: 30px;
