@@ -293,10 +293,11 @@ function updateRadarVisuals() {
   container.style.setProperty('--radar-x', `${point.x}px`);
   container.style.setProperty('--radar-y', `${point.y}px`);
 
-  // 2. Escala do Raio (CSS)
-  const zoom = map.getZoom();
-  const metersPerPixel = 156543.03392 * Math.abs(Math.cos(fixedUserLat * Math.PI / 180)) / Math.pow(2, zoom);
-  const radiusInPixels = currentRangeMeters / metersPerPixel;
+  // 2. Escala do Raio via projeção direta — correto em qualquer zoom/pitch,
+  //    evita o erro da constante 256px-vs-512px dos tiles do Mapbox GL.
+  const latDelta = (currentRangeMeters / 1000) / 111.32;
+  const edgePoint = map.project([fixedUserLng, fixedUserLat + latDelta]);
+  const radiusInPixels = Math.abs(edgePoint.y - point.y);
   container.style.setProperty('--radar-radius', `${radiusInPixels}px`);
 
   // 3. Círculo Geográfico (Turf.js no Mapbox)
@@ -854,6 +855,10 @@ function initializeMapAndLocation() {
       rafPending = false;
     });
   });
+
+  // Garante que o radar reflita o zoom final após qualquer animação terminar.
+  // O handler de 'move' com rAF pode ter rodado pela última vez num zoom intermediário.
+  map.on('moveend', updateRadarVisuals);
 }
 
 // --- Event Listeners e Inicialização ---
