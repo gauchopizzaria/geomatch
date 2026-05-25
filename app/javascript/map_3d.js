@@ -734,6 +734,25 @@ function showUserPopup(user) {
         }
   });
 
+  // --- Botões de segurança: Denunciar / Bloquear ---
+  const reportBtn = document.getElementById('popup-btn-report');
+  const blockBtn  = document.getElementById('popup-btn-block');
+
+  if (reportBtn) {
+    reportBtn.onclick = () => {
+      if (typeof Turbo !== 'undefined') {
+        Turbo.visit(`/report_incident?user_id=${user.id}`);
+      } else {
+        window.location.href = `/report_incident?user_id=${user.id}`;
+      }
+    };
+  }
+
+  if (blockBtn) {
+    const displayName = user.username || user.display_name || 'Usuário';
+    blockBtn.onclick = () => openBlockConfirm(displayName, `/users/${user.id}/block`);
+  }
+
   userPopup.classList.remove("hidden");
   userPopup.classList.add("show");
 }
