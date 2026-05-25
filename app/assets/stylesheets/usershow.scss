@@ -140,7 +140,7 @@ html.dark-mode .profile-header-container .header-btn img {
   margin: 0 0 8px 0;
   font-size: 1.4rem;
   font-weight: 700;
-  color: #fff;
+  color: var(--color-text);
   display: flex;
   align-items: center;
   gap: 8px;
@@ -174,7 +174,7 @@ html.dark-mode .profile-header-container .header-btn img {
 
 .help-label {
   font-size: 0.65rem;
-  color: #ccc;
+  color: var(--color-text-secondary);
   font-weight: 500;
 }
 
@@ -246,14 +246,14 @@ html.dark-mode .profile-header-container .header-btn img {
   .line {
     height: 3px;
     flex: 1;
-    background-color: #333;
+    background-color: var(--color-border);
     border-radius: 2px;
-    &.full { background-color: #fff; }
+    &.full { background-color: var(--color-text); }
   }
 }
 
 .banner-arrow {
-  color: #666;
+  color: var(--color-text-secondary);
   font-size: 1.5rem;
   align-self: center;
 }
@@ -290,14 +290,14 @@ html.dark-mode .profile-header-container .header-btn img {
 .highlight-title {
   font-size: 0.95rem;
   font-weight: 600;
-  color: #fff;
+  color: var(--color-text);
   margin: 0 0 8px 0;
   line-height: 1.2;
 }
 
 .highlight-description {
   font-size: 0.75rem;
-  color: #ccc;
+  color: var(--color-text-secondary);
   line-height: 1.4;
   margin: 0;
 }
