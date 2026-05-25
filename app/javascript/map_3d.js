@@ -36,6 +36,7 @@ let mapboxMarkerDistances = {}; // { userId: distanceKm } — para filtragem cli
 let mapboxUserData = {}; // { userId: userData } — dados mais recentes por usuário
 let lastUserFetchTime = 0;
 let isFetchingNearby = false;
+let nearbyFetchController = null;
 let isUserInvisible = false;
 let rotationAnimId = null;
 let rotationTimer = null;
@@ -345,7 +346,9 @@ function filterMarkersByRange() {
 }
 
 async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
-  if (isFetchingNearby) return;
+  // Cancela qualquer fetch em andamento — garante que o filtro ativo sempre vence.
+  if (nearbyFetchController) nearbyFetchController.abort();
+  nearbyFetchController = new AbortController();
   isFetchingNearby = true;
   showLoadingAnimation();
   const usersList = document.getElementById("users-list");
@@ -358,7 +361,7 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
     let url = `/users/nearby?latitude=${latitude}&longitude=${longitude}&range=${rangeMeters}`;
     if (genderFilter !== "all") url += `&gender=${genderFilter}`;
 
-    const response = await fetch(url);
+    const response = await fetch(url, { signal: nearbyFetchController.signal });
     if (!response.ok) throw new Error("Falha na rede");
     const users = await response.json();
     console.log('[GeoMatch Debug] Usuários:', users);
@@ -505,11 +508,13 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
     filterMarkersByRange();
     hideLoadingAnimation();
   } catch (error) {
+    if (error.name === 'AbortError') return; // fetch cancelado por novo filtro — silencioso
     console.error("Erro ao carregar usuários próximos:", error);
     hideLoadingAnimation();
     if (usersList) usersList.innerHTML = '<li class="text-center loading-text">Erro ao carregar usuários.</li>';
   } finally {
     isFetchingNearby = false;
+    nearbyFetchController = null;
   }
 }
 
@@ -534,6 +539,23 @@ function _handleMapRealtime(data) {
   // --- UPDATE: adiciona ou reposiciona marcador ---
   if (data.action !== "update") return;
   if (!fixedUserLat || !fixedUserLng) return;
+
+  // Respeita o filtro de gênero ativo — realtime não deve bypassar a seleção do usuário
+  if (currentGenderFilter !== 'all') {
+    const GENDER_REALTIME_MAP = {
+      'male':       ['homem', 'male'],
+      'female':     ['mulher', 'female'],
+      'non-binary': ['não binário', 'nao binario', 'non-binary', 'não-binário']
+    };
+    const allowed = GENDER_REALTIME_MAP[currentGenderFilter] || [];
+    const incomingGender = (data.gender || '').toLowerCase();
+    if (!allowed.includes(incomingGender)) {
+      // Remove do mapa se estava visível com filtro anterior
+      const stale = mapboxUserMarkers[uid];
+      if (stale) { stale.remove(); delete mapboxUserMarkers[uid]; delete mapboxMarkerDistances[uid]; delete mapboxUserData[uid]; filterMarkersByRange(); }
+      return;
+    }
+  }
 
   // Distância real em metros — respeita o filtro de raio atual
   const realDistM = haversineDistanceM(fixedUserLat, fixedUserLng, data.lat, data.lng);
@@ -1077,11 +1099,19 @@ document.addEventListener("turbo:load", () => {
 
       showGenderHUD(state);
 
+      // Limpa marcadores stale imediatamente — evita desalinhamento visual enquanto
+      // o novo fetch não chega. O fetch cancelará qualquer request anterior.
+      Object.values(mapboxUserMarkers).forEach(m => m.remove());
+      mapboxUserMarkers = {};
+      mapboxMarkerDistances = {};
+      mapboxUserData = {};
+      const _usersList = document.getElementById("users-list");
+      if (_usersList) _usersList.innerHTML = '';
+
       genderToggleBtn.style.transform = "scale(0.8)";
       setTimeout(() => {
         genderToggleBtn.style.transform = "scale(1)";
         if (fixedUserLat && fixedUserLng) {
-          showLoadingAnimation();
           loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
         }
       }, 150);

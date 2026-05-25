@@ -20,16 +20,18 @@ class DiscoveryService
                 .with_attached_album_photos
 
     if gender_filter.present? && gender_filter != "all"
+      # Cada chave mapeia para todos os valores que o campo gender pode ter no banco.
+      # "nao binario" (sem acento) cobre registros antigos migrados sem normalização.
       mapping = {
-        "male"       => "homem",
-        "female"     => "mulher",
-        "non-binary" => "não binário"
+        "male"       => ["homem"],
+        "female"     => ["mulher"],
+        "non-binary" => ["não binário", "nao binario", "não-binário"]
       }
-      
-      target_value = mapping[gender_filter]
 
-      if target_value
-        query = query.where("LOWER(gender) = ?", target_value)
+      target_values = mapping[gender_filter]
+
+      if target_values
+        query = query.where("LOWER(gender) IN (?)", target_values)
       end
     end
 
