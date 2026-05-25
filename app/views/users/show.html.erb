@@ -1,12 +1,12 @@
 <div class="v-view-sheet">
-  
+
   <%# Botão Fechar Exclusivo %>
   <button class="v-view-close-btn" onclick="history.back()">
     <i class="fas fa-arrow-down"></i>
   </button>
 
   <div class="v-view-scroll-content">
-    
+
     <%# --- TOPO: CARROSSEL IMERSIVO --- %>
     <div class="v-view-carousel-wrapper">
       <%= render "shared/profile_carousel", user: @user, show_gradient: false %>
@@ -29,24 +29,21 @@
 
     <div class="v-view-body-container">
 
-      <%# --- BARRA DE AÇÕES (fluxo normal, antes do "Sobre Mim") --- %>
+      <%# --- BARRA DE AÇÕES --- %>
       <% if @user != current_user %>
         <div class="v-view-action-bar">
-          <%# 1. REJEITAR / PASSAR %>
           <%= button_to reject_user_path(user_id: @user.id), method: :post,
               class: "dsc-action-btn btn-reject",
               form: { class: "dsc-action-form" } do %>
             <%= image_tag "botao-rejeitar.svg", alt: "Rejeitar" %>
           <% end %>
 
-          <%# 2. MENSAGEM / CHAT %>
           <%= button_to start_chat_path(user_id: @user.id), method: :post,
               class: "dsc-action-btn btn-chat",
               form: { class: "dsc-action-form" } do %>
             <%= image_tag "mensagem-prata.svg", alt: "Chat" %>
           <% end %>
 
-          <%# 3. CURTIR / LIKE %>
           <%= button_to likes_path(user_id: @user.id), method: :post,
               class: "dsc-action-btn btn-like",
               form: { class: "dsc-action-form" } do %>
@@ -60,48 +57,66 @@
       <%# --- CARD: SOBRE MIM --- %>
       <div class="v-view-info-card">
         <h3 class="v-view-card-header">SOBRE MIM</h3>
-        <div class="v-view-card-content-center">
-          <p class="v-view-bio-text">
-            <%= @user.bio.present? ? @user.bio : "Sem biografia." %>
-          </p>
-        </div>
+        <p class="v-view-bio-text">
+          <%= @user.bio.present? ? @user.bio : "Sem biografia." %>
+        </p>
       </div>
 
-      <%# --- CARD: INFORMAÇÕES BÁSICAS --- %>
+      <%# --- CARD: INFORMAÇÕES BÁSICAS (PILLS) --- %>
       <div class="v-view-info-card">
         <h3 class="v-view-card-header">INFORMAÇÕES BÁSICAS</h3>
-        <div class="v-view-basic-list">
-          <div class="v-view-basic-item">
-            <span class="v-view-basic-icon"><i class="fas fa-venus-mars"></i></span>
-            <span class="v-view-basic-text"><%= @user.gender.present? ? @user.gender.capitalize : "Não informado" %></span>
-          </div>
-          <div class="v-view-basic-item">
-            <span class="v-view-basic-icon"><i class="fas fa-search"></i></span>
-            <span class="v-view-basic-text">Busca: <%= @user.interested_in.present? ? @user.interested_in.capitalize : "Homem" %></span>
-          </div>
-          <div class="v-view-basic-item">
-            <span class="v-view-basic-icon"><i class="fas fa-map-marker-alt"></i></span>
-            <span class="v-view-basic-text"><%= @user.city || "Ba" %></span>
-          </div>
+        <div class="info-pills-container">
+          <% if @user.gender.present? %>
+            <span class="info-pill">
+              <i class="fas fa-venus-mars"></i> <%= @user.gender.capitalize %>
+            </span>
+          <% end %>
+          <% if @user.interested_in.present? %>
+            <span class="info-pill">
+              <i class="fas fa-search"></i> Busca: <%= @user.interested_in.capitalize %>
+            </span>
+          <% end %>
+          <% if @user.city.present? %>
+            <span class="info-pill">
+              <i class="fas fa-map-marker-alt"></i> <%= @user.city %>
+            </span>
+          <% end %>
         </div>
       </div>
 
-      <%# --- BOTÕES DE SEGURANÇA --- %>
-      <div class="v-view-safety-area">
-        <div class="v-view-safety-divider"></div>
-        
-        <button class="v-view-btn-safety">
-          DENUNCIAR <%= @user.display_name.upcase %>
-        </button>
+      <%# --- CARD: INTERESSES --- %>
+      <% if @user.respond_to?(:hobbies_list) && @user.hobbies_list.any? %>
+        <div class="v-view-info-card">
+          <h3 class="v-view-card-header">INTERESSES</h3>
+          <div class="tags-container">
+            <% @user.hobbies_list.each do |hobby| %>
+              <span class="tag-pill"><%= hobby %></span>
+            <% end %>
+          </div>
+        </div>
+      <% end %>
 
-        <div class="v-view-safety-separator"></div>
+      <%# --- SEGURANÇA --- %>
+      <% if @user != current_user %>
+        <div class="v-view-safety-area">
+          <div class="v-view-safety-divider"></div>
 
-        <button class="v-view-btn-safety">
-          BLOQUEAR <%= @user.display_name.upcase %>
-        </button>
-        
-        <div class="v-view-safety-divider"></div>
-      </div>
+          <%= button_to report_incident_path(user_id: @user.id), method: :get,
+              class: "v-view-btn-safety" do %>
+            DENUNCIAR <%= @user.display_name.upcase %>
+          <% end %>
+
+          <div class="v-view-safety-separator"></div>
+
+          <%= button_to block_user_path(@user), method: :post,
+              class: "v-view-btn-safety",
+              data: { confirm: "Bloquear este usuário?" } do %>
+            BLOQUEAR <%= @user.display_name.upcase %>
+          <% end %>
+
+          <div class="v-view-safety-divider"></div>
+        </div>
+      <% end %>
 
       <div class="v-view-bottom-spacer"></div>
     </div>

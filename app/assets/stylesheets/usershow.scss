@@ -419,39 +419,11 @@ html.dark-mode .profile-header-container .header-btn img {
     text-transform: uppercase;
   }
 
-  .v-view-card-content-center {
-    display: flex;
-    justify-content: center;
-    text-align: center;
-    
-    .v-view-bio-text {
-      font-size: 1.05rem;
-      line-height: 1.5;
-      color: var(--color-text);
-      font-weight: 400;
-    }
-  }
-}
-
-.v-view-basic-list {
-  .v-view-basic-item {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    padding: 12px 0;
-
-    .v-view-basic-icon {
-      width: 22px;
-      color: var(--color-text-secondary);
-      font-size: 1.1rem;
-      text-align: center;
-    }
-
-    .v-view-basic-text {
-      font-size: 1.1rem;
-      font-weight: 500;
-      color: var(--color-text);
-    }
+  .v-view-bio-text {
+    font-size: 1.05rem;
+    line-height: 1.65;
+    color: var(--color-text);
+    font-weight: 400;
   }
 }
 
@@ -463,6 +435,13 @@ html.dark-mode .profile-header-container .header-btn img {
     height: 1px;
     background-color: var(--color-border);
     margin: 20px 10%;
+  }
+
+  .v-view-safety-separator {
+    width: 80%;
+    height: 1px;
+    background: var(--color-border);
+    margin: 0 auto;
   }
 
   .v-view-btn-safety {
@@ -477,7 +456,7 @@ html.dark-mode .profile-header-container .header-btn img {
     text-transform: uppercase;
     cursor: pointer;
 
-    &:hover { color: #666; }
+    &:hover { color: #ff4b4b; }
   }
 }
 

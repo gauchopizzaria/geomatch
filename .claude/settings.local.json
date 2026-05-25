@@ -161,7 +161,8 @@
       "Bash(dir \"C:\\\\Program Files \\(x86\\)\\\\ImageMagick*\")",
       "Bash(where vips *)",
       "Bash(where vipsthumbnail *)",
-      "Bash(echo \"exit $?\")"
+      "Bash(echo \"exit $?\")",
+      "PowerShell(head -20)"
     ],
     "additionalDirectories": [
       "C:\\Users\\Brendo\\Documents\\DEV\\geomatch ruby\\geomatch"
