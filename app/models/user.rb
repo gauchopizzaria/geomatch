@@ -98,9 +98,11 @@ class User < ApplicationRecord
   }
 
   scope :visible,       -> { where(invisible: [false, nil]) }
-  # Usado apenas para o indicador visual (dot verde/cinza) — NÃO filtra visibilidade no mapa.
-  # A presença no mapa é persistente; o usuário só sai ao fazer logout explícito.
-  scope :online_on_map, -> { where('last_location_updated_at >= ?', 3.minutes.ago) }
+  # Filtra utilizadores ativos no mapa: só aparecem quem atualizou a localização
+  # nos últimos 5 minutos. O heartbeat (presence.js) bate a cada 60s; o threshold
+  # de 5 min tolera bloqueios breves de ecrã e quedas de rede temporárias.
+  # Quem fechar o app sem fazer logout desaparece ao fim de 5 min de inatividade.
+  scope :online_on_map, -> { where('last_location_updated_at >= ?', 5.minutes.ago) }
   
   # --- Callbacks ---
   after_create :attach_default_avatar

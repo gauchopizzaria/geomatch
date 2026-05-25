@@ -9,11 +9,11 @@ class DiscoveryService
   def find_nearby_users(radius_km = 10, gender_filter = nil)
     return [] unless @user.latitude && @user.longitude
 
-    # Visibilidade é persistente: retorna TODOS os usuários com coordenadas
-    # válidas, independentemente de quando foi a última atualização.
-    # O usuário só desaparece ao fazer logout explícito (coordenadas limpas).
+    # Só retorna utilizadores que estão online (ativos nos últimos 5 min).
+    # Quem fechar o app sem logout desaparece após 5 min de inatividade.
+    # Bloqueios breves de ecrã sobrevivem porque o presence.js re-bate ao desbloquear.
     query = User.near([@user.latitude, @user.longitude], radius_km)
-                .where.not(latitude: nil, longitude: nil)
+                .online_on_map
                 .where.not(id: @user.id)
                 .where(invisible: [false, nil])
                 .with_attached_avatar
