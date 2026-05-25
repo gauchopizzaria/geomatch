@@ -159,12 +159,11 @@
 
           <div class="safety-separator"></div>
 
-          <%= button_to block_user_path(next_user),
-              method: :post,
-              class: "btn-safety-block",
-              data: { confirm: "Bloquear este usuário?" } do %>
+          <button type="button"
+                  class="btn-safety-block"
+                  onclick="openBlockConfirm('<%= j next_user.display_name %>', '<%= block_user_path(next_user) %>')">
             BLOQUEAR <%= next_user.display_name.upcase %>
-          <% end %>
+          </button>
 
           <div class="safety-divider"></div>
         </div>

@@ -108,11 +108,11 @@
 
           <div class="v-view-safety-separator"></div>
 
-          <%= button_to block_user_path(@user), method: :post,
-              class: "v-view-btn-safety",
-              data: { confirm: "Bloquear este usuário?" } do %>
+          <button type="button"
+                  class="v-view-btn-safety"
+                  onclick="openBlockConfirm('<%= j @user.display_name %>', '<%= block_user_path(@user) %>')">
             BLOQUEAR <%= @user.display_name.upcase %>
-          <% end %>
+          </button>
 
           <div class="v-view-safety-divider"></div>
         </div>
