@@ -264,11 +264,13 @@ end
 
   def upload_avatar
     @user = current_user
-    file = params[:avatar]
-    unless file
-      redirect_to edit_profile_path, alert: "Nenhuma foto selecionada.", status: :see_other
+    file  = params.dig(:user, :avatar_original) || params[:avatar_original]
+
+    unless file.present?
+      redirect_to edit_profile_path, alert: "Nenhuma imagem foi recebida. Tente novamente.", status: :see_other
       return
     end
+
     @user.avatar_original.attach(file)
     redirect_to crop_avatar_profile_path, status: :see_other
   end

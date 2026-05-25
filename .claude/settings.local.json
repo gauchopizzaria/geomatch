@@ -160,7 +160,8 @@
       "Bash(dir \"C:\\\\Program Files\\\\ImageMagick*\")",
       "Bash(dir \"C:\\\\Program Files \\(x86\\)\\\\ImageMagick*\")",
       "Bash(where vips *)",
-      "Bash(where vipsthumbnail *)"
+      "Bash(where vipsthumbnail *)",
+      "Bash(echo \"exit $?\")"
     ],
     "additionalDirectories": [
       "C:\\Users\\Brendo\\Documents\\DEV\\geomatch ruby\\geomatch"

@@ -2,8 +2,7 @@
 // LAYOUT DE MAPA - DISCOVER (DARK PREMIUM) - FINAL V8
 // =========================================================
 
-@import "leaflet.markercluster/dist/MarkerCluster.css";
-@import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+// MarkerCluster CSS é carregado via CDN no layout (application.html.erb).
 
 // 1. CONTAINER & SPOTLIGHT
 .discover-fullscreen-container {

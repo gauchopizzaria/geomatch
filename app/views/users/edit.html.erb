@@ -1,5 +1,15 @@
 <div class="edit-profile-wrapper">
 
+  <%# Formulário de upload da foto original — fora do form principal para evitar nesting inválido.
+      turbo: false garante envio multipart nativo sem interferência do Turbo. %>
+  <%= form_with url: upload_avatar_profile_path, method: :post, multipart: true,
+                id: "avatar-upload-form", style: "display:none",
+                data: { turbo: false } do |f| %>
+    <%= f.file_field :avatar_original, id: "avatar_upload_field",
+                     accept: "image/*",
+                     onchange: "document.getElementById('avatar-upload-form').submit();" %>
+  <% end %>
+
    <%= form_with model: @user, url: profile_path, method: :patch, multipart: true, id: "edit-profile-form" do |f| %>
 
     <%# --- 1. HEADER --- %>
@@ -39,15 +49,12 @@
           <%# Variável para contar slots usados (Limite 6) %>
           <% slots_used = 0 %>
 
-          <%# SLOT 1: AVATAR — FileReader armazena no sessionStorage e navega para crop %>
+          <%# SLOT 1: AVATAR — label dispara o input que pertence ao #avatar-upload-form acima %>
           <div class="photo-slot filled">
             <%= image_tag @user.avatar_or_default, class: "slot-img", id: "avatar-preview" %>
             <label class="edit-badge" for="avatar_upload_field">
               <i class="fas fa-pen"></i>
             </label>
-            <input type="file" id="avatar_upload_field" class="hidden-input" accept="image/*"
-                   data-crop-path="<%= crop_avatar_profile_path %>"
-                   onchange="gmAvatarSelected(this)">
           </div>
           <% slots_used += 1 %>
 
@@ -165,15 +172,4 @@ document.addEventListener("turbo:load", function() {
     });
   });
 });
-
-function gmAvatarSelected(input) {
-  const file = input.files[0];
-  if (!file) return;
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    sessionStorage.setItem('gm_avatar_src', e.target.result);
-    window.location.href = input.dataset.cropPath;
-  };
-  reader.readAsDataURL(file);
-}
 </script>

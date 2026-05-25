@@ -29,12 +29,8 @@
 @use "chat_menu";
 @use "crop_screen";
 
-// Importa os estilos base do Leaflet (se ainda não tiver)
-@import "leaflet/dist/leaflet.css";
-
-// Importa os estilos do MarkerCluster
-@import "leaflet.markercluster/dist/MarkerCluster.css";
-@import "leaflet.markercluster/dist/MarkerCluster.Default.css";
+// Leaflet CSS é carregado via CDN no layout (application.html.erb).
+// @import de .css em DartSass gera browser-level @import — propshaft não serve node_modules.
 
 // Opcional: Customização para o GeoMatch
 .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {

@@ -41,8 +41,13 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700;800&family=Nunito:wght@900&family=Outfit:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@1,500&display=swap" rel="stylesheet">
 
-    <!-- 🚨 NOVO: Link do Font Awesome para os ícones da Sidebar -->
+    <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+
+    <!-- Leaflet CSS (propshaft não serve node_modules; CDN garante o caminho correto) -->
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
+    <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 
     <!-- CSS principal -->
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
