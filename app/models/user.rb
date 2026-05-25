@@ -330,7 +330,19 @@ class User < ApplicationRecord
     features = (plan.features || {}).with_indifferent_access
     features[:see_who_i_liked] == true
   end
-  
+
+  # Free: Não | Plus: Não | Gold: Sim
+  def can_rewind?
+    features = (plan.features || {}).with_indifferent_access
+    features[:rewind_profile] == true
+  end
+
+  # Free: Não | Plus: Não | Gold: Sim
+  def can_search_by_distance?
+    features = (plan.features || {}).with_indifferent_access
+    features[:search_by_distance] == true
+  end
+
   private
 
   # Monta o campo :address a partir dos componentes para o geocoder funcionar

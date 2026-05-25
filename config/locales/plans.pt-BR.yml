@@ -8,6 +8,8 @@
       unlimited_messages: "Mensagens ilimitadas"
       hide_age: "Não mostra minha idade"
       unlimited_map_interaction: "Interação no Mapa ilimitado"
+      rewind_profile: "Voltar perfil não curtido"
+      search_by_distance: "Pesquisar perfil a distância"
 
       # --- Funcionalidades de Lógica/Sistema (Mantidas para segurança) ---
       direct_messages: "Mensagens diretas"

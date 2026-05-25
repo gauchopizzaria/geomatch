@@ -10,7 +10,7 @@ module PlansHelper
     case feature_key.to_s
     when "direct_messages"
       render_direct_messages(value)
-    when "unlimited_messages", "invisible_mode", "hide_age", "unlimited_map_interaction", "see_who_i_liked", "see_who_liked_me", "likes_right_unlimited", "likes_left_unlimited"
+    when "unlimited_messages", "invisible_mode", "hide_age", "unlimited_map_interaction", "see_who_i_liked", "see_who_liked_me", "likes_right_unlimited", "likes_left_unlimited", "rewind_profile", "search_by_distance"
       # Lógica Booleana: True = Check, False/Nil = Cadeado
       value === true ? render_check : render_lock
     else
