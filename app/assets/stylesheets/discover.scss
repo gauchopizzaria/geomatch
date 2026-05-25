@@ -67,9 +67,12 @@
 // 3. CONTROLE DE RADAR
 .radar-control-floating {
   position: absolute; left: 15px; top: 280px; z-index: 500;
-  display: flex; flex-direction: column; align-items: center; gap: 0px; 
-  pointer-events: auto; cursor: grab; touch-action: none; 
-  &:active { cursor: grabbing; }
+  display: flex; flex-direction: column; align-items: center; gap: 0px;
+  pointer-events: auto;
+  // Sem cursor:grab e sem touch-action:none — o container é fixo,
+  // só o input interno deve capturar interações de slide.
+  cursor: default;
+  user-select: none;
 }
 .radar-badge-box {
   position: relative; width: 50px; height: auto;

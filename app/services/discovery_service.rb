@@ -37,7 +37,7 @@ class DiscoveryService
       distance = Geocoder::Calculations.distance_between(
         [@user.latitude, @user.longitude],
         [u.latitude, u.longitude]
-      ).round(1)
+      ).round(3)  # 3 casas = precisão de ~1m; .round(1) truncava 70m→0.1km, quebrando filtros curtos
 
       {
         id: u.id,

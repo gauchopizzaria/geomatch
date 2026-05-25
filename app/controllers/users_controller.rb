@@ -177,7 +177,10 @@ class UsersController < ApplicationController
       return
     end
 
-    range_km = params[:range].present? ? (params[:range].to_f / 1000.0) : 0.3
+    # Mínimo de 150m independente do slider: GPS de celular tem erro de 20-80m por
+    # dispositivo — sem esse piso, raios curtos excluem usuários fisicamente próximos.
+    raw_range_km = params[:range].present? ? (params[:range].to_f / 1000.0) : 0.3
+    range_km = [raw_range_km, 0.15].max
     gender_filter = params[:gender]&.downcase
 
     if current_user && !current_user.invisible

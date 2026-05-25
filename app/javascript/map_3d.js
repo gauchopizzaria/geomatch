@@ -320,12 +320,17 @@ function updateRadarVisuals() {
 
 function filterMarkersByRange() {
   const limitKm = currentRangeMeters / 1000;
+  // 75m de tolerância de GPS: dois celulares encostados podem registrar 50-100m de
+  // distância devido à imprecisão da antena. Sem essa margem, raios curtos (<150m)
+  // ocultam usuários fisicamente próximos cujas coordenadas têm erro de GPS.
+  const GPS_TOL_KM = 0.075;
+  const effectiveLimitKm = limitKm + GPS_TOL_KM;
   let visibleCount = 0;
 
   Object.entries(mapboxMarkerDistances).forEach(([userId, distKm]) => {
     const marker = mapboxUserMarkers[userId];
     if (!marker) return;
-    const visible = distKm <= limitKm;
+    const visible = distKm <= effectiveLimitKm;
     marker.getElement().style.display = visible ? '' : 'none';
     if (visible) visibleCount++;
   });
@@ -334,7 +339,7 @@ function filterMarkersByRange() {
   if (countEl) countEl.textContent = visibleCount;
 
   document.querySelectorAll('#users-list .user-list-item[data-dist-km]').forEach(li => {
-    li.style.display = parseFloat(li.dataset.distKm) <= limitKm ? '' : 'none';
+    li.style.display = parseFloat(li.dataset.distKm) <= effectiveLimitKm ? '' : 'none';
   });
 }
 
@@ -1033,39 +1038,7 @@ document.addEventListener("turbo:load", () => {
     });
   }
 
-  // RADAR DRAGGABLE
-  if (radarControl) {
-    let isDragging = false;
-    let startX, startY, initialLeft, initialTop;
-    const dragStart = (e) => {
-      if (e.target.tagName.toLowerCase() === 'input') return;
-      isDragging = true;
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      startX = clientX;
-      startY = clientY;
-      const style = window.getComputedStyle(radarControl);
-      initialLeft = parseInt(style.left, 10) || 0;
-      initialTop = parseInt(style.top, 10) || 0;
-    };
-    const dragMove = (e) => {
-      if (!isDragging) return;
-      e.preventDefault();
-      const clientX = e.touches ? e.touches[0].clientX : e.clientX;
-      const clientY = e.touches ? e.touches[0].clientY : e.clientY;
-      const deltaX = clientX - startX;
-      const deltaY = clientY - startY;
-      radarControl.style.left = `${initialLeft + deltaX}px`;
-      radarControl.style.top = `${initialTop + deltaY}px`;
-    };
-    const dragEnd = () => { isDragging = false; };
-    radarControl.addEventListener('mousedown', dragStart);
-    window.addEventListener('mousemove', dragMove);
-    window.addEventListener('mouseup', dragEnd);
-    radarControl.addEventListener('touchstart', dragStart, { passive: false });
-    window.addEventListener('touchmove', dragMove, { passive: false });
-    window.addEventListener('touchend', dragEnd);
-  }
+  // Radar control é fixo — posicionado pelo CSS, sem drag JS.
 
   // FILTRO GÊNERO — ciclo circular com HUD imersivo
   if (genderToggleBtn) {
