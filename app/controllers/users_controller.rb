@@ -66,18 +66,18 @@ class UsersController < ApplicationController
     lat = params[:latitude].to_f
     lng = params[:longitude].to_f
 
-    if lat != 0.0 && lng != 0.0
-      current_user.update(
-        latitude: lat,
-        longitude: lng,
-        last_seen_at: Time.zone.now,
-        last_location_updated_at: Time.zone.now
-      )
-      broadcast_map_presence(current_user, lat, lng)
-      head :ok
-    else
-      head :unprocessable_entity
-    end
+    return head :unprocessable_entity if lat.zero? && lng.zero?
+
+    # update_columns ignora callbacks (geocoder, validações) — fundamental para
+    # que este endpoint de heartbeat responda rapidamente sem efeitos colaterais.
+    current_user.update_columns(
+      latitude: lat,
+      longitude: lng,
+      last_seen_at: Time.zone.now,
+      last_location_updated_at: Time.zone.now
+    )
+    broadcast_map_presence(current_user, lat, lng)
+    head :ok
   end
 
   # ==========================================
@@ -168,11 +168,18 @@ class UsersController < ApplicationController
   def nearby
     latitude = params[:latitude].to_f
     longitude = params[:longitude].to_f
+
+    # Verifica coordenadas ANTES de qualquer gravação.
+    # Se o GPS enviar (0,0) (bug ou aquecimento pós-desbloqueio), não corrompemos
+    # as coordenadas do utilizador na BD e não o fazemos desaparecer do mapa de outros.
+    if latitude.zero? && longitude.zero?
+      render json: [], status: :ok
+      return
+    end
+
     range_km = params[:range].present? ? (params[:range].to_f / 1000.0) : 0.3
     gender_filter = params[:gender]&.downcase
 
-    # FORÇA A ATUALIZAÇÃO: 
-    # Usamos update_columns para gravar direto no banco sem disparar callbacks lentos
     if current_user && !current_user.invisible
       current_user.update_columns(
         latitude: latitude,
@@ -181,12 +188,6 @@ class UsersController < ApplicationController
         last_location_updated_at: Time.current
       )
       broadcast_map_presence(current_user, latitude, longitude)
-    end
-
-    # Se veio 0.0, 0.0, é bug de GPS, retorna vazio
-    if latitude.zero? && longitude.zero?
-      render json: [], status: :ok
-      return
     end
 
     # Busca usuários próximos usando o Service

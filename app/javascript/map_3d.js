@@ -300,18 +300,23 @@ async function loadNearbyUsers(latitude, longitude, rangeMeters, genderFilter) {
     const users = await response.json();
     console.log('[GeoMatch Debug] Usuários:', users);
 
-    // Limpa marcadores antigos
+    if (users.length === 0) {
+      // Resposta vazia — não limpa marcadores existentes.
+      // O GPS recém-desbloqueado pode ter jitter e colocar o utilizador ligeiramente
+      // fora do raio por um ciclo. Os marcadores persistem até a próxima resposta com dados.
+      if (!Object.keys(mapboxUserMarkers).length) {
+        if (usersList) usersList.innerHTML = '<li class="text-center loading-text">Ninguém por perto...</li>';
+        if (usersCountElement) usersCountElement.textContent = "0";
+      }
+      hideLoadingAnimation();
+      return;
+    }
+
+    // Só limpa e reconstrói quando há dados frescos para repor
     Object.values(mapboxUserMarkers).forEach(m => m.remove());
     mapboxUserMarkers = {};
     mapboxMarkerDistances = {};
     if (usersList) usersList.innerHTML = "";
-
-    if (users.length === 0) {
-      if (usersList) usersList.innerHTML = '<li class="text-center loading-text">Ninguém por perto...</li>';
-      if (usersCountElement) usersCountElement.textContent = "0";
-      hideLoadingAnimation();
-      return;
-    }
 
     users.forEach(user => {
       const distDisplay = (user.distance_km || user.distance || 0);
