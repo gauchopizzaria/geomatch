@@ -77,7 +77,6 @@
           <%= yield %>
         </main>
       </div>
-      <%= render "shared/block_confirm_modal" %>
     <% else %>
       <!-- Estrutura para usuários não autenticados (com header e footer ) -->
       <% unless turbo_native_app? %>
@@ -195,5 +194,10 @@
         }
       });
     </script>
+
+    <%# Modal de bloqueio — último elemento do DOM para garantir z-index máximo %>
+    <% if user_signed_in? %>
+      <%= render "shared/block_confirm_modal" %>
+    <% end %>
   </body>
 </html>
