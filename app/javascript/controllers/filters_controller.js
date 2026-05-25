@@ -1,5 +1,8 @@
 import { Controller } from "@hotwired/stimulus"
 
+const TRACK_DARK  = "#2a2a2e"
+const TRACK_LIGHT = "#dcdce0"
+
 export default class extends Controller {
   static targets = ["modal", "distanceValue", "distanceInput", "minAgeInput", "maxAgeInput", "ageDisplay"]
 
@@ -21,25 +24,27 @@ export default class extends Controller {
   updateDistanceVisual() {
     if (this.hasDistanceInputTarget) {
       this.distanceValueTarget.textContent = this.distanceInputTarget.value
+      this._paintSlider(this.distanceInputTarget)
     }
   }
 
   updateAgeVisual() {
     if (this.hasMinAgeInputTarget && this.hasMaxAgeInputTarget) {
-      let min = parseInt(this.minAgeInputTarget.value)
-      let max = parseInt(this.maxAgeInputTarget.value)
-
-      // Lógica simples: Se min > max, empurra o max pra cima (ou vice versa)
-      if (min > max) {
-        // Opção A: Bloquear (Descomente abaixo se preferir)
-        // this.minAgeInputTarget.value = max; min = max;
-        
-        // Opção B: Apenas visualmente aceitar por enquanto (o usuário se ajeita)
-      }
-
+      const min = parseInt(this.minAgeInputTarget.value)
+      const max = parseInt(this.maxAgeInputTarget.value)
       this.ageDisplayTarget.textContent = `${min} - ${max}`
+      this._paintSlider(this.minAgeInputTarget)
+      this._paintSlider(this.maxAgeInputTarget)
     }
   }
-  
-  // Ação 'apply' não é necessária pois o botão é type="submit" e o form cuida do envio
+
+  _paintSlider(input) {
+    const min = parseFloat(input.min) || 0
+    const max = parseFloat(input.max) || 100
+    const val = parseFloat(input.value)
+    const pct = ((val - min) / (max - min)) * 100
+    const trackBg = document.documentElement.classList.contains("dark-mode") ? TRACK_DARK : TRACK_LIGHT
+    input.style.background =
+      `linear-gradient(to right, #F4DFC4 0%, #C9A079 ${pct}%, ${trackBg} ${pct}%, ${trackBg} 100%)`
+  }
 }

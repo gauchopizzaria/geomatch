@@ -27,72 +27,62 @@
   <%# --- 5. MODAL DE FILTROS --- %>
   <div class="filter-modal hidden" data-filters-target="modal">
     <div class="filter-backdrop" data-action="click->filters#close"></div>
-    
-    <div class="filter-content theme-dark">
+
+    <div class="filter-content">
       <%= form_tag lead_path, method: :get, data: { filters_target: "form" } do %>
-        
+
         <div class="filter-header">
-          <h2>Filtros</h2>
-          <button type="button" class="close-btn" data-action="click->filters#close">✖</button>
+          <h2 class="filter-title">Filtros</h2>
+          <button type="button" class="filter-close-btn" data-action="click->filters#close">
+            <i class="fas fa-times"></i>
+          </button>
         </div>
 
-        <div class="filter-section">
-          <div class="label-row">
-            <span class="label-title">Distância máxima</span>
-            <span class="label-value">
-              <span data-filters-target="distanceValue"><%= @filter_distance %></span> km
+        <%# --- Card: Distância --- %>
+        <div class="filter-card">
+          <div class="filter-card-top">
+            <span class="filter-card-label">Distância máxima</span>
+            <span class="filter-card-value">
+              <span data-filters-target="distanceValue"><%= @filter_distance %></span> km de você
             </span>
           </div>
-
-          <div class="range-slider-container">
-            <input type="range" name="distance" min="5" max="500" step="5"
-                   value="<%= @filter_distance %>" 
-                   class="range-input" 
-                   data-filters-target="distanceInput"
-                   data-action="input->filters#updateDistanceVisual">
-          </div>
-          
-          <div class="toggle-row">
-             <p>Ver pessoas um pouco mais distantes se acabar</p>
-             <label class="switch">
-               <input type="checkbox" checked>
-               <span class="slider round"></span>
-             </label>
+          <input type="range" name="distance" min="5" max="500" step="5"
+                 value="<%= @filter_distance %>"
+                 class="gm-range"
+                 data-filters-target="distanceInput"
+                 data-action="input->filters#updateDistanceVisual">
+          <div class="filter-card-toggle-row">
+            <p>Ver pessoas um pouco mais distantes se acabar</p>
+            <label class="gm-switch">
+              <input type="checkbox" checked>
+              <span class="gm-switch-track"></span>
+            </label>
           </div>
         </div>
 
-        <hr class="filter-divider">
-
-        <div class="filter-section">
-          <div class="label-row">
-            <span class="label-title">Faixa Etária</span>
-            <span class="label-value">
-              <span data-filters-target="ageDisplay">
-                <%= @filter_min_age %> - <%= @filter_max_age %>
-              </span> anos
+        <%# --- Card: Faixa Etária --- %>
+        <div class="filter-card">
+          <div class="filter-card-top">
+            <span class="filter-card-label">Faixa etária</span>
+            <span class="filter-card-value">
+              <span data-filters-target="ageDisplay"><%= @filter_min_age %> - <%= @filter_max_age %></span> anos
             </span>
           </div>
-
-          <div class="dual-range-wrapper">
-             <div class="range-labels-sub">Mínima / Máxima</div>
-             
-             <input type="range" name="min_age" min="18" max="100" 
-                    value="<%= @filter_min_age %>" 
-                    class="range-input age-range mb-2" 
-                    data-filters-target="minAgeInput"
-                    data-action="input->filters#updateAgeVisual">
-             
-             <input type="range" name="max_age" min="18" max="100" 
-                    value="<%= @filter_max_age %>" 
-                    class="range-input age-range" 
-                    data-filters-target="maxAgeInput"
-                    data-action="input->filters#updateAgeVisual">
-          </div>
+          <span class="filter-range-sub">Mínima</span>
+          <input type="range" name="min_age" min="18" max="100"
+                 value="<%= @filter_min_age %>"
+                 class="gm-range"
+                 data-filters-target="minAgeInput"
+                 data-action="input->filters#updateAgeVisual">
+          <span class="filter-range-sub" style="margin-top: 14px;">Máxima</span>
+          <input type="range" name="max_age" min="18" max="100"
+                 value="<%= @filter_max_age %>"
+                 class="gm-range"
+                 data-filters-target="maxAgeInput"
+                 data-action="input->filters#updateAgeVisual">
         </div>
 
-        <div class="filter-actions">
-          <button type="submit" class="btn-apply">Aplicar Filtros</button>
-        </div>
+        <button type="submit" class="btn-apply-gold">Aplicar Filtros</button>
 
       <% end %>
     </div>

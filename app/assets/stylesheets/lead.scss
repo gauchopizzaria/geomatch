@@ -454,6 +454,9 @@ html, body {
 // =========================================
 // 5. FILTROS MODAL
 // =========================================
+
+$gold-grad: linear-gradient(to right, #F4DFC4, #C9A079);
+
 .filter-modal {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%; z-index: 9999;
   display: flex; align-items: flex-end; transition: opacity 0.3s ease;
@@ -462,53 +465,144 @@ html, body {
 
 .filter-backdrop {
   position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-  background: rgba(0,0,0,0.8); backdrop-filter: blur(5px);
+  background: rgba(0,0,0,0.7); backdrop-filter: blur(6px);
 }
 
 .filter-content {
-  position: relative; width: 100%; background: var(--color-section-light); color: var(--color-text);
-  border-top-left-radius: 25px; border-top-right-radius: 25px;
-  padding: 25px; padding-bottom: calc(30px + env(safe-area-inset-bottom));
+  position: relative; width: 100%;
+  background: var(--color-background);
+  border-top-left-radius: 28px; border-top-right-radius: 28px;
+  padding: 24px 20px; padding-bottom: calc(28px + env(safe-area-inset-bottom));
   box-sizing: border-box;
-  box-shadow: 0 -5px 30px rgba(0,0,0,0.9); transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-
-  h2 { color: var(--color-text); margin: 0; font-size: 1.4rem; font-weight: 700; }
-  .close-btn { color: var(--color-text-secondary); background: none; border: none; font-size: 1.5rem; }
-  .label-title { color: var(--color-text); font-size: 1rem; font-weight: 600; }
-  .label-value { color: var(--gold-primary); font-weight: 700; font-size: 1.1rem; }
-  .filter-divider { border-top: 1px solid var(--color-border); margin: 20px 0; border-bottom: none; }
-  .range-labels-sub { font-size: 0.8rem; color: var(--color-text-secondary); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; }
-  .mb-2 { margin-bottom: 15px; }
+  box-shadow: 0 -8px 40px rgba(0,0,0,0.55);
+  transition: transform 0.35s cubic-bezier(0.2, 0.8, 0.2, 1);
+  display: flex; flex-direction: column; gap: 12px;
 }
 
-.filter-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
-.label-row { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
-.range-slider-container, .dual-range-wrapper { position: relative; margin-bottom: 15px; }
+// Header
+.filter-header {
+  display: flex; justify-content: space-between; align-items: center;
+  margin-bottom: 4px;
+}
 
-.range-input {
-  -webkit-appearance: none; width: 100%; height: 6px; background: var(--color-section-gray); border-radius: 3px; outline: none;
+.filter-title {
+  font-size: 1.3rem; font-weight: 700; color: var(--color-text); margin: 0;
+}
+
+.filter-close-btn {
+  background: var(--color-section-light); border: none;
+  width: 36px; height: 36px; border-radius: 50%;
+  color: var(--color-text-secondary); font-size: 1rem;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  &:active { transform: scale(0.9); }
+}
+
+// Cards
+.filter-card {
+  background: var(--color-section-light);
+  border-radius: 20px;
+  padding: 18px 18px 6px 18px;
+  display: flex; flex-direction: column;
+  border: 1px solid var(--color-border);
+}
+
+.filter-card-top {
+  display: flex; justify-content: space-between; align-items: baseline;
+  margin-bottom: 16px;
+}
+
+.filter-card-label {
+  font-size: 1rem; font-weight: 700; color: var(--color-text);
+}
+
+.filter-card-value {
+  font-size: 0.95rem; font-weight: 600;
+  background: $gold-grad;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+// Range sliders
+.gm-range {
+  -webkit-appearance: none;
+  width: 100%; height: 8px; border-radius: 999px;
+  outline: none; cursor: pointer;
+  margin-bottom: 14px;
+  background: var(--color-section-gray);
+
   &::-webkit-slider-thumb {
-    -webkit-appearance: none; width: 24px; height: 24px; border-radius: 50%;
-    background: var(--gold-primary); border: 3px solid var(--color-section-light); cursor: pointer;
-    box-shadow: 0 0 10px rgba(212, 175, 55, 0.3);
+    -webkit-appearance: none;
+    width: 26px; height: 26px; border-radius: 50%;
+    background: $gold-grad;
+    border: 3px solid var(--color-background);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
+  }
+
+  &::-moz-range-thumb {
+    width: 26px; height: 26px; border-radius: 50%;
+    background: $gold-grad;
+    border: 3px solid var(--color-background);
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.35);
   }
 }
 
-.toggle-row { display: flex; justify-content: space-between; align-items: center; gap: 15px; margin-top: 20px; p { font-size: 0.85rem; color: var(--color-text-secondary); margin: 0; line-height: 1.4; } }
-.switch {
-  position: relative; display: inline-block; width: 46px; height: 26px; flex-shrink: 0;
-  input { opacity: 0; width: 0; height: 0; }
-  .slider {
-    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0;
-    background-color: var(--color-section-gray); transition: .4s; border-radius: 34px;
-    &:before { position: absolute; content: ""; height: 20px; width: 20px; left: 3px; bottom: 3px; background-color: #888; transition: .4s; border-radius: 50%; }
-  }
-  input:checked + .slider { background-color: var(--gold-primary); }
-  input:checked + .slider:before { transform: translateX(20px); background-color: #fff; }
+.filter-range-sub {
+  display: block;
+  font-size: 0.72rem; font-weight: 600;
+  text-transform: uppercase; letter-spacing: 0.8px;
+  color: var(--color-text-secondary);
+  margin-bottom: 8px;
 }
 
-.btn-apply {
-  width: 100%; padding: 16px; margin-top: 10px; background: var(--gold-primary); color: #000; border: none; border-radius: 30px; font-weight: 800; font-size: 1.1rem; cursor: pointer; box-shadow: 0 5px 20px rgba(212, 175, 55, 0.2);
+// Toggle row at bottom of card
+.filter-card-toggle-row {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 14px;
+  border-top: 1px solid var(--color-border);
+  margin-top: 2px; padding: 14px 0 10px 0;
+
+  p { font-size: 0.82rem; color: var(--color-text-secondary); margin: 0; line-height: 1.45; flex: 1; }
+}
+
+// Switch / Toggle
+.gm-switch {
+  position: relative; display: inline-block; width: 48px; height: 28px; flex-shrink: 0;
+
+  input { opacity: 0; width: 0; height: 0; position: absolute; }
+
+  .gm-switch-track {
+    position: absolute; cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: var(--color-section-gray);
+    border-radius: 34px; transition: background 0.3s;
+
+    &:before {
+      position: absolute; content: "";
+      width: 22px; height: 22px; left: 3px; bottom: 3px;
+      background: #888; border-radius: 50%;
+      transition: transform 0.3s, background 0.3s;
+    }
+  }
+
+  input:checked + .gm-switch-track {
+    background: $gold-grad;
+    &:before { transform: translateX(20px); background: #fff; }
+  }
+}
+
+// Apply button
+.btn-apply-gold {
+  width: 100%; padding: 17px 0; margin-top: 4px;
+  background: $gold-grad;
+  color: #1a120a; font-weight: 800; font-size: 1.05rem;
+  border: none; border-radius: 999px; cursor: pointer;
+  box-shadow: 0 6px 24px rgba(201, 160, 121, 0.35);
+  letter-spacing: 0.3px;
+  &:active { transform: scale(0.98); }
 }
 
 // =========================================
