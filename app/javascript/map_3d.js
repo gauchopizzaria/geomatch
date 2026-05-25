@@ -42,9 +42,38 @@ let rotationTimer = null;
 let isCinematicMode = false;
 let cinematicPopup = null;
 let activeMarkerEl = null;
+let genderHudTimer = null;
 
 const radarSourceId = 'radar-circle-source';
 const radarLayerId = 'radar-circle-layer';
+
+// --- Gender filter cycle definition ---
+const GENDER_STATES = [
+  { key: "all",        label: "Todos",       svgKeys: ["male", "female", "nonbinary"] },
+  { key: "male",       label: "Homens",      svgKeys: ["male"]       },
+  { key: "female",     label: "Mulheres",    svgKeys: ["female"]     },
+  { key: "non-binary", label: "Não Binário", svgKeys: ["nonbinary"]  },
+];
+
+const GENDER_SVGS = {
+  male: `<svg viewBox="0 0 44 44" fill="none" stroke="url(#gm-gold-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="18" cy="26" r="13"/>
+    <line x1="27" y1="17" x2="40" y2="4"/>
+    <polyline points="30 4 40 4 40 14"/>
+  </svg>`,
+  female: `<svg viewBox="0 0 44 44" fill="none" stroke="url(#gm-gold-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="22" cy="17" r="13"/>
+    <line x1="22" y1="30" x2="22" y2="42"/>
+    <line x1="14" y1="37" x2="30" y2="37"/>
+  </svg>`,
+  nonbinary: `<svg viewBox="0 0 44 44" fill="none" stroke="url(#gm-gold-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="22" cy="22" r="11"/>
+    <line x1="22" y1="33" x2="22" y2="42"/>
+    <line x1="15" y1="39" x2="29" y2="39"/>
+    <line x1="22" y1="11" x2="22" y2="4"/>
+    <polyline points="16 9 22 4 28 9"/>
+  </svg>`,
+};
 
 // --- Haversine: distância métrica real entre dois pontos geográficos ---
 function haversineDistanceM(lat1, lng1, lat2, lng2) {
@@ -59,7 +88,7 @@ function haversineDistanceM(lat1, lng1, lat2, lng2) {
 
 // --- Funções de Interface (UI) ---
 
-// Função para exibir mensagens rápidas (Toasts)
+// Função para exibir mensagens rápidas (Toasts) — mantida para uso genérico
 function showQuickMessage(text) {
   let toast = document.getElementById("gender-toast");
   if (!toast) {
@@ -69,9 +98,37 @@ function showQuickMessage(text) {
   }
   toast.textContent = text;
   toast.classList.add("show");
-  setTimeout(() => {
-    toast.classList.remove("show");
-  }, 2000);
+  setTimeout(() => { toast.classList.remove("show"); }, 2000);
+}
+
+// HUD imersivo para o filtro de gênero
+function showGenderHUD(state) {
+  const hud      = document.getElementById("gender-hud");
+  const iconsEl  = document.getElementById("gender-hud-icons");
+  const labelEl  = document.getElementById("gender-hud-label");
+  if (!hud || !iconsEl || !labelEl) return;
+
+  // Cancela timer anterior (clique rápido)
+  if (genderHudTimer) { clearTimeout(genderHudTimer); genderHudTimer = null; }
+
+  // Injeta ícones e texto
+  iconsEl.innerHTML = state.svgKeys.map(k => GENDER_SVGS[k]).join("");
+  iconsEl.dataset.count = state.svgKeys.length;
+  labelEl.textContent = state.label;
+
+  // Exibe
+  hud.classList.remove("fade-out");
+  hud.classList.add("show");
+
+  // Esconde após 3s com fade-out suave
+  genderHudTimer = setTimeout(() => {
+    hud.classList.remove("show");
+    hud.classList.add("fade-out");
+    genderHudTimer = setTimeout(() => {
+      hud.classList.remove("fade-out");
+      genderHudTimer = null;
+    }, 500);
+  }, 3000);
 }
 
 function showTrackingToast(text) {
@@ -1010,25 +1067,19 @@ document.addEventListener("turbo:load", () => {
     window.addEventListener('touchend', dragEnd);
   }
 
-  // FILTRO GÊNERO
+  // FILTRO GÊNERO — ciclo circular com HUD imersivo
   if (genderToggleBtn) {
+    let stateIdx = GENDER_STATES.findIndex(s => s.key === currentGenderFilter);
+    if (stateIdx === -1) stateIdx = 0;
+
     genderToggleBtn.addEventListener("click", () => {
-      let message = "";
-      if (currentGenderFilter === "all") {
-        currentGenderFilter = "male";
-        message = "Exibindo apenas: Homens";
-      } else if (currentGenderFilter === "male") {
-        currentGenderFilter = "female";
-        message = "Exibindo apenas: Mulheres";
-      } else if (currentGenderFilter === "female") {
-        currentGenderFilter = "non-binary";
-        message = "Exibindo apenas: Não Binários";
-      } else {
-        currentGenderFilter = "all";
-        message = "Exibindo: Todos";
-      }
+      stateIdx = (stateIdx + 1) % GENDER_STATES.length;
+      const state = GENDER_STATES[stateIdx];
+      currentGenderFilter = state.key;
       localStorage.setItem(STORAGE_KEYS.GENDER_FILTER, currentGenderFilter);
-      showQuickMessage(message);
+
+      showGenderHUD(state);
+
       genderToggleBtn.style.transform = "scale(0.8)";
       setTimeout(() => {
         genderToggleBtn.style.transform = "scale(1)";

@@ -230,6 +230,21 @@
   </div>
 
   <div id="upgrade-modal-container" style="position: relative; z-index: 99999;"></div>
+
+  <%# --- GENDER HUD --- %>
+  <div id="gender-hud" class="gender-hud">
+    <%# Gradient referenced by all JS-injected gender SVG icons %>
+    <svg width="0" height="0" style="position:absolute; overflow:hidden;">
+      <defs>
+        <linearGradient id="gm-gold-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+          <stop offset="0%" stop-color="#F4DFC4"/>
+          <stop offset="100%" stop-color="#C9A079"/>
+        </linearGradient>
+      </defs>
+    </svg>
+    <div id="gender-hud-icons" class="gender-hud__icons"></div>
+    <p id="gender-hud-label" class="gender-hud__label"></p>
+  </div>
 </div>
 
 <%= javascript_include_tag "live_location", type: "module" %>

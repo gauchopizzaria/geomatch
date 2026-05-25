@@ -914,3 +914,80 @@ body.cinematic-mode .premium-marker {
   box-shadow: 0 3px 10px rgba(180, 140, 70, 0.35);
   &:active { transform: scale(0.96); box-shadow: none; }
 }
+
+// =========================================================
+// GENDER HUD TOAST — hologram, sem caixa
+// =========================================================
+
+@keyframes gm-hud-in {
+  from { opacity: 0; transform: scale(0.82); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+@keyframes gm-hud-out {
+  from { opacity: 1; transform: scale(1);    }
+  to   { opacity: 0; transform: scale(0.94); }
+}
+
+.gender-hud {
+  // Fullscreen overlay — apenas para centralizar
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  z-index: 99998;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  pointer-events: none;
+
+  // Sem fundo sólido — vinheta radial difusa só para legibilidade
+  background: radial-gradient(ellipse 190px 140px at center, rgba(0,0,0,0.22) 0%, transparent 70%);
+
+  // Invisível por padrão; animações controlam completamente a opacidade
+  opacity: 0;
+
+  &.show {
+    animation: gm-hud-in 0.38s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+  }
+
+  &.fade-out {
+    animation: gm-hud-out 0.5s ease forwards;
+  }
+
+  &__icons {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 14px;
+
+    svg {
+      width: 62px;
+      height: 62px;
+      // Sombra escura para contraste no mapa claro + halo dourado
+      filter:
+        drop-shadow(0 2px 12px rgba(0, 0, 0, 0.92))
+        drop-shadow(0 0 20px rgba(244, 223, 196, 0.45));
+    }
+
+    // Três ícones lado a lado (estado "Todos")
+    &[data-count="3"] svg {
+      width: 44px;
+      height: 44px;
+    }
+  }
+
+  &__label {
+    font-size: 0.95rem;
+    font-weight: 800;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    margin: 0;
+    background: linear-gradient(to right, #F4DFC4, #C9A079);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    // Sombra escura para contraste sem fundo
+    filter: drop-shadow(0 2px 10px rgba(0, 0, 0, 0.95));
+  }
+}
