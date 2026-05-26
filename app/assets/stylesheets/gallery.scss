@@ -87,15 +87,19 @@ body.turbo-native .gallery-header { padding-top: 14px; }
 }
 
 // Pílulas de Sexo
+// Linha 1: 3 opções lado a lado | Linha 2: "Todos" em largura total
 .gender-pills {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
   gap: 8px;
-  flex-wrap: wrap;
+
+  // "Todos" é sempre o último pill e ocupa as 3 colunas
+  .gender-pill:last-child {
+    grid-column: 1 / -1;
+  }
 }
 
 .gender-pill {
-  flex: 1 1 0;
-  min-width: 90px;
   padding: 7px 12px;
   border-radius: 999px;
   background: var(--color-section-light);
