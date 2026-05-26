@@ -3,6 +3,14 @@ class Discover3dController < ApplicationController
 
   GALLERY_LIMIT = 60
 
+  # Mapeia o param :sexo para os valores reais do campo gender no banco.
+  # "nao-binario" cobre variantes com/sem acento de registros antigos.
+  GENDER_MAPPING = {
+    "homem"       => ["homem"],
+    "mulher"      => ["mulher"],
+    "nao-binario" => ["não binário", "nao binario", "não-binário"]
+  }.freeze
+
   def gallery
     base = User.visible
                .where.not(id: current_user.excluded_user_ids + [current_user.id])
@@ -14,9 +22,12 @@ class Discover3dController < ApplicationController
     }
 
     scope = base
-    scope = scope.where("LOWER(gender) = ?", @filters[:sexo].downcase) if @filters[:sexo]
-    scope = scope.where("state ILIKE ?", @filters[:state].strip)       if @filters[:state]
-    scope = scope.where("city ILIKE ?", @filters[:city].strip)         if @filters[:city]
+    if @filters[:sexo]
+      targets = GENDER_MAPPING[@filters[:sexo].downcase]
+      scope = scope.where("LOWER(gender) IN (?)", targets) if targets
+    end
+    scope = scope.where("state ILIKE ?", @filters[:state].strip) if @filters[:state]
+    scope = scope.where("city ILIKE ?", @filters[:city].strip)   if @filters[:city]
 
     if @filters.values.all?(&:blank?)
       # Sem filtros: perfis em destaque (verificados → premium → mais ativos)

@@ -31,9 +31,10 @@
         </h3>
         <div class="gender-pills" role="radiogroup" aria-label="Filtrar por sexo">
           <% [
-               { value: "",       label: "Todos"  },
-               { value: "homem",  label: "Homem"  },
-               { value: "mulher", label: "Mulher" }
+               { value: "",            label: "Todos"       },
+               { value: "homem",       label: "Homem"       },
+               { value: "mulher",      label: "Mulher"      },
+               { value: "nao-binario", label: "Não Binário" }
              ].each do |opt| %>
             <% selected = (@filters[:sexo].to_s.downcase == opt[:value]) %>
             <label class="gender-pill <%= 'is-active' if selected %>">
