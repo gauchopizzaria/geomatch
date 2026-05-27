@@ -106,6 +106,7 @@ class UsersController < ApplicationController
 
   def me_profile
     @user = current_user
+    @user.album_photos.load
   end
 
   def safety_center; end

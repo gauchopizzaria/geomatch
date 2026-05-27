@@ -1,4 +1,4 @@
-<% photo_url      = user.avatar.attached? ? url_for(user.avatar) : asset_path("default-avatar.png") %>
+<% photo_url = user.avatar_url %>
 <% location_text = [user.city, user.state].compact_blank.join(", ").presence || user.country.presence || "Localização oculta" %>
 <% _parts = user.display_name.to_s.split; short_name = _parts.size > 1 ? "#{_parts.first} #{_parts.last}" : _parts.first.to_s %>
 

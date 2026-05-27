@@ -39,7 +39,9 @@ class Discover3dController < ApplicationController
       scope = scope.order(Arel.sql("last_seen_at DESC NULLS LAST"))
     end
 
-    @users = scope.limit(GALLERY_LIMIT)
+    @users = scope.with_attached_avatar
+                  .with_attached_album_photos
+                  .limit(GALLERY_LIMIT)
 
     @favorites_map = current_user.favorites
                                   .where(favorited_user_id: @users.map(&:id))

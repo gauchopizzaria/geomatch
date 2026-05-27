@@ -51,7 +51,7 @@ class DiscoveryService
         bio: u.bio,
         interested_in: u.interested_in,
         hobbies_list: u.hobbies_list,
-        avatar_url: (u.avatar.attached? ? Rails.application.routes.url_helpers.rails_blob_path(u.avatar, only_path: true) : nil),
+        avatar_url: effective_avatar_path(u),
         distance_km: distance,
         last_seen_at: u.last_seen_at,
         verified: u.verified,
@@ -62,6 +62,17 @@ class DiscoveryService
   end
 
   private
+
+  # Retorna o path do avatar principal; se ausente, usa a 1ª foto do álbum.
+  # Ambos os escopos (avatar + album_photos) são pré-carregados na query principal
+  # via with_attached_avatar + with_attached_album_photos — zero queries extras.
+  def effective_avatar_path(user)
+    if user.avatar.attached?
+      rails_blob_path(user.avatar, only_path: true)
+    elsif (first_album = user.album_photos.first)
+      rails_blob_path(first_album, only_path: true)
+    end
+  end
 
   def build_photos_urls(user)
     urls = []

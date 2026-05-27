@@ -21,11 +21,7 @@
     
     <%# ESQUERDA: Avatar %>
     <div class="hero-avatar-container">
-      <% if @user.avatar.attached? %>
-        <%= image_tag @user.avatar, class: "hero-avatar-img" %>
-      <% else %>
-        <%= image_tag "default-avatar.png", class: "hero-avatar-img" %>
-      <% end %>
+      <%= image_tag @user.avatar_url, class: "hero-avatar-img" %>
       <%= image_tag "aurea-dourada-mensagens.svg", class: "hero-ring" %>
     </div>
 
