@@ -40,6 +40,9 @@ class UsersController < ApplicationController
   def safety_history
     @blocked_users = current_user.blocked_users.includes(:avatar_attachment)
     @my_reports    = current_user.reports_sent.order(created_at: :desc)
+    respond_to do |format|
+      format.html
+    end
   end
 
  # Ação para o botão de "Modo Invisível" no Mapa
@@ -109,13 +112,17 @@ class UsersController < ApplicationController
     @user.album_photos.load
   end
 
-  def safety_center; end
+  def safety_center
+    respond_to do |format|
+      format.html
+    end
+  end
 
   # Página de Denúncia
   def report_incident
-    # Se vier com um ID na URL (clicou em denunciar no perfil), carregamos o usuário
-    if params[:user_id].present?
-      @reported_user = User.find_by(id: params[:user_id])
+    @reported_user = User.find_by(id: params[:user_id]) if params[:user_id].present?
+    respond_to do |format|
+      format.html
     end
   end
 

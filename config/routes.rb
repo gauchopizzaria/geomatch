@@ -24,6 +24,9 @@ Rails.application.routes.draw do
   get '/suporte', to: 'pages#suporte', as: 'suporte'
   # -----------------------------------------------------------
 
+  # Path configuration para Hotwire Native iOS
+  get "/configurations/native.json", to: "path_configurations#show", as: :native_path_configuration
+
   # Páginas estáticas existentes (Mantidas)
   get "/terms",    to: "public#terms",   as: :terms_of_use
   get "/privacy",  to: "public#privacy", as: :privacy_policy
