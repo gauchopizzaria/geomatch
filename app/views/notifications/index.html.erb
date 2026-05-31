@@ -72,11 +72,7 @@
               <%= link_to link_target, class: "like-card-link #{'trigger-upgrade-modal' if is_locked}" do %>
                 
                 <%# --- FOTO DO USUÁRIO --- %>
-                <% if target_user.avatar.attached? %>
-                  <%= image_tag target_user.avatar, class: "like-card-img" %>
-                <% else %>
-                  <%= image_tag "default-avatar.png", class: "like-card-img" %>
-                <% end %>
+                <%= image_tag target_user.avatar_url, class: "like-card-img" %>
 
                 <%# --- LÓGICA DE BLOQUEIO VS INFORMAÇÃO --- %>
                 <% if is_locked %>

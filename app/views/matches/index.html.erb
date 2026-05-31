@@ -51,11 +51,7 @@
           <% next if other.nil? %>
           <%= link_to match_path(match), class: "match-item" do %>
             <div class="avatar-wrapper">
-              <% if other.avatar.attached? %>
-                <%= image_tag other.avatar, class: "user-avatar-img" %>
-              <% else %>
-                <%= image_tag "default-avatar.png", class: "user-avatar-img" %>
-              <% end %>
+              <%= image_tag other.avatar_url, class: "user-avatar-img" %>
               <%= image_tag "aurea-dourada-mensagens.svg", class: "gold-ring-overlay" %>
             </div>
             <span class="match-name" style="display: flex; align-items: center; justify-content: center; gap: 3px;">
@@ -103,11 +99,7 @@
           <%= link_to match_path(match), class: "conversation-row" do %>
             
             <div class="conv-avatar-container">
-              <% if other.avatar.attached? %>
-                <%= image_tag other.avatar, class: "conv-avatar" %>
-              <% else %>
-                <div class="conv-avatar-placeholder"><%= other.display_name[0] %></div>
-              <% end %>
+              <%= image_tag other.avatar_url, class: "conv-avatar" %>
             </div>
 
             <div class="conv-details">

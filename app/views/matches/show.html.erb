@@ -8,11 +8,7 @@
 
     <div class="header-user-info">
       <%= link_to user_path(@other_user), class: "header-avatar-link" do %>
-        <% if @other_user.avatar.attached? %>
-          <%= image_tag @other_user.avatar, class: "header-avatar" %>
-        <% else %>
-          <div class="header-avatar-placeholder"><%= @other_user.display_name[0] %></div>
-        <% end %>
+        <%= image_tag @other_user.avatar_url, class: "header-avatar" %>
       <% end %>
 
       <div class="header-text">

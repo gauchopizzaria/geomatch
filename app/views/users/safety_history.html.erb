@@ -33,11 +33,7 @@
         <% @blocked_users.each do |user| %>
           <div class="sh-card sh-card-blocked">
             <div class="sh-card-avatar">
-              <% if user.avatar.attached? %>
-                <%= image_tag user.avatar, class: "sh-avatar-img" %>
-              <% else %>
-                <div class="sh-avatar-placeholder"><%= user.display_name[0].upcase %></div>
-              <% end %>
+              <%= image_tag user.avatar_url, class: "sh-avatar-img" %>
             </div>
 
             <div class="sh-card-info">

@@ -3,12 +3,17 @@ class NotificationsController < ApplicationController
   before_action :authenticate_user!
 
   def index
+    photo_includes = { avatar_attachment: :blob, album_photos_attachments: :blob }
+
     # 1. Notificações (Quem te curtiu)
-    @notifications = current_user.notifications.order(created_at: :desc)
+    @notifications = current_user.notifications
+      .includes(actor: photo_includes)
+      .order(created_at: :desc)
 
     # 2. Quem VOCÊ curtiu
-    # CORREÇÃO AQUI: Trocamos 'user_id' por 'liker_id' conforme o erro do banco
-    @my_likes = Like.where(liker_id: current_user.id).order(created_at: :desc)
+    @my_likes = Like.where(liker_id: current_user.id)
+      .includes(liked: photo_includes)
+      .order(created_at: :desc)
 
     # Marca todas como lidas ao visitar a página
     current_user.notifications.unread.update_all(read_at: Time.current)

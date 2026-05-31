@@ -38,7 +38,7 @@ class UsersController < ApplicationController
 
   # Histórico: bloqueados + denúncias enviadas
   def safety_history
-    @blocked_users = current_user.blocked_users.includes(:avatar_attachment)
+    @blocked_users = current_user.blocked_users.includes(:avatar_attachment, album_photos_attachments: :blob)
     @my_reports    = current_user.reports_sent.order(created_at: :desc)
     respond_to do |format|
       format.html
@@ -468,7 +468,7 @@ end
 
   def build_user_photos_urls(user)
     urls = []
-    urls << rails_blob_path(user.avatar, only_path: true) if user.avatar.attached?
+    urls << rails_blob_path(user.avatar, only_path: true) if user.has_real_avatar?
     user.album_photos.each { |p| urls << rails_blob_path(p, only_path: true) }
     urls
   rescue => e
@@ -485,7 +485,11 @@ end
       username:      user.display_name.presence || user.username,
       lat:           lat,
       lng:           lng,
-      avatar_url:    user.avatar.attached? ? rails_blob_path(user.avatar, only_path: true) : nil,
+      avatar_url:    if user.has_real_avatar?
+                       rails_blob_path(user.avatar, only_path: true)
+                     elsif (first = user.album_photos.first)
+                       rails_blob_path(first, only_path: true)
+                     end,
       photos_urls:   build_user_photos_urls(user),
       verified:      user.verified?,
       bio:           user.bio,

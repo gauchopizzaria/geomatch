@@ -9,11 +9,7 @@
   <%= link_to link_target, class: "like-card-link #{'trigger-upgrade-modal' if is_locked}" do %>
     
     <%# --- FOTO (O CSS cuida do Blur se tiver a classe 'locked') --- %>
-    <% if actor.avatar.attached? %>
-      <%= image_tag actor.avatar, class: "like-card-img" %>
-    <% else %>
-      <%= image_tag "default-avatar.png", class: "like-card-img" %>
-    <% end %>
+    <%= image_tag actor.avatar_url, class: "like-card-img" %>
 
     <%# --- GRADIENTE (Sempre visível para ler o texto) --- %>
     <div class="like-card-gradient"></div>

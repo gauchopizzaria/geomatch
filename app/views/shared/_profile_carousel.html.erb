@@ -8,7 +8,7 @@
 <% pc_gradient = local_assigns.fetch(:show_gradient, true) %>
 
 <% pc_photos = [] %>
-<% pc_photos << pc_user.avatar        if pc_user.avatar.attached? %>
+<% pc_photos << pc_user.avatar if pc_user.has_real_avatar? %>
 <% pc_user.album_photos.each { |p| pc_photos << p } if pc_user.album_photos.attached? %>
 
 <div class="pc-wrapper" data-controller="carousel">

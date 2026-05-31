@@ -14,9 +14,12 @@ class MatchesController < ApplicationController
       .pluck("messages.match_id")
 
     # 2. Carrega matches iniciados preservando a ordem
+    avatar_includes = { avatar_attachment: :blob, album_photos_attachments: :blob }
+    user_photo_includes = { user: avatar_includes, matched_user: avatar_includes }
+
     @matches_initiated = if initiated_ids_ordered.any?
       matches_hash = Match.where(id: initiated_ids_ordered)
-                          .includes(:user, :matched_user)
+                          .includes(user_photo_includes)
                           .index_by(&:id)
       initiated_ids_ordered.map { |id| matches_hash[id] }.compact
     else
@@ -28,7 +31,7 @@ class MatchesController < ApplicationController
     @matches_uninitiated = Match
       .where("user_id = ? OR matched_user_id = ?", current_user.id, current_user.id)
       .where.not(id: initiated_ids_ordered)
-      .includes(:user, :matched_user)
+      .includes(user_photo_includes)
       .select do |match|
         other = match.other_user(current_user)
         next false if other.nil?

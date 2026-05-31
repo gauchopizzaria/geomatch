@@ -243,21 +243,25 @@ class User < ApplicationRecord
     end
   end
 
+  def has_real_avatar?
+    avatar.attached? && avatar.blob.filename.to_s != "avatarfoto.jpg"
+  end
+
   def avatar_or_default
-    avatar.attached? ? avatar : "avatarfoto.jpg"
+    if has_real_avatar?
+      avatar
+    elsif (first = album_photos.first)
+      first
+    else
+      "avatarfoto.jpg"
+    end
   end
 
   def avatar_url
     helpers = Rails.application.routes.url_helpers
-    # O callback attach_default_avatar sempre anexa "avatarfoto.jpg" como blob
-    # ao criar o usuário. Precisamos distinguir esse placeholder de uma foto real;
-    # se for o placeholder, tratamos como "sem avatar" e caímos no album_photos.
-    has_real_avatar = avatar.attached? && avatar.blob.filename.to_s != "avatarfoto.jpg"
-
-    if has_real_avatar
+    if has_real_avatar?
       helpers.url_for(avatar)
     elsif (first_album = album_photos.first)
-      # Callers devem pré-carregar via .with_attached_album_photos para evitar N+1.
       helpers.url_for(first_album)
     else
       ActionController::Base.helpers.asset_path("avatarfoto.jpg")
