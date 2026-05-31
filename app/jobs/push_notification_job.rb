@@ -105,10 +105,13 @@ class PushNotificationJob < ApplicationJob
                      Apnotic::Connection.new(connection_options)
                    end
 
-      notification              = Apnotic::Notification.new(recipient.apns_token)
-      notification.alert        = { title: title, body: body }
+      notification               = Apnotic::Notification.new(recipient.apns_token)
+      notification.alert         = { title: title, body: body }
+      notification.sound         = "default"  # toca som padrão e vibra no iOS
+      notification.push_type     = "alert"    # apns-push-type: alert — obrigatório iOS 13+
+      notification.priority      = 10         # entrega imediata; acorda o dispositivo
       notification.custom_payload = { url: url }
-      notification.topic        = ENV.fetch("APNS_TOPIC", "br.com.geomatch.app")
+      notification.topic         = ENV.fetch("APNS_TOPIC", "br.com.geomatch.app")
 
       response = connection.push(notification)
 
