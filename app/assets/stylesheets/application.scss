@@ -101,7 +101,9 @@
 }
 
 // 🌙 Modo Escuro
-.dark-mode {
+// .dark-mode → classe do nosso JS (toggle explícito)
+// html.dark:not(.light-mode) → classe injetada pelo iOS WebView, ignorada quando usuário escolheu light explicitamente
+.dark-mode, html.dark:not(.light-mode) {
   --color-background: #121212;
   --color-text: #f8f2e7;
   --color-dark: #f8f2e7; // Inversão para manter legibilidade
@@ -167,10 +169,9 @@
   box-sizing: border-box;
 }
 
-html.dark-mode, body.dark-mode {
+html.dark-mode, html.dark:not(.light-mode), body.dark-mode {
   --color-background: #121212;
   --color-text: #f8f2e7;
-  // ... outras variáveis de dark mode
 }
 
 
@@ -1112,7 +1113,7 @@ html, body {
     height: 8px;
     background-color: #ff4b4b;
     border-radius: 50%;
-    border: 2px solid #0e0e10;
+    border: 2px solid var(--color-background);
   }
 }
 

@@ -43,7 +43,9 @@ export default class extends Controller {
     const max = parseFloat(input.max) || 100
     const val = parseFloat(input.value)
     const pct = ((val - min) / (max - min)) * 100
-    const trackBg = document.documentElement.classList.contains("dark-mode") ? TRACK_DARK : TRACK_LIGHT
+    const html = document.documentElement
+    const isDark = html.classList.contains("dark-mode") || (html.classList.contains("dark") && !html.classList.contains("light-mode"))
+    const trackBg = isDark ? TRACK_DARK : TRACK_LIGHT
     input.style.background =
       `linear-gradient(to right, #F4DFC4 0%, #C9A079 ${pct}%, ${trackBg} ${pct}%, ${trackBg} 100%)`
   }

@@ -120,7 +120,7 @@
   height: 64px;
   border-radius: 50%;
   object-fit: cover;
-  border: 2px solid #000;
+  border: 2px solid var(--color-background);
 }
 
 /* Aurea Dourada */
@@ -185,7 +185,7 @@
   align-items: center;
   justify-content: center;
   z-index: 6;
-  border: 2px solid #0e0e10;
+  border: 2px solid var(--color-background);
 }
 
 /* --- 3. CONVERSAS --- */
@@ -322,8 +322,8 @@
 .msg-prefix { color: var(--color-text-secondary); margin-right: 4px; }
 
 .badge-your-turn {
-  background-color: #fff;
-  color: #000;
+  background-color: var(--color-section-light);
+  color: var(--color-text);
   font-size: 0.65rem;
   font-weight: 700;
   padding: 2px 8px;

@@ -20,6 +20,7 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="Geomatch">
+<meta name="color-scheme" content="light dark">
 
 <meta name="mapbox-token" content="<%= ENV['MAPBOX_TOKEN'] %>">
 
@@ -175,10 +176,16 @@
 
    <script>
   (function() {
-    const theme = localStorage.getItem('theme-preference') || 
-                 (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark-mode');
+    const stored = localStorage.getItem('theme-preference');
+    const html = document.documentElement;
+    if (stored === 'dark') {
+      html.classList.add('dark-mode');
+      html.classList.remove('light-mode');
+    } else if (stored === 'light') {
+      html.classList.remove('dark-mode');
+      html.classList.add('light-mode');
+    } else if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      html.classList.add('dark-mode');
     }
   })();
 </script>

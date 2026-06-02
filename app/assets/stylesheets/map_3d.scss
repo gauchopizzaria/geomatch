@@ -61,9 +61,9 @@
     perspective: 1000px;
 }
 
-/* Container do Mapa com fundo claro */
+/* Container do Mapa */
 #map-3d {
-    background-color: #f0f0f0;
+    background-color: var(--color-section-gray);
 }
 
 /* Marcador estilo Apple/Uber */
@@ -76,11 +76,11 @@
 .marker-content {
     width: 50px;
     height: 50px;
-    background: white;
+    background: var(--color-section-light);
     border-radius: 12px; /* Bordas arredondadas estilo iOS */
     padding: 3px;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-    border: 2px solid white;
+    border: 2px solid var(--color-section-light);
 }
 
 .marker-content img {
