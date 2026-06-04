@@ -721,6 +721,7 @@
     height: 100%;
     overflow-x: auto;
     scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
     scrollbar-width: none;
     -webkit-overflow-scrolling: touch;
     &::-webkit-scrollbar { display: none; }
@@ -736,30 +737,42 @@
     display: block;
     user-select: none;
     -webkit-user-drag: none;
+    pointer-events: none;
   }
 
-  // Pontinhos indicadores
+  // Zonas de toque: tap esquerdo = foto anterior, tap direito = próxima
+  .dsc-tap-zone {
+    position: absolute;
+    top: 0;
+    height: 100%;
+    width: 40%;
+    z-index: 20;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    &.dsc-tap-prev { left: 0; }
+    &.dsc-tap-next { right: 0; }
+  }
+
+  // Barras indicadoras no topo (estilo Stories)
   .dsc-carousel-indicators {
     position: absolute;
-    bottom: 74px;
-    left: 50%;
-    transform: translateX(-50%);
+    top: 10px;
+    left: 8px;
+    right: 8px;
     display: flex;
-    gap: 5px;
+    gap: 4px;
     z-index: 25;
     pointer-events: none;
 
     .dsc-dot {
-      width: 5px;
-      height: 5px;
-      background: rgba(255,255,255,0.45);
-      border-radius: 50%;
-      transition: all 0.25s ease;
+      flex: 1;
+      height: 3px;
+      background: rgba(255,255,255,0.4);
+      border-radius: 2px;
+      transition: background 0.2s ease;
 
       &.active {
-        background: #fff;
-        width: 16px;
-        border-radius: 8px;
+        background: rgba(255,255,255,0.95);
       }
     }
   }

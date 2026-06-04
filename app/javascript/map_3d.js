@@ -652,21 +652,55 @@ function showUserPopup(user) {
       : [user.avatar_url || '/default-avatar.png'];
 
     carousel.innerHTML = photos
-      .map(url => `<img src="${url}" class="dsc-carousel-slide" loading="lazy" draggable="false">`)
+      .map(url => `<img src="${url}" class="dsc-carousel-slide" draggable="false">`)
       .join('');
     carousel.scrollLeft = 0;
+
+    // Limpa zonas de toque do usuário anterior
+    carousel.parentElement.querySelectorAll('.dsc-tap-zone').forEach(z => z.remove());
 
     if (dotsWrap) {
       dotsWrap.innerHTML = photos.length > 1
         ? photos.map((_, i) => `<span class="dsc-dot${i === 0 ? ' active' : ''}"></span>`).join('')
         : '';
 
-      carousel.onscroll = () => {
-        const idx = Math.round(carousel.scrollLeft / carousel.offsetWidth);
+      const updateDots = () => {
+        const idx = Math.round(carousel.scrollLeft / Math.max(carousel.offsetWidth, 1));
         dotsWrap.querySelectorAll('.dsc-dot').forEach((d, i) =>
           d.classList.toggle('active', i === idx)
         );
       };
+
+      // scrollend dispara uma vez ao parar (preciso); fallback com debounce para browsers antigos
+      if ('onscrollend' in window) {
+        carousel.onscrollend = updateDots;
+        carousel.onscroll = null;
+      } else {
+        let t;
+        carousel.onscroll = () => { clearTimeout(t); t = setTimeout(updateDots, 80); };
+      }
+
+      if (photos.length > 1) {
+        const goTo = (idx) => carousel.scrollTo({ left: idx * carousel.offsetWidth, behavior: 'smooth' });
+        const wrapper = carousel.parentElement;
+
+        const prev = document.createElement('div');
+        prev.className = 'dsc-tap-zone dsc-tap-prev';
+        prev.addEventListener('click', () => {
+          const cur = Math.round(carousel.scrollLeft / Math.max(carousel.offsetWidth, 1));
+          if (cur > 0) goTo(cur - 1);
+        });
+
+        const next = document.createElement('div');
+        next.className = 'dsc-tap-zone dsc-tap-next';
+        next.addEventListener('click', () => {
+          const cur = Math.round(carousel.scrollLeft / Math.max(carousel.offsetWidth, 1));
+          if (cur < photos.length - 1) goTo(cur + 1);
+        });
+
+        wrapper.appendChild(prev);
+        wrapper.appendChild(next);
+      }
     }
   }
 
