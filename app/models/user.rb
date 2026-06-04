@@ -277,7 +277,12 @@ class User < ApplicationRecord
   end
 
   def display_name
-    username.presence || email&.split('@')&.first || "Usuário"
+    if username.present?
+      parts = username.split
+      parts.size > 1 ? "#{parts.first} #{parts.last}" : parts.first
+    else
+      email&.split('@')&.first || "Usuário"
+    end
   end
   
   def age
