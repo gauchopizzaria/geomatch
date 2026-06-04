@@ -3,15 +3,15 @@
 // =========================================================
 
 .safety-wrapper {
-  background-color: #050507; /* Fundo bem escuro */
+  background-color: var(--color-background);
   min-height: 100vh;
   width: 100%;
   font-family: 'Poppins', sans-serif;
-  color: #fff;
+  color: var(--color-text);
   display: flex;
   flex-direction: column;
-  overflow-y: auto; 
-  padding-bottom: 80px; /* Espaço para não cobrir o item 4 */
+  overflow-y: auto;
+  padding-bottom: 80px;
 }
 
 /* --- 1. HEADER --- */
@@ -39,6 +39,11 @@
   width: 28px;
   height: 28px;
   object-fit: contain;
+  filter: brightness(0); // PNG branco → preto no modo claro
+
+  .dark-mode & {
+    filter: none; // mantém branco no modo escuro
+  }
 }
 
 .header-text-block {
@@ -56,7 +61,7 @@
 
 .subtitle {
   font-size: 0.75rem;
-  color: #ccc;
+  color: var(--color-text-secondary);
   margin: 0;
   font-weight: 400;
 }
@@ -77,9 +82,9 @@
   flex: 1;
 }
 
-.section-label {
+.safety-wrapper .section-label {
   font-size: 0.9rem;
-  color: #fff;
+  color: var(--color-text);
   margin-bottom: 15px;
   font-weight: 500;
 }
@@ -167,13 +172,13 @@
 
 /* --- 3. FOOTER (INSTRUÇÕES) --- */
 .safety-footer {
-  background-color: #e3e3e3; /* Cinza claro */
+  background-color: var(--color-section-gray);
   border-top-left-radius: 25px;
   border-top-right-radius: 25px;
   padding: 30px 25px;
   margin-top: 30px;
-  color: #1a1a1a;
-  flex-shrink: 0; /* Impede que a caixa cinza seja "espremida" */
+  color: var(--color-text);
+  flex-shrink: 0;
   margin-bottom: 0;
 }
 
@@ -216,13 +221,13 @@
     strong {
       font-size: 0.9rem;
       font-weight: 600;
-      color: #000;
+      color: var(--color-text);
     }
-    
+
     p {
       margin: 0;
       font-size: 0.8rem;
-      color: #555;
+      color: var(--color-text-secondary);
       line-height: 1.3;
     }
   }
