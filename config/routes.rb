@@ -218,6 +218,7 @@ Rails.application.routes.draw do
           member do
             patch :verify_user
             patch :reject_photo
+            patch :undo_rejection
             patch :ban_user
             post  :reanalyze
           end

@@ -10,26 +10,27 @@ module Api
       class ModerationController < BaseController
         PAGE_SIZE = 20
 
-        # Usuários com verification_photo anexada e ainda não verificados
+        # Lista pendentes, verificados e recusados
         def index
           pending_users  = pending_scope.page(params[:page]).per(PAGE_SIZE)
           verified_users = verified_scope.page(params[:page]).per(PAGE_SIZE)
+          rejected_users = rejected_scope.page(params[:page]).per(PAGE_SIZE)
 
-          Rails.logger.debug "[Moderation#index] Pendentes encontrados: #{pending_scope.count}"
-          Rails.logger.debug "[Moderation#index] Verificados encontrados: #{verified_scope.count}"
+          Rails.logger.debug "[Moderation#index] Pendentes: #{pending_scope.count} | Verificados: #{verified_scope.count} | Recusados: #{rejected_scope.count}"
 
           render json: {
             pending:  pending_users.map  { |u| serialize(u) },
             verified: verified_users.map { |u| serialize(u) },
+            rejected: rejected_users.map { |u| serialize(u) },
             pagination: {
-              current_page: pending_users.current_page,
-              total_pages:  pending_users.total_pages,
-              total_count:  pending_users.total_count
+              current_page:  pending_users.current_page,
+              total_pages:   pending_users.total_pages,
+              total_count:   pending_users.total_count
             }
           }
         rescue => e
           Rails.logger.error "[Moderation#index] Erro: #{e.message}"
-          render json: { pending: [], verified: [], pagination: { current_page: 1, total_pages: 0, total_count: 0 } }, status: :ok
+          render json: { pending: [], verified: [], rejected: [], pagination: { current_page: 1, total_pages: 0, total_count: 0 } }, status: :ok
         end
 
         # Marca usuário como verificado e remove a foto de verificação
@@ -75,6 +76,20 @@ module Api
           api_not_found("Usuário não encontrado.")
         end
 
+        # Reverte a rejeição automática, zerando o status para o usuário reenviar a foto
+        def undo_rejection
+          user = User.find(params[:id])
+          user.update_columns(
+            ai_moderation_status:  nil,
+            ai_moderation_score:   nil,
+            ai_moderation_details: nil
+          )
+          Rails.logger.info "[MODERATION] Rejeição revertida para User##{user.id} (#{user.email})."
+          render json: { id: user.id, message: 'Rejeição revertida. O usuário pode reenviar a foto de verificação.' }
+        rescue ActiveRecord::RecordNotFound
+          api_not_found('Usuário não encontrado.')
+        end
+
         # Bane a conta e remove a foto de verificação
         def ban_user
           user = User.find(params[:id])
@@ -99,6 +114,13 @@ module Api
         def verified_scope
           User
             .where(verified: true, banned_at: nil)
+            .includes(avatar_attachment: :blob)
+            .order(updated_at: :desc)
+        end
+
+        def rejected_scope
+          User
+            .where(ai_moderation_status: "rejected", banned_at: nil)
             .includes(avatar_attachment: :blob)
             .order(updated_at: :desc)
         end

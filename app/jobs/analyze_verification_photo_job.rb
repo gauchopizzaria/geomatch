@@ -27,6 +27,7 @@ class AnalyzeVerificationPhotoJob < ApplicationJob
       Rails.logger.info "[AnalyzeVerificationPhotoJob] User##{user_id} verificado automaticamente pela IA."
     when :rejected
       user.verification_photo.purge
+      UserMailer.verification_rejected(user).deliver_later
       Rails.logger.info "[AnalyzeVerificationPhotoJob] User##{user_id} foto removida pela IA (conteúdo rejeitado)."
     when :manual_review
       Rails.logger.info "[AnalyzeVerificationPhotoJob] User##{user_id} encaminhado para revisão manual."
