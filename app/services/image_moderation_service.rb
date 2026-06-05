@@ -34,7 +34,7 @@ class ImageModerationService
     # --- 2. Rosto ---
     if response.face_annotations.empty?
       Rails.logger.info "[ImageModerationService] Nenhum rosto detectado na imagem."
-      return { status: :manual_review, score: 0.5, details: { reason: "no_face_detected" } }
+      return { status: :rejected, score: 0.0, details: { reason: "no_face_detected" } }
     end
 
     # --- 3. OCR — nome esperado no texto da foto ---
