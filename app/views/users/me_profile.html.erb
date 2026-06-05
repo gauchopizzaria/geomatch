@@ -51,8 +51,69 @@
 
   </div>
 
-  <%# --- 3. BANNER VERIFICAÇÃO (Lógica condicional) --- %>
-  <% unless @user&.verified? %>
+  <%# --- 3. BANNER VERIFICAÇÃO (Lógica condicional por status de moderação) --- %>
+  <% if @user&.verified? %>
+    <%# Estado 4: Verificado — selo verde %>
+    <div class="verification-banner" style="cursor:default;border-color:rgba(34,197,94,.35);background:rgba(34,197,94,.06)">
+      <div class="icon-box">
+        <%= image_tag "icone-verificar.png", class: "verify-icon-lg" %>
+      </div>
+      <div class="banner-text">
+        <strong style="color:#22c55e">Identidade Verificada!</strong>
+        <p class="banner-description">Obrigado por confirmar seu perfil. Seu selo de usuário verificado já está ativo.</p>
+        <div class="progress-bar-lines">
+          <span class="line full" style="background:#22c55e"></span>
+          <span class="line full" style="background:#22c55e"></span>
+          <span class="line full" style="background:#22c55e"></span>
+        </div>
+      </div>
+    </div>
+
+  <% elsif @user.ai_moderation_status == 'pending' || @user.ai_moderation_status == 'manual_review' %>
+    <%# Estado 2: Em análise — aviso âmbar com ícone de relógio %>
+    <div class="verification-banner" style="cursor:default;border-color:rgba(245,158,11,.35);background:rgba(245,158,11,.06)">
+      <div class="icon-box">
+        <svg width="38" height="38" viewBox="0 0 24 24" fill="none" stroke="var(--color-primary)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="banner-text">
+        <strong>Foto em análise</strong>
+        <p class="banner-description">Sua foto está sendo validada. Nossa equipe está verificando sua identidade e avisaremos em breve.</p>
+      </div>
+    </div>
+
+  <% elsif @user.ai_moderation_status == 'rejected' %>
+    <%# Estado 3: Recusado — alerta vermelho + botão para reenviar %>
+    <%
+      rejection_reasons = {
+        "no_face_detected"        => "Nenhum rosto foi identificado na foto.",
+        "explicit_content"        => "A imagem contém conteúdo inapropriado.",
+        "name_not_found_in_photo" => "Não conseguimos ler o seu nome na imagem.",
+        "api_error"               => "Ocorreu um erro ao processar sua foto."
+      }
+      raw_reason      = @user.ai_moderation_details&.dig("reason").to_s
+      friendly_reason = rejection_reasons.fetch(raw_reason, "Sua foto não pôde ser aprovada.")
+    %>
+    <div class="verification-banner" style="cursor:default;flex-direction:column;gap:0.75rem;border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.06)">
+      <div style="display:flex;align-items:center;gap:0.875rem;width:100%">
+        <div class="icon-box">
+          <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#f87171" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+          </svg>
+        </div>
+        <div class="banner-text">
+          <strong style="color:#f87171">Foto não aprovada</strong>
+          <p class="banner-description"><%= friendly_reason %></p>
+        </div>
+      </div>
+      <%= link_to verification_path, style: "display:block;padding:12px 20px;border-radius:50px;background:var(--color-primary);color:#000;font-weight:700;text-align:center;text-decoration:none;font-size:0.9rem;width:100%;box-sizing:border-box" do %>
+        Enviar nova foto
+      <% end %>
+    </div>
+
+  <% else %>
+    <%# Estado 1: Nenhuma foto enviada ainda — banner padrão com link %>
     <%= link_to verification_path, class: "verification-banner" do %>
       <div class="icon-box">
         <%= image_tag "icone-verificar.png", class: "verify-icon-lg" %>
