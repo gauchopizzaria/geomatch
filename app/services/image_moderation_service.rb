@@ -1,8 +1,8 @@
 require "open-uri"
 
 class ImageModerationService
-  # Limites de likelihood do Google Vision (4 = LIKELY, 5 = VERY_LIKELY)
-  EXPLICIT_THRESHOLD = 4
+  # Níveis de SafeSearch do Google Vision que configuram rejeição automática
+  REJECT_LIKELIHOODS = %i[POSSIBLE LIKELY VERY_LIKELY].freeze
 
   def self.analyze_image(image_url, expected_name = nil)
     image_annotator = Google::Cloud::Vision.image_annotator
@@ -26,8 +26,8 @@ class ImageModerationService
 
     # --- 1. Conteúdo explícito ---
     safe = response.safe_search_annotation
-    if safe && ([safe.adult, safe.violence].any? { |l| l >= EXPLICIT_THRESHOLD })
-      Rails.logger.info "[ImageModerationService] Conteúdo explícito detectado (adult=#{safe.adult} violence=#{safe.violence})"
+    if safe && ([safe.adult, safe.violence, safe.racy].any? { |l| REJECT_LIKELIHOODS.include?(l) })
+      Rails.logger.info "[ImageModerationService] Conteúdo explícito detectado (adult=#{safe.adult} violence=#{safe.violence} racy=#{safe.racy})"
       return { status: :rejected, score: 0.1, details: { reason: "explicit_content" } }
     end
 
