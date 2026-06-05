@@ -45,8 +45,8 @@ class ImageModerationService
     unless name_found
       Rails.logger.info "[ImageModerationService] Nome '#{expected_name}' não encontrado no texto extraído."
       return {
-        status:  :manual_review,
-        score:   0.7,
+        status:  :rejected,
+        score:   0.0,
         details: { reason: "name_not_found_in_photo", extracted_text: extracted_raw }
       }
     end
