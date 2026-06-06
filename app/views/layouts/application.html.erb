@@ -122,7 +122,7 @@
           <div class="footer-column">
             <h4>Ajuda</h4>
             <ul>
-              <li><%= link_to "Central de Ajuda", "#" %></li>
+              <li><%= link_to "Central de Suporte", "/suporte" %></li>
               <li><%= link_to "Centro de Segurança", "#" %></li>
               <li><%= link_to "Relatório de Confiança", "#" %></li>
               <li><%= link_to "Contato", "#" %></li>
@@ -153,11 +153,11 @@
           <div class="app-links">
             <p>Baixe o app:</p>
             <%= link_to image_tag("appstore.png", alt: "Baixe no App Store"), "#" %>
-            <%= link_to image_tag("googleplay.png", alt: "Baixe no Google Play"), "#" %>
+            <%= link_to image_tag("googleplay.png", alt: "Baixe no Google Play"), "https://play.google.com/store/apps/details?id=com.geomatch.app", target: "_blank", rel: "noopener" %>
           </div>
 
           <p class="copyright">
-            © 2006 – <%= Time.current.year %> GeoMatch. Todos os direitos reservados.
+            © <%= Time.current.year %> GeoMatch. Todos os direitos reservados.
           </p>
         </div>
       </div>
