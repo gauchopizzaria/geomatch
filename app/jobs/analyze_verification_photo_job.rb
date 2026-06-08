@@ -4,14 +4,17 @@ class AnalyzeVerificationPhotoJob < ApplicationJob
   def perform(user_id)
     user = User.find(user_id)
 
-    unless user.verification_photo.attached?
-      Rails.logger.info "[AnalyzeVerificationPhotoJob] User##{user_id} sem verification_photo anexada. Pulando."
+    unless user.document_front.attached? && user.document_back.attached? && user.selfie_with_document.attached?
+      Rails.logger.info "[AnalyzeVerificationPhotoJob] User##{user_id} não possui todas as fotos KYC. Pulando."
       return
     end
 
-    image_url = user.verification_photo.url
-
-    result = ImageModerationService.analyze_image(image_url, user.display_name)
+    result = ImageModerationService.analyze_kyc(
+      document_front_url: user.document_front.url,
+      document_back_url:  user.document_back.url,
+      selfie_url:         user.selfie_with_document.url,
+      expected_name:      user.display_name
+    )
 
     user.update_columns(
       ai_moderation_status:  result[:status].to_s,
@@ -26,9 +29,11 @@ class AnalyzeVerificationPhotoJob < ApplicationJob
       user.update(verified: true)
       Rails.logger.info "[AnalyzeVerificationPhotoJob] User##{user_id} verificado automaticamente pela IA."
     when :rejected
-      user.verification_photo.purge
+      user.document_front.purge
+      user.document_back.purge
+      user.selfie_with_document.purge
       UserMailer.verification_rejected(user).deliver_later
-      Rails.logger.info "[AnalyzeVerificationPhotoJob] User##{user_id} foto removida pela IA (conteúdo rejeitado)."
+      Rails.logger.info "[AnalyzeVerificationPhotoJob] User##{user_id} documentos removidos pela IA (KYC rejeitado)."
     when :manual_review
       Rails.logger.info "[AnalyzeVerificationPhotoJob] User##{user_id} encaminhado para revisão manual."
     end

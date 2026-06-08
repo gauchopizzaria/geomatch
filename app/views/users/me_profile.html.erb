@@ -78,8 +78,8 @@
         </svg>
       </div>
       <div class="banner-text">
-        <strong>Foto em análise</strong>
-        <p class="banner-description">Sua foto está sendo validada. Nossa equipe está verificando sua identidade e avisaremos em breve.</p>
+        <strong>Documentos em análise</strong>
+        <p class="banner-description">Seus documentos estão sendo validados. Nossa equipe está verificando sua identidade e avisaremos em breve.</p>
       </div>
     </div>
 
@@ -87,13 +87,16 @@
     <%# Estado 3: Recusado — alerta vermelho + botão para reenviar %>
     <%
       rejection_reasons = {
-        "no_face_detected"        => "Nenhum rosto foi identificado na foto.",
-        "explicit_content"        => "A imagem contém conteúdo inapropriado.",
-        "name_not_found_in_photo" => "Não conseguimos ler o seu nome na imagem.",
-        "api_error"               => "Ocorreu um erro ao processar sua foto."
+        "no_face_in_selfie"           => "Nenhum rosto foi identificado na selfie.",
+        "explicit_content"            => "Uma das imagens contém conteúdo inapropriado.",
+        "name_not_found_in_document"  => "Não conseguimos ler o seu nome no documento enviado.",
+        "face_mismatch"               => "O rosto da selfie não corresponde ao documento.",
+        "api_error"                   => "Ocorreu um erro ao processar os documentos.",
+        "no_face_detected"            => "Nenhum rosto foi identificado na foto.",
+        "name_not_found_in_photo"     => "Não conseguimos ler o seu nome na imagem."
       }
       raw_reason      = @user.ai_moderation_details&.dig("reason").to_s
-      friendly_reason = rejection_reasons.fetch(raw_reason, "Sua foto não pôde ser aprovada.")
+      friendly_reason = rejection_reasons.fetch(raw_reason, "Seus documentos não puderam ser aprovados.")
     %>
     <div class="verification-banner" style="cursor:default;flex-direction:column;gap:0.75rem;border-color:rgba(239,68,68,.35);background:rgba(239,68,68,.06)">
       <div style="display:flex;align-items:center;gap:0.875rem;width:100%">
@@ -103,12 +106,12 @@
           </svg>
         </div>
         <div class="banner-text">
-          <strong style="color:#f87171">Foto não aprovada</strong>
+          <strong style="color:#f87171">Documentos não aprovados</strong>
           <p class="banner-description"><%= friendly_reason %></p>
         </div>
       </div>
       <%= link_to verification_path, style: "display:block;padding:12px 20px;border-radius:50px;background:var(--color-primary);color:#000;font-weight:700;text-align:center;text-decoration:none;font-size:0.9rem;width:100%;box-sizing:border-box" do %>
-        Enviar nova foto
+        Enviar novos documentos
       <% end %>
     </div>
 

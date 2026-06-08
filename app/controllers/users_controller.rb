@@ -434,29 +434,34 @@ end
     # Se o usuário já enviou uma foto antes, podemos mostrar um aviso ou status
   end
 
-  # Processa o envio da foto
+  # Processa o envio dos documentos KYC (frente, verso e selfie)
   def send_verification
-    if params[:verification_photo].present?
-      Rails.logger.info "[send_verification] Recebendo foto de verificação para o usuário #{current_user.id}"
-      begin
-        current_user.verification_photo.attach(params[:verification_photo])
-        current_user.update_columns(
-          ai_moderation_status:  "pending",
-          ai_moderation_score:   nil,
-          ai_moderation_details: nil
-        )
-        AnalyzeVerificationPhotoJob.perform_later(current_user.id)
-        flash[:notice] = "Solicitação enviada com sucesso! Nossa equipe analisará seu perfil."
-        redirect_to my_profile_path
-      rescue => e
-        Rails.logger.error "[send_verification] Erro ao anexar foto para User##{current_user.id}: #{e.message}"
-        Rails.logger.error "[send_verification] Erros do modelo: #{current_user.errors.full_messages}"
-        flash[:alert] = "Erro ao salvar a foto. Tente novamente."
-        render :verification
-      end
-    else
-      Rails.logger.error "### FOTO NÃO RECEBIDA ### params: #{params.to_unsafe_h.keys}"
-      flash[:alert] = "Por favor, selecione uma foto para enviar."
+    front  = params[:document_front]
+    back   = params[:document_back]
+    selfie = params[:selfie_with_document]
+
+    unless front.present? && back.present? && selfie.present?
+      Rails.logger.error "[send_verification] Documentos incompletos para User##{current_user.id}. Recebidos: #{params.to_unsafe_h.keys}"
+      flash[:alert] = "Por favor, envie as três fotos obrigatórias para continuar."
+      render :verification and return
+    end
+
+    begin
+      Rails.logger.info "[send_verification] Anexando documentos KYC para User##{current_user.id}"
+      current_user.document_front.attach(front)
+      current_user.document_back.attach(back)
+      current_user.selfie_with_document.attach(selfie)
+      current_user.update_columns(
+        ai_moderation_status:  "pending",
+        ai_moderation_score:   nil,
+        ai_moderation_details: nil
+      )
+      AnalyzeVerificationPhotoJob.perform_later(current_user.id)
+      flash[:notice] = "Documentos enviados com sucesso! Nossa equipe irá analisar seu KYC em breve."
+      redirect_to my_profile_path
+    rescue => e
+      Rails.logger.error "[send_verification] Erro ao anexar documentos para User##{current_user.id}: #{e.message}"
+      flash[:alert] = "Erro ao salvar os documentos. Tente novamente."
       render :verification
     end
   end

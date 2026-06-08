@@ -46,7 +46,9 @@ class User < ApplicationRecord
   # Active Storage
   has_one_attached :avatar
   has_one_attached :avatar_original
-  has_one_attached :verification_photo
+  has_one_attached :document_front
+  has_one_attached :document_back
+  has_one_attached :selfie_with_document
   has_many_attached :album_photos
 
   # Enum de escolaridade (coluna integer no banco)

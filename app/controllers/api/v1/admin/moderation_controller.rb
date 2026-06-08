@@ -45,23 +45,23 @@ module Api
           render json: { error: e.message }, status: :unprocessable_entity
         end
 
-        # Remove a foto de verificação (sem verificar)
+        # Remove os documentos KYC (sem verificar)
         def reject_photo
           user = User.find(params[:id])
-          reason = params[:reason].presence || 'Foto não corresponde ao perfil.'
-          user.verification_photo.purge_later if user.verification_photo.attached?
-          Rails.logger.info "[MODERATION] Foto recusada para User##{user.id} (#{user.email}). Motivo: #{reason}"
-          render json: { id: user.id, message: 'Foto removida.' }
+          reason = params[:reason].presence || 'Documentos não correspondem ao perfil.'
+          purge_kyc_documents(user)
+          Rails.logger.info "[MODERATION] Documentos recusados para User##{user.id} (#{user.email}). Motivo: #{reason}"
+          render json: { id: user.id, message: 'Documentos removidos.' }
         rescue ActiveRecord::RecordNotFound
           api_not_found('Usuário não encontrado.')
         end
 
-        # Reenfileira a foto para reanálise pela IA
+        # Reenfileira documentos para reanálise pela IA
         def reanalyze
           user = User.find(params[:id])
 
-          unless user.verification_photo.attached?
-            return render json: { success: false, error: "Usuário não possui foto de verificação." },
+          unless user.document_front.attached? && user.document_back.attached? && user.selfie_with_document.attached?
+            return render json: { success: false, error: "Usuário não possui todos os documentos KYC." },
                           status: :unprocessable_entity
           end
 
@@ -76,7 +76,7 @@ module Api
           api_not_found("Usuário não encontrado.")
         end
 
-        # Reverte a rejeição automática, zerando o status para o usuário reenviar a foto
+        # Reverte a rejeição para o usuário reenviar os documentos
         def undo_rejection
           user = User.find(params[:id])
           user.update_columns(
@@ -85,20 +85,20 @@ module Api
             ai_moderation_details: nil
           )
           Rails.logger.info "[MODERATION] Rejeição revertida para User##{user.id} (#{user.email})."
-          render json: { id: user.id, message: 'Rejeição revertida. O usuário pode reenviar a foto de verificação.' }
+          render json: { id: user.id, message: 'Rejeição revertida. O usuário pode reenviar os documentos.' }
         rescue ActiveRecord::RecordNotFound
           api_not_found('Usuário não encontrado.')
         end
 
-        # Bane a conta e remove a foto de verificação
+        # Bane a conta e remove os documentos
         def ban_user
           user = User.find(params[:id])
           return render json: { error: 'Não é possível banir um administrador.' },
                         status: :unprocessable_entity if user.admin?
 
           user.ban!
-          user.verification_photo.purge_later if user.verification_photo.attached?
-          render json: { id: user.id, banned: true, message: 'Conta banida e foto removida.' }
+          purge_kyc_documents(user)
+          render json: { id: user.id, banned: true, message: 'Conta banida e documentos removidos.' }
         rescue ActiveRecord::RecordNotFound
           api_not_found('Usuário não encontrado.')
         end
@@ -107,7 +107,7 @@ module Api
 
         def pending_scope
           User.where(verified: false, banned_at: nil)
-              .joins(:verification_photo_attachment)
+              .joins(:document_front_attachment)
               .order(created_at: :desc)
         end
 
@@ -127,21 +127,29 @@ module Api
 
         def serialize(user)
           {
-            id:                       user.id,
-            name:                     user.display_name,
-            email:                    user.email,
-            created_at:               user.created_at.iso8601,
-            avatar_url:               blob_path(user.avatar),
-            verification_photo_url:   blob_path(user.verification_photo),
-            ai_moderation_status:     user.ai_moderation_status,
-            ai_moderation_score:      user.ai_moderation_score,
-            ai_moderation_details:    user.ai_moderation_details
+            id:                          user.id,
+            name:                        user.display_name,
+            email:                       user.email,
+            created_at:                  user.created_at.iso8601,
+            avatar_url:                  blob_path(user.avatar),
+            document_front_url:          blob_path(user.document_front),
+            document_back_url:           blob_path(user.document_back),
+            selfie_with_document_url:    blob_path(user.selfie_with_document),
+            ai_moderation_status:        user.ai_moderation_status,
+            ai_moderation_score:         user.ai_moderation_score,
+            ai_moderation_details:       user.ai_moderation_details
           }
         end
 
         def blob_path(attachment)
           return nil unless attachment.attached?
           Rails.application.routes.url_helpers.rails_blob_path(attachment, only_path: true)
+        end
+
+        def purge_kyc_documents(user)
+          user.document_front.purge_later          if user.document_front.attached?
+          user.document_back.purge_later           if user.document_back.attached?
+          user.selfie_with_document.purge_later    if user.selfie_with_document.attached?
         end
       end
     end
