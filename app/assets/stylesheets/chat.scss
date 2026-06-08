@@ -14,7 +14,9 @@
   left: 0;
   width: 100%;
   max-width: 100vw;
-  height: 100dvh; /* dvh: exclui barras do Safari automaticamente */
+  /* svh (small viewport) exclui barras do browser; o JS substitui com vv.height ao abrir teclado */
+  height: 100svh;
+  height: 100dvh; /* override com dvh para browsers que suportam */
   z-index: 2000;
   display: flex;
   flex-direction: column;

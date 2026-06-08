@@ -565,34 +565,45 @@ document.addEventListener('turbo:load', () => {
   }
 
   // =======================================================
-  //   AJUSTE DE TECLADO (iOS)
+  //   AJUSTE DE TECLADO — Safari PWA + WkWebView (iOS app)
   // =======================================================
   const chatWrapper = document.querySelector('.chat-screen-wrapper');
 
   function adjustToViewport() {
-    if (!chatWrapper || !window.visualViewport) return;
-    const vv = window.visualViewport;
-    chatWrapper.style.height = vv.height + 'px';
-    chatWrapper.style.top    = vv.offsetTop + 'px';
+    if (!chatWrapper) return;
+    // visualViewport é preciso no Safari; em WkWebView pode não atualizar
+    // window.innerHeight é o fallback confiável no WkWebView
+    const vv     = window.visualViewport;
+    const height = vv ? vv.height   : window.innerHeight;
+    const top    = vv ? vv.offsetTop : 0;
+    chatWrapper.style.height = height + 'px';
+    chatWrapper.style.top    = top    + 'px';
     requestAnimationFrame(scrollToBottom);
   }
 
+  // visualViewport.resize — funciona no Safari browser
   if (window.visualViewport) {
     window.visualViewport.addEventListener('resize', adjustToViewport);
     window.visualViewport.addEventListener('scroll', adjustToViewport);
   }
+  // window.resize — funciona no WkWebView onde visualViewport.resize pode não disparar
+  window.addEventListener('resize', adjustToViewport);
 
   adjustToViewport();
   requestAnimationFrame(() => { adjustToViewport(); scrollToBottom(); });
 
-  messageInput.addEventListener('focus', () => setTimeout(scrollToBottom, 380));
+  messageInput.addEventListener('focus', () => {
+    // Dois retries para cobrir a animação do teclado iOS (~300ms)
+    setTimeout(() => { adjustToViewport(); scrollToBottom(); }, 120);
+    setTimeout(() => { adjustToViewport(); scrollToBottom(); }, 380);
+  });
 
   messageInput.addEventListener('blur', () => {
     if (chatWrapper) {
       chatWrapper.style.height = '';
       chatWrapper.style.top    = '';
     }
-    requestAnimationFrame(scrollToBottom);
+    setTimeout(scrollToBottom, 100);
   });
 
   // --- Fechar teclado ao tocar na área de mensagens (comportamento WhatsApp) ---
