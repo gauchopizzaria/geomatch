@@ -112,25 +112,22 @@
   </div>
 
   <%# --- 3. INPUT (Barra inferior) --- %>
+  <%# Usamos <div> em vez de <form> para eliminar a barra de navegação de formulário do iOS (^ v ✓) %>
   <div class="chat-input-dark">
-    <%# Botão GIF (Decorativo) %>
-    <button class="btn-gif">GIF</button>
+    <button type="button" class="btn-gif">GIF</button>
 
-    <%= form_with url: match_messages_path(@match), 
-                  method: :post, 
-                  id: "new-message-form", 
-                  class: "dark-form",
-                  data: { remote: true } do |form| %>
-      
-      <%= form.text_field :content, id: "message-input", 
-            placeholder: "Digite uma mensagem", 
-            autocomplete: "off",
-            class: "dark-input" %>
-      
-      <button type="submit" id="send-button" class="btn-send">
-          ➤
-      </button>
-    <% end %>
+    <div id="new-message-form" class="dark-form">
+      <input type="text"
+             id="message-input"
+             placeholder="Digite uma mensagem"
+             autocomplete="off"
+             autocorrect="off"
+             autocapitalize="sentences"
+             enterkeyhint="send"
+             class="dark-input">
+
+      <button type="button" id="send-button" class="btn-send">➤</button>
+    </div>
   </div>
 
 </div>

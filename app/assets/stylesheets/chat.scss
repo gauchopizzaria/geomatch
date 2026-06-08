@@ -331,15 +331,17 @@
 
 /* --- 3. BARRA DE INPUT (Fixo no Rodapé) --- */
 .chat-input-dark {
-  flex-shrink: 0; /* Garante que a barra de input nunca suma ou diminua */
+  flex-shrink: 0;
   width: 100%;
   padding: 10px 15px;
+  /* safe-area-inset-bottom só no estado normal (sem teclado aberto).
+     Quando o teclado está visível o inset vira 0 automaticamente no iOS. */
+  padding-bottom: max(10px, env(safe-area-inset-bottom));
   background-color: var(--color-background);
   border-top: 1px solid var(--color-border);
   display: flex;
   align-items: center;
   gap: 10px;
-  padding-bottom: calc(15px + env(safe-area-inset-bottom));
 }
 
 .btn-gif {

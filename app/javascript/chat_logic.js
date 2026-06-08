@@ -178,18 +178,19 @@ document.addEventListener('turbo:load', () => {
 
   // =======================================================
   //   SUBMIT DA MENSAGEM
+  //   (sem <form>: o envio é disparado pelo botão ou pelo Enter)
   // =======================================================
-  newMessageForm.addEventListener("submit", (e) => {
-    e.preventDefault();
+  const sendButton = document.getElementById('send-button');
+  const messagesUrl = `${window.location.origin}/matches/${matchId}/messages`;
 
+  function sendMessage() {
     const content = messageInput.value.trim();
     if (!content) return;
 
     messageInput.value = "";
-    messageInput.focus();
     matchChannel.sendTypingStatus(false);
 
-    fetch(newMessageForm.action, {
+    fetch(messagesUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -197,10 +198,19 @@ document.addEventListener('turbo:load', () => {
       },
       body: JSON.stringify({ message: { content } }),
     })
-    .then(async (response) => {
+    .then((response) => {
       if (!response.ok) console.error("Erro ao enviar mensagem");
     })
     .catch((error) => console.error(error));
+  }
+
+  if (sendButton) sendButton.addEventListener('click', sendMessage);
+
+  messageInput.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      sendMessage();
+    }
   });
 
   // =======================================================
@@ -584,6 +594,15 @@ document.addEventListener('turbo:load', () => {
     }
     requestAnimationFrame(scrollToBottom);
   });
+
+  // --- Fechar teclado ao tocar na área de mensagens (comportamento WhatsApp) ---
+  // Usa touchstart em fase de captura para pegar o toque antes do long-press
+  chatWindow.addEventListener('touchstart', (e) => {
+    if (document.activeElement !== messageInput) return;
+    const tag = e.target.tagName;
+    if (tag === 'INPUT' || tag === 'TEXTAREA' || tag === 'BUTTON') return;
+    messageInput.blur();
+  }, { passive: true, capture: true });
 
   // =======================================================
   //   DESLIZAR PARA REVELAR HORÁRIOS (estilo Instagram)
