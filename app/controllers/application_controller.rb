@@ -32,10 +32,11 @@ class ApplicationController < ActionController::Base
   # Changes to the importmap will invalidate the etag for HTML responses
   stale_when_importmap_changes
 
-    # Redireciona para /discover_3d após o login
+  # Após login: retorna à página original se foi salva (ex: deep link de notificação iOS).
+  # Fallback para /discover_3d nos acessos diretos ao /sign_in.
   def after_sign_in_path_for(resource)
     resource.touch(:last_location_updated_at)
-    discover_3d_path
+    stored_location_for(resource) || discover_3d_path
   end
 
   private
