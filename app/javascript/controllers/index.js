@@ -48,3 +48,6 @@ application.register("chat-menu", ChatMenuController)
 
 import CropScreenController from "./crop_screen_controller"
 application.register("crop-screen", CropScreenController)
+
+import LandingController from "./landing_controller"
+application.register("landing", LandingController)
