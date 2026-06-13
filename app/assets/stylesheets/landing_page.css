@@ -30,10 +30,15 @@ body {
   background: var(--cream);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
-  overflow-x: hidden;
+  /* overflow-x: hidden removido do body — em iOS Safari cria scroll container alternativo
+     que faz o IntersectionObserver nunca disparar para elementos abaixo do fold */
 }
 
 img { display: block; max-width: 100%; }
+
+/* overflow horizontal contido no wrapper da landing, não no body,
+   para não criar scroll container alternativo no iOS Safari */
+[data-controller="landing"] { overflow-x: hidden; }
 
 .wrap { width: min(1140px, 92vw); margin: 0 auto; }
 
@@ -239,8 +244,9 @@ img { display: block; max-width: 100%; }
 
 .hero {
   position: relative;
-  min-height: 100vh;
-  min-height: 100svh;
+  min-height: 100vh;   /* fallback para browsers antigos */
+  min-height: 100svh;  /* small viewport height: exclui barras de UI */
+  min-height: 100dvh;  /* dynamic viewport height: atualiza quando barra de URL some */
   background: radial-gradient(ellipse at 50% 38%, #14100A 0%, #0A0805 60%, #000 100%);
   color: #F7F1E6;
   display: flex;
