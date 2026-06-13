@@ -30,15 +30,9 @@ body {
   background: var(--cream);
   color: var(--ink);
   -webkit-font-smoothing: antialiased;
-  /* overflow-x: hidden removido do body — em iOS Safari cria scroll container alternativo
-     que faz o IntersectionObserver nunca disparar para elementos abaixo do fold */
 }
 
 img { display: block; max-width: 100%; }
-
-/* overflow horizontal contido no wrapper da landing, não no body,
-   para não criar scroll container alternativo no iOS Safari */
-[data-controller="landing"] { overflow-x: hidden; }
 
 .wrap { width: min(1140px, 92vw); margin: 0 auto; }
 
