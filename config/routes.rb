@@ -15,7 +15,7 @@ Rails.application.routes.draw do
   # =================================================================
   # 2. ROTAS PÚBLICAS E GERAIS
   # =================================================================
-  root "public#landing"
+  root "pages#landing"
 
   # --- NOVAS ROTAS (Termos e Privacidade para o Cadastro) ---
   # Estas rotas apontam para o PagesController criado para o formulário
