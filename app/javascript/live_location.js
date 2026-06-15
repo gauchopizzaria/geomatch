@@ -67,7 +67,17 @@ function startTracking(buttonElement, onLocationChange) {
   console.log("📍 Iniciando rastreamento contínuo...");
 
   if (window.webkit?.messageHandlers?.locationHandler) {
-    window.webkit.messageHandlers.locationHandler.postMessage('startTracking');
+    // Envia o token JWT junto com a ação para que o Swift possa fazer
+    // requisições HTTP diretas a POST /users/update_location em background,
+    // sem depender de evaluateJavaScript (que falha com WKWebView suspenso).
+    // O Swift deve armazenar apiToken e incluí-lo como:
+    //   Authorization: Bearer <apiToken>
+    // O token tem validade de 7 dias e é renovado a cada abertura do app.
+    const apiToken = document.querySelector('meta[name="api-token"]')?.content ?? '';
+    window.webkit.messageHandlers.locationHandler.postMessage({
+      action:   'startTracking',
+      apiToken: apiToken
+    });
   }
 
   watchId = navigator.geolocation.watchPosition(
@@ -123,7 +133,7 @@ function stopTracking(buttonElement) {
   console.log("🛑 Rastreamento contínuo parado.");
 
   if (window.webkit?.messageHandlers?.locationHandler) {
-    window.webkit.messageHandlers.locationHandler.postMessage('stopTracking');
+    window.webkit.messageHandlers.locationHandler.postMessage({ action: 'stopTracking' });
   }
 }
 

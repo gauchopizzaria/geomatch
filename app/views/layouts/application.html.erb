@@ -8,6 +8,10 @@
     <% if user_signed_in? %>
       <meta name="current-user-id" content="<%= current_user.id %>">
       <meta name="user-logged-in" content="true">
+      <%# Token JWT de curta duração para o app nativo iOS fazer requisições diretas
+          em background (sem depender do evaluateJavaScript do WKWebView).
+          Lido por live_location.js e enviado ao Swift via locationHandler bridge. %>
+      <meta name="api-token" content="<%= JwtService.encode(sub: current_user.id, exp: 7.days.from_now.to_i) %>">
     <% end %>
 
     <% if devise_controller? %>

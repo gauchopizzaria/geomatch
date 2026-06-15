@@ -1,5 +1,12 @@
 class UsersController < ApplicationController
   before_action :authenticate_user!
+
+  # update_location aceita dois caminhos de autenticação:
+  #   1. Bearer JWT  — app nativo iOS em background (sem WKWebView ativo, sem CSRF)
+  #   2. Sessão web  — navegador / PWA (Devise session + CSRF normal)
+  skip_before_action :verify_authenticity_token, only: [:update_location]
+  skip_before_action :authenticate_user!,        only: [:update_location]
+  before_action      :authenticate_for_location!, only: [:update_location]
   
   # ==========================================
   #  AÇÕES DE SEGURANÇA E INTERAÇÃO
@@ -64,7 +71,8 @@ class UsersController < ApplicationController
   end
 
   def update_location
-    return head :ok if current_user.invisible
+    user = @location_user
+    return head :ok if user.invisible
 
     lat = params[:latitude].to_f
     lng = params[:longitude].to_f
@@ -73,13 +81,13 @@ class UsersController < ApplicationController
 
     # update_columns ignora callbacks (geocoder, validações) — fundamental para
     # que este endpoint de heartbeat responda rapidamente sem efeitos colaterais.
-    current_user.update_columns(
+    user.update_columns(
       latitude: lat,
       longitude: lng,
       last_seen_at: Time.zone.now,
       last_location_updated_at: Time.zone.now
     )
-    broadcast_map_presence(current_user, lat, lng)
+    broadcast_map_presence(user, lat, lng)
     head :ok
   end
 
@@ -470,6 +478,42 @@ end
   #  PRIVATE
   # ==========================================
   private
+
+  # Autenticação dual para POST /users/update_location.
+  #
+  # Caminho JWT (app nativo iOS em background):
+  #   Header  → Authorization: Bearer <token>
+  #   Token   → JWT gerado por JwtService, exposto via <meta name="api-token">
+  #   CSRF    → não verificado (não há cookie de sessão em requests nativos)
+  #
+  # Caminho web (navegador / PWA):
+  #   Auth    → Devise session (current_user)
+  #   CSRF    → verificado manualmente (presence.js inclui X-CSRF-Token ou
+  #              authenticity_token no corpo para sendBeacon)
+  def authenticate_for_location!
+    auth_header = request.headers['Authorization']
+
+    if auth_header&.start_with?('Bearer ')
+      token          = auth_header.split(' ', 2).last
+      payload        = JwtService.decode(token)
+      @location_user = User.find(payload[:sub])
+    else
+      verify_authenticity_token
+      unless user_signed_in?
+        head :unauthorized
+        return
+      end
+      @location_user = current_user
+    end
+  rescue JWT::ExpiredSignature
+    render json: { error: 'Token expirado' }, status: :unauthorized
+  rescue JWT::DecodeError
+    render json: { error: 'Token inválido' }, status: :unauthorized
+  rescue ActiveRecord::RecordNotFound
+    render json: { error: 'Usuário não encontrado' }, status: :unauthorized
+  rescue ActionController::InvalidAuthenticityToken
+    head :unprocessable_entity
+  end
 
   def build_user_photos_urls(user)
     urls = []
