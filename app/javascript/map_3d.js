@@ -1235,7 +1235,8 @@ document.addEventListener("turbo:load", () => {
       if (isNowTracking) {
         showTrackingToast("✅ Visibilidade em tempo real ligada! Prepare-se para encontros espontâneos.");
         if (window.Android && userId) {
-          window.Android.iniciarRastreioSegundoPlano(userId);
+          const apiToken = document.querySelector('meta[name="api-token"]')?.content ?? '';
+          window.Android.iniciarRastreioSegundoPlano(userId, apiToken);
         }
       } else {
         showTrackingToast("❌ Visibilidade em tempo real desativada. Sua localização não está mais visível.");
@@ -1402,7 +1403,8 @@ document.addEventListener("turbo:load", () => {
       startLiveTracking(map, fabLiveTracking, trackingCallback);
       showTrackingToast("✅ Visibilidade em tempo real ligada! Prepare-se para encontros espontâneos.");
       if (window.Android && userId) {
-        window.Android.iniciarRastreioSegundoPlano(userId);
+        const apiToken = document.querySelector('meta[name="api-token"]')?.content ?? '';
+        window.Android.iniciarRastreioSegundoPlano(userId, apiToken);
       }
     }
   }, 1000);
