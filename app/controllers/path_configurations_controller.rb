@@ -33,6 +33,19 @@ class PathConfigurationsController < ApplicationController
           patterns: ["/onboarding"],
           properties: { context: "default", presentation: "replace" }
         },
+        # Mapa 3D: replace para evitar empilhamento, cache e keep_alive para preservar
+        # o estado do mapa (pins, subscrição ActionCable) ao navegar entre telas.
+        # pull_to_refresh desabilitado pois o mapa tem seu próprio mecanismo de refresh.
+        {
+          patterns: ["/discover_3d"],
+          properties: {
+            context:               "default",
+            presentation:          "replace",
+            pull_to_refresh_enabled: false,
+            cache_enabled:         true,
+            keep_alive:            true
+          }
+        },
         # Rotas de segurança: push padrão sobre a pilha atual
         {
           patterns: [
