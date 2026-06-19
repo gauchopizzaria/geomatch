@@ -12,6 +12,7 @@ export default class extends Controller {
     this.setupReveal()
     this.setupMobileCta()
     this.setupHeroMotion()
+    this.setupHorizontalLock()
   }
 
   disconnect() {
@@ -21,6 +22,8 @@ export default class extends Controller {
       window.removeEventListener("scroll", this._revealOnScroll)
       window.removeEventListener("touchmove", this._revealOnScroll)
     }
+    if (this._onTouchStart) document.removeEventListener("touchstart", this._onTouchStart)
+    if (this._onTouchMove)  document.removeEventListener("touchmove",  this._onTouchMove)
   }
 
   // Duplica o conteúdo das faixas para o loop ser contínuo
@@ -147,5 +150,30 @@ export default class extends Controller {
       schedule()
     })
     hero.addEventListener("mouseleave", () => { rx = 0; ry = 0; schedule() })
+  }
+
+  // Bloqueia rubber-band horizontal no iOS Safari.
+  // CSS (touch-action, overscroll-behavior) não é suficiente em versões antigas —
+  // preventDefault() no touchmove é a única garantia universal.
+  setupHorizontalLock() {
+    let startX = 0, startY = 0
+
+    this._onTouchStart = (e) => {
+      if (e.touches.length !== 1) return
+      startX = e.touches[0].clientX
+      startY = e.touches[0].clientY
+    }
+
+    this._onTouchMove = (e) => {
+      if (e.touches.length !== 1) return
+      const dx = Math.abs(e.touches[0].clientX - startX)
+      const dy = Math.abs(e.touches[0].clientY - startY)
+      // Bloqueia somente quando o gesto é predominantemente horizontal
+      if (dx > dy && dx > 5) e.preventDefault()
+    }
+
+    document.addEventListener("touchstart", this._onTouchStart, { passive: true })
+    // passive: false obrigatório para que preventDefault() funcione
+    document.addEventListener("touchmove", this._onTouchMove, { passive: false })
   }
 }
