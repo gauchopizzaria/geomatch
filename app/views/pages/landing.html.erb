@@ -14,7 +14,7 @@
 <header class="topbar">
   <div class="wrap">
     <a class="wordmark" href="#">
-      <span class="logo-pin"><span>G</span></span>
+      <%= image_tag "logo-geomatch.svg", alt: "GeoMatch", class: "wordmark-logo" %>
       <span><span class="wm-geo">Geo</span><span class="wm-match">Match</span></span>
     </a>
     <a class="btn btn--dark" href="#baixar">Baixar agora</a>
@@ -149,7 +149,7 @@
       <div class="feature-media">
         <div class="phone">
           <div class="phone-notch"></div>
-          <div class="phone-screen"><%= image_tag "geomatch/app-perfil.png", alt: "Tela de perfil do GeoMatch" %></div>
+          <div class="phone-screen"><%= image_tag "geomatch/app-bloqueado.jpg", alt: "Tela de bloqueio do GeoMatch" %></div>
         </div>
       </div>
       <div class="feature-copy">
@@ -158,6 +158,54 @@
         <h3>O controle é sempre seu.</h3>
         <p>A conexão não deu certo? Bloqueie com um toque. A pessoa some do seu mapa e do filtro por cidade — <strong>para sempre.</strong></p>
         <p>Você define com quem quer se conectar. Sempre.</p>
+      </div>
+    </div>
+
+    <div class="feature-row feature-row--flip rv">
+      <div class="feature-media">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen"><%= image_tag "geomatch/app-discover_3d-gallery.png", alt: "Galeria de perfis do GeoMatch" %></div>
+        </div>
+      </div>
+      <div class="feature-copy">
+        <span class="feature-tag">Galeria de perfis</span>
+        <span class="feat-ic">🖼️</span>
+        <h3>Veja quem está ao redor, de um jeito diferente.</h3>
+        <p>Além do mapa, explore os perfis das pessoas próximas em uma galeria visual. Fotos, bio e distância — tudo em uma tela só.</p>
+        <p>Encontre quem você quer conhecer <strong>antes mesmo de abrir o mapa.</strong></p>
+      </div>
+    </div>
+
+    <div class="feature-row rv">
+      <div class="feature-media">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen"><%= image_tag "geomatch/app-perfil-verificado.jpg", alt: "Perfil verificado do GeoMatch" %></div>
+        </div>
+      </div>
+      <div class="feature-copy">
+        <span class="feature-tag">Perfil verificado</span>
+        <span class="feat-ic">✅</span>
+        <h3>Pessoas reais. Perfis verificados.</h3>
+        <p>O GeoMatch verifica a identidade dos usuários com análise de documentos e selfie. O <strong>selo de verificado</strong> garante que você está falando com uma pessoa real.</p>
+        <p>Sem perfis falsos. Sem bots. Só gente de verdade.</p>
+      </div>
+    </div>
+
+    <div class="feature-row feature-row--flip rv">
+      <div class="feature-media">
+        <div class="phone">
+          <div class="phone-notch"></div>
+          <div class="phone-screen"><%= image_tag "geomatch/app-central-seguranca.jpg", alt: "Central de Segurança do GeoMatch" %></div>
+        </div>
+      </div>
+      <div class="feature-copy">
+        <span class="feature-tag">Central de Segurança</span>
+        <span class="feat-ic">🛡️</span>
+        <h3>Segurança a um toque de distância.</h3>
+        <p>Modo Pânico, compartilhamento de localização, denúncia rápida e ligação direta para a polícia — tudo dentro do app, disponível a qualquer momento.</p>
+        <p>Porque conexão real só acontece quando você <strong>se sente seguro.</strong></p>
       </div>
     </div>
   </div>
@@ -184,8 +232,36 @@
         <h3>Central de Segurança</h3>
         <p>Ferramentas de proteção a um toque, dentro do app.</p>
       </div>
-      <div class="seg-action"><span class="seg-ic-lg">🆘</span><div><h4>Modo Pânico</h4><p>Ativa um alerta de emergência que compartilha sua localização em tempo real e avisa seus contatos que você pode estar em perigo.</p></div></div>
-      <div class="seg-action"><span class="seg-ic-lg">⚑</span><div><h4>Denúncia Rápida</h4><p>Reporte qualquer comportamento inadequado direto para nossa equipe. Agimos rápido em qualquer tipo de incidência.</p></div></div>
+      <div class="seg-quick-grid">
+        <div class="seg-quick-card seg-quick--pink">
+          <div class="seg-quick-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M6.62 10.79c1.44 2.83 3.76 5.14 6.59 6.59l2.2-2.2c.27-.27.67-.36 1.02-.24 1.12.37 2.33.57 3.57.57.55 0 1 .45 1 1V20c0 .55-.45 1-1 1-9.39 0-17-7.61-17-17 0-.55.45-1 1-1h3.5c.55 0 1 .45 1 1 0 1.25.2 2.45.57 3.57.11.35.03.74-.25 1.02l-2.2 2.2z"/></svg>
+          </div>
+          <strong>Ações Rápidas</strong>
+          <span>Ligar 190</span>
+        </div>
+        <div class="seg-quick-card seg-quick--blue">
+          <div class="seg-quick-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>
+          </div>
+          <strong>Denúncias Rápidas</strong>
+          <span>Reportar Incidência</span>
+        </div>
+        <div class="seg-quick-card seg-quick--purple">
+          <div class="seg-quick-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>
+          </div>
+          <strong>Compartilhar Local</strong>
+          <span>Enviar localização atual</span>
+        </div>
+        <div class="seg-quick-card seg-quick--pink-light">
+          <div class="seg-quick-icon">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22M12 6l7.53 13H4.47M11 10v4h2v-4m-2 6v2h2v-2"/></svg>
+          </div>
+          <strong>Modo Pânico</strong>
+          <span>Enviar alerta de emergência</span>
+        </div>
+      </div>
     </div>
 
     <p class="seg-closing rv">No GeoMatch, você se conecta. <span class="hl">A segurança fica com a gente.</span></p>
@@ -223,26 +299,40 @@
       <p>Para quem quer uma experiência completa — e uma camada extra de privacidade.</p>
     </div>
 
-    <div class="gold-grid">
+    <div class="gold-features">
       <div class="gold-invisible rv">
         <span class="feat-ic">👁️</span>
         <h3>Você vê. <span class="hl">Ninguém te vê.</span></h3>
         <p>O Modo Gold permite que você navegue no mapa completamente invisível. Você vê todos os perfis ao redor — mas ninguém consegue te ver. Perfeito para quem é mais reservado, ou para figuras públicas que querem interagir com discrição.</p>
       </div>
-      <div class="gold-panel rv rv-d1">
-        <ul>
-          <li>Modo invisível no mapa — interaja sem aparecer</li>
-          <li>Filtro avançado por cidade e estado sem limites</li>
-          <li>Sem anúncios — experiência limpa e premium</li>
-          <li>Badge Gold exclusivo no perfil</li>
-          <li>Acesso antecipado a novas funcionalidades</li>
-        </ul>
-        <div class="gold-price">
-          <p class="price-label">A partir de</p>
-          <p class="price-value">R$ 19,99<span style="font-size: 22px;">/mês</span></p>
-          <p class="price-period">Cancele quando quiser</p>
-          <a class="btn btn--gold" href="#baixar">Seja Gold — Assine agora</a>
-        </div>
+      <div class="gold-invisible rv rv-d1">
+        <span class="feat-ic">⚡</span>
+        <h3>Interação <span class="hl">ilimitada.</span></h3>
+        <p>Curta, converse e conecte sem limites. No Gold, não há teto de curtidas nem de mensagens — você interage com quem quiser, quantas vezes quiser.</p>
+      </div>
+      <div class="gold-invisible rv rv-d2">
+        <span class="feat-ic">🎂</span>
+        <h3>Sua idade, <span class="hl">em sigilo.</span></h3>
+        <p>Oculte sua idade no perfil com um toque. Conecte-se por quem você é — não por quando nasceu.</p>
+      </div>
+    </div>
+    <div class="gold-panel rv">
+      <ul>
+        <li>Interação no mapa ilimitada</li>
+        <li>Mensagens ilimitadas</li>
+        <li>Lista de quem curtiu você</li>
+        <li>Lista de quem você curtiu</li>
+        <li>Modo oculto — interaja sem aparecer no mapa</li>
+        <li>Não exibe sua idade no perfil</li>
+        <li>Voltar perfil não curtido</li>
+        <li>Sem anúncios — experiência limpa e premium</li>
+        <li>Badge Gold exclusivo no perfil</li>
+      </ul>
+      <div class="gold-price">
+        <p class="price-label">A partir de</p>
+        <p class="price-value">R$ 47,90<span style="font-size: 22px;">/mês</span></p>
+        <p class="price-period">Cancele quando quiser</p>
+        <a class="btn btn--gold" href="#baixar">Seja Gold — Assine agora</a>
       </div>
     </div>
   </div>
@@ -367,7 +457,7 @@
 <footer class="footer">
   <div class="wrap">
     <a class="wordmark" href="#">
-      <span class="logo-pin"><span>G</span></span>
+      <%= image_tag "logo-geomatch.svg", alt: "GeoMatch", class: "wordmark-logo" %>
       <span><span class="wm-geo">Geo</span><span class="wm-match">Match</span></span>
     </a>
     <p class="footer-tag">Conexões reais, agora. • 🇧🇷 Feito no Brasil</p>
@@ -383,7 +473,7 @@
 
 <!-- ============ CTA FIXO MOBILE ============ -->
 <div class="mobile-cta" id="mobile-cta" aria-hidden="true">
-  <span class="mobile-cta-brand"><span class="logo-pin"><span>G</span></span></span>
+  <span class="mobile-cta-brand"><%= image_tag "logo-geomatch.svg", alt: "GeoMatch", class: "wordmark-logo" %></span>
   <div class="mobile-cta-text"><strong>GeoMatch</strong><small>Grátis • iPhone e Android</small></div>
   <a class="btn btn--gold" href="#baixar">Baixar agora</a>
 </div>
