@@ -30,8 +30,8 @@
       <p class="hero-sub">GeoMatch mostra pessoas reais a até <strong>300 metros</strong> de você — em tempo real.</p>
       <p class="hero-support">Conecte-se, converse e marque algo. Sem perfis falsos. Sem swipe infinito. Só conexões reais.</p>
       <div class="cta-row">
-        <a class="btn btn--gold" href="#baixar"><span class="btn-ic">&#63743;</span><span class="btn-label"><span>Baixar para iPhone</span><span class="btn-sub">App Store</span></span></a>
-        <a class="btn btn--dark" href="#baixar"><span class="btn-ic">▶</span><span class="btn-label"><span>Baixar para Android</span><span class="btn-sub">Google Play</span></span></a>
+        <a class="btn btn--gold" href="https://testflight.apple.com/join/d2WGpc3D" target="_blank" rel="noopener noreferrer"><span class="btn-ic">&#63743;</span><span class="btn-label"><span>Baixar para iPhone</span><span class="btn-sub">App Store</span></span></a>
+        <a class="btn btn--dark" href="https://play.google.com/store/apps/details?id=com.geomatch.app&hl=pt_BR" target="_blank" rel="noopener noreferrer"><span class="btn-ic">▶</span><span class="btn-label"><span>Baixar para Android</span><span class="btn-sub">Google Play</span></span></a>
       </div>
       <p class="hero-proof">🇧🇷 Feito no Brasil <span class="sep">•</span> Disponível agora <span class="sep">•</span> 100% gratuito para começar</p>
     </div>
@@ -332,7 +332,7 @@
         <p class="price-label">A partir de</p>
         <p class="price-value">R$ 47,90<span style="font-size: 22px;">/mês</span></p>
         <p class="price-period">Cancele quando quiser</p>
-        <a class="btn btn--gold" href="#baixar">Seja Gold — Assine agora</a>
+        <%= link_to "Seja Gold — Assine agora", plans_path, class: "btn btn--gold" %>
       </div>
     </div>
   </div>
@@ -446,8 +446,8 @@
       <h3>Baixe agora e comece a <span class="hl">se conectar.</span></h3>
       <p>Gratuito. Sem complicação. Só conexões reais.</p>
       <div class="cta-row center">
-        <a class="btn btn--gold" href="#"><span class="btn-ic">&#63743;</span><span class="btn-label"><span>Baixar para iPhone</span><span class="btn-sub">App Store — Grátis</span></span></a>
-        <a class="btn btn--dark" href="#"><span class="btn-ic">▶</span><span class="btn-label"><span>Baixar para Android</span><span class="btn-sub">Google Play — Grátis</span></span></a>
+        <a class="btn btn--gold" href="https://testflight.apple.com/join/d2WGpc3D" target="_blank" rel="noopener noreferrer"><span class="btn-ic">&#63743;</span><span class="btn-label"><span>Baixar para iPhone</span><span class="btn-sub">App Store — Grátis</span></span></a>
+        <a class="btn btn--dark" href="https://play.google.com/store/apps/details?id=com.geomatch.app&hl=pt_BR" target="_blank" rel="noopener noreferrer"><span class="btn-ic">▶</span><span class="btn-label"><span>Baixar para Android</span><span class="btn-sub">Google Play — Grátis</span></span></a>
       </div>
     </div>
   </div>
@@ -461,7 +461,7 @@
       <span><span class="wm-geo">Geo</span><span class="wm-match">Match</span></span>
     </a>
     <p class="footer-tag">Conexões reais, agora. • 🇧🇷 Feito no Brasil</p>
-    <div class="footer-contact"><span>suporte@geomatchbr.com</span><span>geomatchbr.com</span><span>@geomatchbr</span></div>
+    <div class="footer-contact"><span>suporte@geomatchbr.com</span><span>geomatchbr.com</span><a href="https://www.instagram.com/geomatchbr/" target="_blank" rel="noopener noreferrer">@geomatchbr</a></div>
     <div class="footer-links">
       <%= link_to "Termos de Uso", terms_of_use_path %>
       <%= link_to "Política de Privacidade", privacy_policy_path %>

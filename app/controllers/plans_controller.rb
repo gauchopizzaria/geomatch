@@ -1,5 +1,5 @@
 class PlansController < ApplicationController
-  before_action :authenticate_user!
+  before_action :authenticate_user!, except: [:index]
 
   def index
     @plans = Plan.where(active: true).order(price_cents: :asc)
