@@ -32,5 +32,6 @@ Crawl-delay: 1
 User-agent: ChatGPT-User
 Crawl-delay: 1
 
-# Sitemap
+# Sitemaps (dinâmica com posts + estática)
 Sitemap: https://geomatchbr.com/sitemap.xml
+Sitemap: https://geomatchbr.com/public/sitemap.xml

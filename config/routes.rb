@@ -27,11 +27,19 @@ Rails.application.routes.draw do
   # Path configuration para Hotwire Native iOS
   get "/configurations/native.json", to: "path_configurations#show", as: :native_path_configuration
 
+  # Sitemap dinâmico com posts
+  get "/sitemap.xml", to: "sitemaps#index", format: :xml
+
   # Páginas estáticas existentes (Mantidas)
   get "/terms",    to: "public#terms",   as: :terms_of_use
   get "/privacy",  to: "public#privacy", as: :privacy_policy
   get "/profiles", to: "public#profiles", as: :public_profiles
   get "notifications/index"
+
+  # Blog
+  get "/blog", to: "blog_posts#index", as: "blog"
+  get "/blog/categoria/:category", to: "blog_posts#index", as: "blog_category"
+  get "/blog/:slug", to: "blog_posts#show", as: "blog_post"
 
   # Stories
   resources :stories, only: [:index, :create]
@@ -152,6 +160,7 @@ Rails.application.routes.draw do
   namespace :admin do
     root to: 'settings#index'
     resources :settings, only: [:index, :edit, :update]
+    resources :blog_posts, only: [:index, :new, :create, :edit, :update, :destroy]
   end
 
   # =================================================================

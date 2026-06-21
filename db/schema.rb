@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_05_25_200230) do
+ActiveRecord::Schema[8.1].define(version: 2026_06_21_152933) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -95,6 +95,30 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200230) do
     t.index ["blocked_id"], name: "index_blocks_on_blocked_id"
     t.index ["blocker_id", "blocked_id"], name: "index_blocks_on_blocker_id_and_blocked_id", unique: true
     t.index ["blocker_id"], name: "index_blocks_on_blocker_id"
+  end
+
+  create_table "blog_categories", force: :cascade do |t|
+    t.text "description"
+    t.string "name", null: false
+    t.string "slug", null: false
+    t.index ["slug"], name: "index_blog_categories_on_slug", unique: true
+  end
+
+  create_table "blog_posts", force: :cascade do |t|
+    t.bigint "blog_category_id", null: false
+    t.text "content", null: false
+    t.datetime "created_at", null: false
+    t.text "excerpt"
+    t.string "featured_image"
+    t.datetime "published_at"
+    t.string "slug", null: false
+    t.string "title", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["blog_category_id"], name: "index_blog_posts_on_blog_category_id"
+    t.index ["published_at"], name: "index_blog_posts_on_published_at"
+    t.index ["slug"], name: "index_blog_posts_on_slug", unique: true
+    t.index ["user_id"], name: "index_blog_posts_on_user_id"
   end
 
   create_table "favorites", force: :cascade do |t|
@@ -490,6 +514,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_05_25_200230) do
   add_foreign_key "active_storage_variant_records", "active_storage_blobs", column: "blob_id"
   add_foreign_key "blocks", "users", column: "blocked_id"
   add_foreign_key "blocks", "users", column: "blocker_id"
+  add_foreign_key "blog_posts", "blog_categories"
+  add_foreign_key "blog_posts", "users"
   add_foreign_key "favorites", "users"
   add_foreign_key "favorites", "users", column: "favorited_user_id"
   add_foreign_key "likes", "users", column: "liked_id"

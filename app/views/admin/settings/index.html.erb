@@ -1,6 +1,13 @@
-<% content_for :page_title, "Configurações do Sistema" %>
+<% content_for :page_title, "Painel Admin" %>
 
 <div class="max-w-3xl">
+
+  <div class="admin-nav" style="display: flex; gap: 10px; margin-bottom: 30px;">
+    <%= link_to "Configurações", admin_settings_url, class: "admin-nav-btn admin-nav-btn--active", style: "background: var(--color-primary); color: #000; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600;" %>
+    <%= link_to "Blog Posts", admin_blog_posts_url, class: "admin-nav-btn", style: "background: var(--color-section-light); color: var(--color-text); padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; border: 1px solid var(--color-border);" %>
+  </div>
+
+  <h2 style="color: var(--color-text); margin-bottom: 20px;">Configurações do Sistema</h2>
 
   <p class="text-slate-400 text-sm mb-6">
     Gerencie os parâmetros dinâmicos do GeoMatch. As alterações entram em vigor imediatamente.
