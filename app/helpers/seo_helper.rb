@@ -1,6 +1,13 @@
 module SeoHelper
-  # Gera JSON-LD para SoftwareApplication (Google, Bing, schema.org)
+  # Gera múltiplos schemas em um array (SoftwareApplication + LocalBusiness)
   def schema_application_json
+    [
+      software_application_schema,
+      local_business_schema
+    ]
+  end
+
+  def software_application_schema
     {
       "@context": "https://schema.org/",
       "@type": "SoftwareApplication",
@@ -41,9 +48,44 @@ module SeoHelper
     }
   end
 
+  def local_business_schema
+    {
+      "@context": "https://schema.org/",
+      "@type": "LocalBusiness",
+      "name": "GeoMatch",
+      "description": "Aplicativo brasileiro de conexões em tempo real baseado em localização",
+      "url": "https://geomatchbr.com",
+      "telephone": "+55 11 4040-1212",
+      "email": "suporte@geomatchbr.com",
+      "image": image_url("logo-geomatch.svg"),
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "São Paulo",
+        "addressLocality": "São Paulo",
+        "addressRegion": "SP",
+        "postalCode": "01311-100",
+        "addressCountry": "BR"
+      },
+      "sameAs": [
+        "https://www.instagram.com/geomatchbr/",
+        "https://www.facebook.com/geomatchbr",
+        "https://twitter.com/geomatchbr"
+      ],
+      "priceRange": "R$ 0 - R$ 47,90/mês"
+    }
+  end
+
   # Renderiza JSON-LD como <script type="application/ld+json">
+  # Suporta array de schemas (múltiplos)
   def render_schema_json
-    tag.script(schema_application_json.to_json, type: "application/ld+json")
+    schemas = schema_application_json
+    tags = []
+
+    schemas.each do |schema|
+      tags << tag.script(schema.to_json, type: "application/ld+json")
+    end
+
+    tags.join("\n").html_safe
   end
 
   # Gera metatags Open Graph + Twitter Card
@@ -94,5 +136,73 @@ module SeoHelper
     tags << tag.meta(name: "keywords", content: "geolocalização, mapa, chat, conexões, pessoas próximas, aplicativo")
 
     tags.join("\n").html_safe
+  end
+
+  # FAQ Schema — para página de suporte
+  def schema_faq_json(faqs)
+    {
+      "@context": "https://schema.org/",
+      "@type": "FAQPage",
+      "mainEntity": faqs.map do |faq|
+        {
+          "@type": "Question",
+          "name": faq[:question],
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": faq[:answer]
+          }
+        }
+      end
+    }
+  end
+
+  # Breadcrumb Schema — navegação estruturada
+  def schema_breadcrumb_json(breadcrumbs)
+    # breadcrumbs = [
+    #   { name: "Home", url: "/" },
+    #   { name: "Blog", url: "/blog" },
+    #   { name: "Post Title", url: "/blog/post-title" }
+    # ]
+    {
+      "@context": "https://schema.org/",
+      "@type": "BreadcrumbList",
+      "itemListElement": breadcrumbs.each_with_index.map do |crumb, index|
+        {
+          "@type": "ListItem",
+          "position": index + 1,
+          "name": crumb[:name],
+          "item": "https://geomatchbr.com#{crumb[:url]}"
+        }
+      end
+    }
+  end
+
+  # Organization Schema com todos os detalhes
+  def schema_organization_json
+    {
+      "@context": "https://schema.org/",
+      "@type": "Organization",
+      "name": "GeoMatch",
+      "url": "https://geomatchbr.com",
+      "logo": image_url("logo-geomatch.svg"),
+      "description": "Plataforma de conexões em tempo real baseada em geolocalização",
+      "foundingDate": "2025",
+      "foundingLocation": "São Paulo, Brazil",
+      "email": "suporte@geomatchbr.com",
+      "telephone": "+55 11 4040-1212",
+      "sameAs": [
+        "https://www.instagram.com/geomatchbr/",
+        "https://www.facebook.com/geomatchbr",
+        "https://twitter.com/geomatchbr"
+      ],
+      "address": {
+        "@type": "PostalAddress",
+        "streetAddress": "São Paulo",
+        "addressLocality": "São Paulo",
+        "addressRegion": "SP",
+        "postalCode": "01311-100",
+        "addressCountry": "BR"
+      }
+    }
   end
 end

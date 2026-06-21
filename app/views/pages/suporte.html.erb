@@ -1,3 +1,45 @@
+<!-- FAQ Schema para SEO -->
+<script type="application/ld+json">
+<%= {
+  "@context": "https://schema.org/",
+  "@type": "FAQPage",
+  "mainEntity": [
+    {
+      "@type": "Question",
+      "name": "Como excluir minha conta?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Acesse seu perfil → Configurações → Excluir conta. Se precisar de ajuda, envie um e-mail com o assunto 'Excluir conta'."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Como cancelar minha assinatura?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Cancele diretamente pela App Store (iOS) ou pelo app em Perfil → Assinatura. Para reembolsos, entre em contato pelo e-mail acima."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Como reportar um usuário?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "No perfil do usuário, toque em 'Reportar'. Nossa equipe de moderação analisa todos os relatos em até 24 horas."
+      }
+    },
+    {
+      "@type": "Question",
+      "name": "Problemas com notificações?",
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": "Verifique se as notificações estão habilitadas em Ajustes → GeoMatch → Notificações no seu dispositivo."
+      }
+    }
+  ]
+}.to_json %>
+</script>
+
 <div class="support-page">
   <div class="support-container">
     <div class="support-logo">

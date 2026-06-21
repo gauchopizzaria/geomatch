@@ -5,6 +5,34 @@
    Imagens:       app/assets/images/geomatch/ (app-mapa.png, app-perfil.png, app-chat.png)
 %>
 
+<!-- Breadcrumb Schema para navegação estruturada -->
+<script type="application/ld+json">
+<%= {
+  "@context": "https://schema.org/",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://geomatchbr.com/"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Planos",
+      "item": "https://geomatchbr.com/plans"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "Central de Segurança",
+      "item": "https://geomatchbr.com/safety_center"
+    }
+  ]
+}.to_json %>
+</script>
+
 <% content_for :head do %>
   <%= stylesheet_link_tag "landing_page", media: "all" %>
 <% end %>

@@ -336,3 +336,14 @@
   color: var(--color-text-secondary);
   padding: 20px;
 }
+
+/* Ícone de verificação: sempre pequeno */
+img[alt="Perfil Verificado"],
+.match-name img,
+.conv-header img {
+  max-width: 16px !important;
+  max-height: 16px !important;
+  width: 16px !important;
+  height: 16px !important;
+  display: inline-block !important;
+}

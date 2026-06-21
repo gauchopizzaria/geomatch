@@ -174,12 +174,11 @@
 
   <%# --- 6. AÇÕES DA CONTA (SAIR / EXCLUIR) --- %>
   <div class="profile-account-actions">
-    
-    <%# --- MUDANÇA AQUI: O botão agora só abre o modal --- %>
+
+    <%# Botão Sair - Abre o modal %>
     <button type="button" class="btn-logout" onclick="document.getElementById('logout-modal').classList.add('show')" style="border: none; background: transparent; width: 100%;">
       <i class="fas fa-sign-out-alt"></i> Sair
     </button>
-
 
     <%# Botão Encerrar Conta %>
     <%= button_to user_registration_path, method: :delete, data: { turbo_confirm: "Tem certeza que deseja excluir sua conta? Essa ação não pode ser desfeita." }, class: "btn-delete-account" do %>
@@ -188,12 +187,12 @@
 
   </div>
 
-</div> <%# fecha o profile-dashboard-wrapper (que já existia no final do seu arquivo) %>
+</div> <%# fecha o profile-dashboard-wrapper %>
 
 <%# --- MODAL DE CONFIRMAÇÃO DE LOGOUT --- %>
 <div id="logout-modal" class="logout-modal-overlay">
   <div class="logout-modal-content">
-    
+
     <div class="logout-icon">
       <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#d4af37" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
@@ -212,12 +211,28 @@
       </button>
 
       <%# BOTÃO SIM: Realiza o Logout de verdade %>
-      <%= link_to logout_path, data: { turbo_method: :delete }, class: "btn-confirm" do %>
+      <button type="button" class="btn-confirm" onclick="confirmLogout()">
         Sim
-      <% end %>
+      </button>
     </div>
 
   </div>
 </div>
 
-</div>
+<script>
+  function confirmLogout() {
+    fetch('<%= destroy_user_session_path %>', {
+      method: 'DELETE',
+      headers: {
+        'X-CSRF-Token': '<%= form_authenticity_token %>',
+        'Content-Type': 'application/json'
+      }
+    })
+    .then(response => {
+      if (response.ok) {
+        window.location.reload();
+      }
+    })
+    .catch(error => console.error('Erro ao fazer logout:', error));
+  }
+</script>

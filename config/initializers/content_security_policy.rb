@@ -16,7 +16,9 @@ Rails.application.configure do
     policy.img_src :self, :https, :data, "res.cloudinary.com", "cdnjs.cloudflare.com"
 
     # Scripts: self + HTTPS + importmap + inline scripts com nonce + CDN permitidos
-    policy.script_src :self, :https, "cdn.jsdelivr.net", "cdnjs.cloudflare.com", "unpkg.com"
+    # unsafe-eval: necessário para turf.js (geolocalização)
+    # unsafe-inline: necessário para onclick handlers e inline scripts
+    policy.script_src :self, :https, :unsafe_eval, :unsafe_inline, "cdn.jsdelivr.net", "cdnjs.cloudflare.com", "unpkg.com"
 
     # Styles: self + HTTPS + inline styles com nonce + Google Fonts + CDN
     policy.style_src :self, :https, :unsafe_inline, "fonts.googleapis.com", "cdnjs.cloudflare.com", "unpkg.com"
@@ -43,13 +45,10 @@ Rails.application.configure do
     # policy.report_uri "/csp-violation-report-endpoint"
   end
 
-  # Generate session nonces for permitted importmap, inline scripts, and inline styles.
-  config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
-  config.content_security_policy_nonce_directives = %w(script-src style-src)
-
-  # Automatically add `nonce` to `javascript_tag`, `javascript_include_tag`, and `stylesheet_link_tag`
-  # if the corresponding directives are specified in `content_security_policy_nonce_directives`.
-  config.content_security_policy_nonce_auto = true
+  # Nonce desabilitado porque conflita com unsafe-inline
+  # config.content_security_policy_nonce_generator = ->(request) { request.session.id.to_s }
+  # config.content_security_policy_nonce_directives = %w(script-src style-src)
+  # config.content_security_policy_nonce_auto = true
 
   # Report violations without enforcing the policy (report-only mode — útil em staging).
   # config.content_security_policy_report_only = true
