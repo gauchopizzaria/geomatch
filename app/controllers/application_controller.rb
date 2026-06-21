@@ -1,8 +1,11 @@
 class ApplicationController < ActionController::Base
+  helper :seo
+
   before_action :configure_permitted_parameters, if: :devise_controller?
   before_action :disable_cache_for_auth, if: :devise_controller?
   before_action :update_last_seen, if: :user_signed_in?
   before_action :require_onboarding!, if: :user_signed_in?
+  before_action :set_default_seo_tags
 
   rescue_from ActionController::InvalidAuthenticityToken, with: :redirect_and_refresh_token
 
@@ -65,5 +68,23 @@ class ApplicationController < ActionController::Base
 
   def redirect_and_refresh_token
     redirect_to new_user_session_path, alert: "Sessão atualizada por segurança. Por favor, tente novamente."
+  end
+
+  def set_default_seo_tags
+    image_url = view_context.image_url("logo-geomatch.svg")
+    @seo_tags = {
+      title: "GeoMatch — Conecte-se com pessoas reais perto de você",
+      description: "Veja quem está a até 300 metros de você em tempo real. Chat instantâneo, mapa interativo, segurança em primeiro lugar.",
+      image: image_url,
+      url: request.url,
+      og_title: "GeoMatch",
+      og_description: "Conecte-se com pessoas reais a 300 metros de você.",
+      og_image: image_url,
+      og_type: "website",
+      tw_card: "summary_large_image",
+      tw_title: "GeoMatch",
+      tw_description: "Conecte-se com pessoas reais perto de você.",
+      tw_image: image_url
+    }
   end
 end

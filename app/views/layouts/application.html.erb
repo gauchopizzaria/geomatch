@@ -1,9 +1,12 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>GeoMatch</title>
+    <title><%= @seo_tags[:title] if @seo_tags %></title>
     <%= csrf_meta_tags %>
     <%= csp_meta_tag %>
+
+    <!-- SEO: Metatags dinâmicas -->
+    <%= render_page_meta_tags(@seo_tags) if @seo_tags %>
 
     <% if user_signed_in? %>
       <meta name="current-user-id" content="<%= current_user.id %>">
@@ -42,8 +45,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <meta name="csrf-token" content="<%= form_authenticity_token %>">
 
-    <!-- Fonte: Poppins -->
+    <!-- Fonte: Poppins + Anton + Outfit (otimizado para LCP) -->
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="preload" href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@400;700;800&family=Outfit:wght@400;600&display=swap" as="style">
     <link href="https://fonts.googleapis.com/css2?family=Anton&family=Poppins:wght@300;400;600;700;800&family=Nunito:wght@900&family=Outfit:wght@400;500;600;700&family=Cormorant+Garamond:ital,wght@1,500&display=swap" rel="stylesheet">
 
     <!-- Font Awesome -->
@@ -54,8 +58,12 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 
-    <!-- CSS principal -->
+    <!-- CSS principal (preload para LCP) -->
+    <link rel="preload" href="<%= asset_path("application.css") %>" as="style">
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>
+
+    <!-- SEO: JSON-LD Schema.org -->
+    <%= render_schema_json %>
 
   <meta name="vapid-public-key" content="<%= ENV["VAPID_PUBLIC_KEY"] %>">
 
