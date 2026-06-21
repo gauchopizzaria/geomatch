@@ -60,6 +60,11 @@
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.css">
     <link rel="stylesheet" href="https://unpkg.com/leaflet.markercluster@1.5.3/dist/MarkerCluster.Default.css">
 
+    <!-- Mapbox GL (carregado no HEAD para que modules ES6 possam acessar globalmente) -->
+    <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
+    <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
+    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+
     <!-- CSS principal (preload para LCP) -->
     <link rel="preload" href="<%= asset_path("application.css") %>" as="style">
     <%= stylesheet_link_tag "application", "data-turbo-track": "reload" %>

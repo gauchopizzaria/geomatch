@@ -41,6 +41,9 @@ Rails.application.configure do
     # Base URI: apenas self
     policy.base_uri :self
 
+    # Web Workers: necessário para Mapbox GL (cria workers a partir de blobs)
+    policy.worker_src :self, :blob
+
     # Relatório de violações (optional — envia para um endpoint)
     # policy.report_uri "/csp-violation-report-endpoint"
   end

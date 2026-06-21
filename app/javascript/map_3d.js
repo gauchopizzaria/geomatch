@@ -814,11 +814,33 @@ function showUserPopup(user) {
 }
 
 function initializeMapAndLocation() {
-  const mapboxToken = document.querySelector('meta[name="mapbox-token"]').content;
+  // ===== VERIFICAÇÃO DE SEGURANÇA =====
+  if (typeof mapboxgl === 'undefined') {
+    console.error('[GeoMatch] CRÍTICO: mapboxgl não está definido globalmente!');
+    console.error('[GeoMatch] Verifique se o script Mapbox GL está carregando antes do módulo ES6');
+    return;
+  }
+
+  const mapboxTokenEl = document.querySelector('meta[name="mapbox-token"]');
+  if (!mapboxTokenEl) {
+    console.error('[GeoMatch] CRÍTICO: meta tag mapbox-token não encontrada!');
+    return;
+  }
+
+  const mapboxToken = mapboxTokenEl.content;
+  if (!mapboxToken) {
+    console.error('[GeoMatch] CRÍTICO: mapbox-token está vazio! Verifique ENV[MAPBOX_TOKEN]');
+    return;
+  }
+
   mapboxgl.accessToken = mapboxToken;
+  console.log('[GeoMatch] Mapbox token configurado ✓');
 
   const mapElement = document.getElementById('map-3d');
-  if (!mapElement) return;
+  if (!mapElement) {
+    console.error('[GeoMatch] CRÍTICO: elemento #map-3d não encontrado no DOM!');
+    return;
+  }
 
   mapElement.innerHTML = '';
 
@@ -831,6 +853,7 @@ function initializeMapAndLocation() {
   const initialCenter = hasDbCoords ? [dbLng, dbLat] : [-39.2781, -14.7876];
 
   // Inicia em 2D (pitch 0, bearing 0)
+  console.log('[GeoMatch] Criando Mapbox Map com center:', initialCenter, 'hasDbCoords:', hasDbCoords);
   map = new mapboxgl.Map({
     container: 'map-3d',
     style: 'mapbox://styles/mapbox/standard',
@@ -843,11 +866,17 @@ function initializeMapAndLocation() {
     fadeDuration: 150 // Evita buracos visíveis ao trocar tiles durante zoom no iPhone
   });
 
+  console.log('[GeoMatch] Mapbox Map instanciado ✓', map);
+
   map.on('click', () => { if (isCinematicMode || cinematicPopup) closeCinematicPopup(); });
 
   map.once('load', () => {
+    console.log('[GeoMatch] Mapbox map.load disparado ✓');
     window._mapIsReady = true;
-    if (typeof window._onMapLoaded === 'function') window._onMapLoaded();
+    if (typeof window._onMapLoaded === 'function') {
+      console.log('[GeoMatch] Chamando window._onMapLoaded()');
+      window._onMapLoaded();
+    }
     map.resize();
     setTimeout(() => map.resize(), 500);
     setTimeout(() => map.resize(), 900);
@@ -968,6 +997,7 @@ document.addEventListener("turbo:render", () => {
 });
 
 document.addEventListener("turbo:load", () => {
+  console.log('[GeoMatch] turbo:load disparado - verificando se é página de mapa');
   if (typeof Turbo !== 'undefined' && Turbo.cache) Turbo.cache.clear();
 
   window._mapIsReady = false;
@@ -975,6 +1005,8 @@ document.addEventListener("turbo:load", () => {
 
   const loader = document.querySelector('.map-loading');
   const mapContainer = document.getElementById('map-3d');
+
+  console.log('[GeoMatch] mapContainer encontrado?', !!mapContainer);
 
   // Sem mapa nesta página: destrói loader e qualquer instância obsoleta
   if (!mapContainer) {
