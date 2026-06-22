@@ -66,6 +66,7 @@ function startTracking(buttonElement, onLocationChange) {
   if (buttonElement) buttonElement.classList.add("active-tracking");
   console.log("📍 Iniciando rastreamento contínuo...");
 
+  // === BLOCO iOS ===
   if (window.webkit?.messageHandlers?.locationHandler) {
     // Envia o token JWT junto com a ação para que o Swift possa fazer
     // requisições HTTP diretas a POST /users/update_location em background,
@@ -78,6 +79,14 @@ function startTracking(buttonElement, onLocationChange) {
       action:   'startTracking',
       apiToken: apiToken
     });
+  }
+
+  // === BLOCO Android ===
+  if (window.Android?.iniciarRastreioSegundoPlano) {
+    const apiToken = document.querySelector('meta[name="api-token"]')?.content ?? '';
+    const userId = document.querySelector('meta[name="current-user-id"]')?.content ?? '';
+    window.Android.iniciarRastreioSegundoPlano(userId, apiToken);
+    console.log("📲 Android: Serviço de segundo plano iniciado com userId:", userId);
   }
 
   watchId = navigator.geolocation.watchPosition(
@@ -132,8 +141,15 @@ function stopTracking(buttonElement) {
   if (buttonElement) buttonElement.classList.remove("active-tracking");
   console.log("🛑 Rastreamento contínuo parado.");
 
+  // === BLOCO iOS ===
   if (window.webkit?.messageHandlers?.locationHandler) {
     window.webkit.messageHandlers.locationHandler.postMessage({ action: 'stopTracking' });
+  }
+
+  // === BLOCO Android ===
+  if (window.Android?.pararRastreioSegundoPlano) {
+    window.Android.pararRastreioSegundoPlano();
+    console.log("📲 Android: Serviço de segundo plano parado");
   }
 }
 
@@ -151,9 +167,9 @@ window.handleNativeLocationUpdate = (latitude, longitude) => {
   if (lastLat !== null) {
     const dist = haversineMeters(lastLat, lastLng, lat, lng);
     if (dist < MIN_MOVE_METERS) return;
-    console.log(`🌐 [Native] Movimento: ${dist.toFixed(1)}m → (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
+    console.log(`🌐 [iOS Native] Movimento: ${dist.toFixed(1)}m → (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
   } else {
-    console.log(`🌐 [Native] Posição inicial: (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
+    console.log(`🌐 [iOS Native] Posição inicial: (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
   }
 
   lastLat = lat;
@@ -169,5 +185,36 @@ window.handleNativeLocationUpdate = (latitude, longitude) => {
       'X-CSRF-Token': csrfToken || ''
     },
     body: JSON.stringify({ latitude: lat, longitude: lng })
-  }).catch(err => console.warn('⚠️ [Native] Falha ao enviar localização:', err));
+  }).catch(err => console.warn('⚠️ [iOS Native] Falha ao enviar localização:', err));
+};
+
+// Ponte nativa Android (Kotlin → JS): chamada pelo WebView quando o serviço de segundo plano envia posição.
+// Aplica o mesmo filtro de ruído do watchPosition para evitar updates desnecessários.
+window.handleAndroidLocationUpdate = (latitude, longitude) => {
+  const lat = parseFloat(latitude);
+  const lng = parseFloat(longitude);
+  if (isNaN(lat) || isNaN(lng)) return;
+
+  if (lastLat !== null) {
+    const dist = haversineMeters(lastLat, lastLng, lat, lng);
+    if (dist < MIN_MOVE_METERS) return;
+    console.log(`🌐 [Android Native] Movimento: ${dist.toFixed(1)}m → (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
+  } else {
+    console.log(`🌐 [Android Native] Posição inicial: (${lat.toFixed(6)}, ${lng.toFixed(6)})`);
+  }
+
+  lastLat = lat;
+  lastLng = lng;
+
+  if (nativeLocationCallback) nativeLocationCallback(lat, lng);
+
+  const csrfToken = document.querySelector('meta[name="csrf-token"]')?.content;
+  fetch('/users/update_location', {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-CSRF-Token': csrfToken || ''
+    },
+    body: JSON.stringify({ latitude: lat, longitude: lng })
+  }).catch(err => console.warn('⚠️ [Android Native] Falha ao enviar localização:', err));
 };
