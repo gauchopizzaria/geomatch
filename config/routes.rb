@@ -169,6 +169,7 @@ Rails.application.routes.draw do
   resources :push_subscriptions, only: [:create, :destroy] do
     collection do
       post :apns, action: :create_apns
+      post :fcm, action: :create_fcm
     end
   end
 

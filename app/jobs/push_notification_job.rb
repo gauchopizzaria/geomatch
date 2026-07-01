@@ -16,9 +16,10 @@ class PushNotificationJob < ApplicationJob
     url     = "/matches/#{message.match_id}"
     payload = { title: title, body: body, data: { path: url, app: "GeoMatch" }, tag: "chat-#{message.match_id}" }.to_json
 
-    # Os dois canais são completamente independentes — falha em um não afeta o outro.
+    # Os três canais são completamente independentes — falha em um não afeta os outros.
     send_web_push(recipient, message_id, payload)
     send_apns(recipient, message_id, title, body, url)
+    send_fcm(recipient, message_id, title, body, url)
   end
 
   private
@@ -124,6 +125,39 @@ class PushNotificationJob < ApplicationJob
       Rails.logger.error "[APNs] Erro — message=#{message_id} error=#{e.class}: #{e.message}"
     ensure
       connection&.close
+    end
+  end
+
+  # ── Canal 3: FCM (Firebase Cloud Messaging — Android nativo) ──────
+  def send_fcm(recipient, message_id, title, body, url)
+    return unless recipient.fcm_token.present?
+
+    unless ENV["FCM_PROJECT_ID"].present?
+      Rails.logger.warn "[FCM] FCM_PROJECT_ID ausente — skipping message=#{message_id}"
+      return
+    end
+
+    begin
+      # A gem `fcm` (API HTTP v1) recebe (json_key_path, project_id) nesta ordem.
+      fcm = FCM.new("firebase-credentials.json", ENV["FCM_PROJECT_ID"])
+
+      # Payload da v1. O send_v1 já embrulha o hash em { message: ... },
+      # portanto passamos apenas o conteúdo interno (token/notification/data).
+      message = {
+        token:        recipient.fcm_token,
+        notification: { title: title, body: body },
+        data:         { path: url }
+      }
+
+      response = fcm.send_v1(message)
+
+      if response[:status_code] == 200
+        Rails.logger.info "[FCM] Enviado com sucesso — message=#{message_id} recipient=#{recipient.id}"
+      else
+        Rails.logger.error "[FCM] Falha na entrega — message=#{message_id} status=#{response[:status_code]} body=#{response[:body]}"
+      end
+    rescue => e
+      Rails.logger.error "[FCM] Erro — message=#{message_id} error=#{e.class}: #{e.message}"
     end
   end
 end

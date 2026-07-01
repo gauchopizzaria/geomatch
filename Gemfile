@@ -40,6 +40,7 @@ gem "tzinfo-data", platforms: %i[ windows jruby ]
 gem "sidekiq-cron"
 gem "web-push"
 gem "apnotic"
+gem "fcm"
 gem "google-cloud-vision"
 
 group :development, :test do

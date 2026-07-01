@@ -1,7 +1,7 @@
 # app/controllers/push_subscriptions_controller.rb
 class PushSubscriptionsController < ApplicationController
   before_action :authenticate_user!
-  skip_before_action :verify_authenticity_token, only: [:create, :destroy, :create_apns] # Pode ser necessário para PWA / Hotwire Native
+  skip_before_action :verify_authenticity_token, only: [:create, :destroy, :create_apns, :create_fcm] # Pode ser necessário para PWA / Hotwire Native
 
   def create
     subscription_params = params.require(:push_subscription).permit(:endpoint, :p256dh, :auth)
@@ -40,6 +40,24 @@ class PushSubscriptionsController < ApplicationController
 
     if current_user.update(apns_token: token)
       Rails.logger.info "[APNs] token registrado user=#{current_user.id} token=#{token.first(8)}…"
+      head :ok
+    else
+      render json: current_user.errors, status: :unprocessable_entity
+    end
+  end
+
+  # Recebe o registration token FCM (Firebase Cloud Messaging) do app Android
+  # e persiste no usuário. Segue o mesmo padrão defensivo do create_apns.
+  def create_fcm
+    Rails.logger.info "[FCM] Tentativa de registro para o usuário: #{current_user&.email || 'sem sessão'}"
+
+    return head :unauthorized if current_user.blank?
+
+    token = params[:fcm_token].to_s.strip
+    return head :bad_request if token.blank?
+
+    if current_user.update(fcm_token: token)
+      Rails.logger.info "[FCM] token registrado user=#{current_user.id} token=#{token.first(8)}…"
       head :ok
     else
       render json: current_user.errors, status: :unprocessable_entity

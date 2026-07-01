@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_06_21_152933) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_01_170527) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -449,6 +449,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_21_152933) do
     t.integer "education_level"
     t.string "email", default: "", null: false
     t.string "encrypted_password", default: "", null: false
+    t.string "fcm_token"
     t.string "gender"
     t.string "hobbies"
     t.string "interested_in"
@@ -484,6 +485,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_06_21_152933) do
     t.index ["admin"], name: "index_users_on_admin"
     t.index ["banned_at"], name: "index_users_on_banned_at"
     t.index ["email"], name: "index_users_on_email", unique: true
+    t.index ["fcm_token"], name: "index_users_on_fcm_token", unique: true
     t.index ["last_location_updated_at"], name: "index_users_on_last_location_updated_at"
     t.index ["latitude", "longitude"], name: "index_users_on_latitude_and_longitude"
     t.index ["plan_id"], name: "index_users_on_plan_id"

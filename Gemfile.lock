@@ -190,6 +190,9 @@ GEM
       net-http (~> 0.5)
     faraday-retry (2.4.0)
       faraday (~> 2.0)
+    fcm (2.0.2)
+      faraday (>= 1.0.0, < 3.0)
+      googleauth (~> 1)
     ffi (1.17.2-x64-mingw-ucrt)
     ffi (1.17.2-x86_64-linux-gnu)
     fiddle (1.1.1)
@@ -674,6 +677,7 @@ DEPENDENCIES
   enumerize
   factory_bot_rails
   faker
+  fcm
   fiddle
   geocoder
   google-cloud-vision
