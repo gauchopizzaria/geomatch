@@ -332,6 +332,8 @@
   transition: transform .15s ease, box-shadow .15s ease;
   position: relative;
   overflow: hidden;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 .gm-match__btn:hover  { transform: translateY(-1px); }
 .gm-match__btn:active { transform: translateY(1px); }

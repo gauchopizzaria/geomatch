@@ -292,21 +292,23 @@ input[type="submit"] {
   align-items: center;
   justify-content: center;
   gap: 10px;
-  
-  width: 100%;           
-  max-width: 200px;      
+
+  width: 100%;
+  max-width: 200px;
   padding: 14px 20px;
-  
+
   background-color: var(--color-section-light);
   color: var(--color-text);
-  border: 1px solid var(--color-border); 
-  border-radius: 50px;       
-  
+  border: 1px solid var(--color-border);
+  border-radius: 50px;
+
   font-weight: 600;
   font-size: 1rem;
   text-decoration: none;
   transition: all 0.3s ease;
   box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .btn-logout:hover {
@@ -331,6 +333,8 @@ input[type="submit"] {
   padding: 10px;
   opacity: 0.8;
   transition: opacity 0.3s;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .btn-delete-account:hover {

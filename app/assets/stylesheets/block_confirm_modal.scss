@@ -92,6 +92,8 @@
   cursor: pointer;
   border: none;
   transition: transform 0.15s ease, opacity 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 
   &:active {
     transform: scale(0.97);

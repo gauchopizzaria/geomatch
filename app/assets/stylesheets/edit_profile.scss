@@ -28,6 +28,8 @@
   text-decoration: none;
   font-size: 0.8rem;
   font-weight: 500;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 
   span {
     display: block;
@@ -51,6 +53,8 @@
   border: none;
   cursor: pointer;
   padding: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .check-circle {

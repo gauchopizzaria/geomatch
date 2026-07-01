@@ -120,6 +120,8 @@
   display: flex;
   align-items: center;
   justify-content: center;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 /* --- 2. JANELA DE CHAT (Área de Scroll) --- */
@@ -357,6 +359,8 @@
   border-radius: 50%;
   cursor: pointer;
   flex-shrink: 0;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 .dark-form {
@@ -384,11 +388,13 @@
   background: none;
   border: none;
   color: #c2b589;
-  font-size: 1.4rem; 
+  font-size: 1.4rem;
   cursor: pointer;
   padding: 0 5px;
   line-height: 1;
-  
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+
   &:active { transform: scale(0.9); }
 }
 
@@ -454,6 +460,7 @@
   transition: transform 0.15s, background 0.15s;
   line-height: 1;
   -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 
   &:active {
     transform: scale(1.35);

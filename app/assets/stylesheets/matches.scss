@@ -63,6 +63,8 @@
   opacity: 0.8;
   transition: opacity 0.2s;
   color: var(--color-text);
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 
   &:hover { opacity: 1; }
 }

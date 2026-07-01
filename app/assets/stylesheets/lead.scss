@@ -50,9 +50,9 @@ html, body {
 
   .header-left { display: flex; align-items: center; }
   .header-logo { height: 28px; width: auto; object-fit: contain; display: block; }
-  .header-right { 
-    display: flex; gap: 15px; 
-    .header-btn { background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; img { width: 24px; height: 24px; } }
+  .header-right {
+    display: flex; gap: 15px;
+    .header-btn { background: none; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; img { width: 24px; height: 24px; } }
     // Sol: 30px. Lua é forma sólida e aparece maior, por isso fica em 22px.
     .header-btn:last-child img { width: 30px; height: 30px; }
   }
@@ -218,6 +218,8 @@ html, body {
   cursor: pointer;
   box-shadow: 0 5px 15px rgba(0,0,0,0.6);
   position: relative;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
   // Transição suave para o destaque dinâmico
   transition: transform 0.2s ease,
               box-shadow 0.2s ease,

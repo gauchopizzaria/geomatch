@@ -33,6 +33,39 @@
 // Leaflet CSS é carregado via CDN no layout (application.html.erb).
 // @import de .css em DartSass gera browser-level @import — propshaft não serve node_modules.
 
+// ==================================================
+// ANDROID TAP HIGHLIGHT FIX
+// Remove o "flash azul" nativo do Android/Chrome ao tocar
+// em elementos interativos, além do callout de long-press.
+// ==================================================
+a,
+button,
+[role="button"],
+input[type="button"],
+input[type="submit"],
+input[type="reset"],
+label,
+select,
+.nav-item,
+.action-btn,
+.btn,
+.btn-form,
+.header-btn,
+.icon-btn,
+.gm-icon-btn,
+.fab-button,
+.btn-gender-icon,
+.btn-apply-gold,
+.btn-safety-block,
+.btn-gold-outline,
+.btn-send,
+.btn-gif,
+.emoji-btn,
+.icon-btn-dots {
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
 // Opcional: Customização para o GeoMatch
 .marker-cluster-small, .marker-cluster-medium, .marker-cluster-large {
     background-color: rgba(212, 175, 55, 0.6); // Dourado com opacidade
@@ -1048,7 +1081,10 @@ html, body {
     flex: 1;
     opacity: 0.6;
     transition: all 0.2s ease;
-    max-width: 70px; 
+    max-width: 70px;
+    -webkit-tap-highlight-color: transparent;
+    -webkit-touch-callout: none;
+    outline: none;
 
     .icon-container {
       position: relative;

@@ -43,6 +43,8 @@
   color: var(--color-text);
   display: flex;
   align-items: center;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
 }
 
 /* --- 2. ABAS (TABS) --- */
