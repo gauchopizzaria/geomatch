@@ -431,7 +431,20 @@ end
       # garante que onboarding_completed persiste mesmo que geocoder ou outra
       # callback interfira no save principal
       current_user.update_column(:onboarding_completed, true)
-      redirect_to lead_path, notice: "Perfil completado! Bem-vindo ao GeoMatch 🎉"
+
+      # Aplica cupom, se fornecido (campo opcional do onboarding).
+      # Falha no cupom não bloqueia o onboarding — apenas avisa via flash[:alert].
+      flash[:notice] = "Perfil completado! Bem-vindo ao GeoMatch 🎉"
+      if params[:user][:coupon_code].present?
+        coupon_result = current_user.apply_coupon(params[:user][:coupon_code])
+        if coupon_result[:success]
+          flash[:notice] = "Perfil completado! #{coupon_result[:message]}"
+        else
+          flash[:alert] = coupon_result[:message]
+        end
+      end
+
+      redirect_to lead_path
     else
       @errors = current_user.errors.full_messages
       render :onboarding, status: :unprocessable_entity
@@ -472,6 +485,24 @@ end
       flash[:alert] = "Erro ao salvar os documentos. Tente novamente."
       render :verification
     end
+  end
+
+  # Aplica um cupom a partir da tela de perfil (/meu-perfil)
+  def apply_coupon
+    coupon_code = params[:coupon_code].to_s.strip
+
+    if coupon_code.present?
+      coupon_result = current_user.apply_coupon(coupon_code)
+      if coupon_result[:success]
+        flash[:notice] = coupon_result[:message]
+      else
+        flash[:alert] = coupon_result[:message]
+      end
+    else
+      flash[:alert] = "Por favor, insira um código de cupom."
+    end
+
+    redirect_to my_profile_path
   end
 
   # ==========================================
@@ -555,7 +586,7 @@ end
     params.require(:user).permit(
       :avatar, :username, :bio, :birthdate, :gender,
       :share_location, :interested_in, :invisible,
-      :city, :state,
+      :city, :state, :coupon_code,
       { hobbies_list: [] },
       album_photos: []
     )

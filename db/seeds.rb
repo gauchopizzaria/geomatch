@@ -74,3 +74,15 @@ puts "Criando 50 usuários de teste localizados em Itabuna/BA..."
 end
 
 puts "População de dados concluída. 50 usuários de teste criados e localizados em Itabuna/BA."
+
+# 4. Cupom de primeiro acesso
+puts "Criando cupom 'PRIMEIROACESSO'..."
+Coupon.find_or_create_by!(code: 'PRIMEIROACESSO') do |coupon|
+  coupon.description   = 'Acesso de 1 mês aos recursos Plus e Gold para novos usuários.'
+  coupon.discount_type = 'free_access'
+  coupon.duration_days = 30
+  coupon.plan_codes    = ['plus', 'gold']
+  coupon.usage_limit   = 0 # 0 = ilimitado; a restrição de uso único por usuário é garantida pelo UserCoupon
+  coupon.active        = true
+end
+puts "Cupom 'PRIMEIROACESSO' criado/verificado."

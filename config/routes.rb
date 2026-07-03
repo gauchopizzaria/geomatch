@@ -115,6 +115,7 @@ Rails.application.routes.draw do
   patch "/onboarding",   to: "users#complete_onboarding"
   get '/verificacao', to: 'users#verification', as: :verification
   patch '/verificacao', to: 'users#send_verification', as: :send_verification
+  post "/apply_coupon", to: "users#apply_coupon", as: :apply_coupon
 
   # Edição do próprio perfil
   resource :profile, controller: 'users', only: [:edit, :update] do
@@ -161,6 +162,7 @@ Rails.application.routes.draw do
     root to: 'settings#index'
     resources :settings, only: [:index, :edit, :update]
     resources :blog_posts, only: [:index, :new, :create, :edit, :update, :destroy]
+    resources :coupons
   end
 
   # =================================================================

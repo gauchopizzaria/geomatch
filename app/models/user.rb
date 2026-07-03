@@ -44,6 +44,15 @@ class User < ApplicationRecord
 
   has_many :reports_sent, class_name: 'Report', foreign_key: :reporter_id, dependent: :destroy
 
+  # Cupons resgatados por este usuário
+  has_many :user_coupons, dependent: :destroy
+  has_many :coupons, through: :user_coupons
+
+  # Atributo virtual — coupon_code chega junto do form de onboarding/perfil,
+  # mas não é coluna do banco. Sem isto, permitir :coupon_code em user_params
+  # quebraria o update com ActiveModel::UnknownAttributeError.
+  attr_accessor :coupon_code
+
   # Active Storage
   has_one_attached :avatar
   has_one_attached :avatar_original
@@ -338,30 +347,77 @@ class User < ApplicationRecord
   # PERMISSÕES DE VISUALIZAÇÃO (NOTIFICAÇÕES)
   # =========================================================
 
+  # Verifica genericamente uma feature: premium (via cupom/pagamento) libera tudo,
+  # senão consulta o JSON de features do plano.
+  def has_feature?(feature_name)
+    return true if premium?
+    features = (plan.features || {}).with_indifferent_access
+    features[feature_name] == true
+  end
+
   # 1. Pode ver quem curtiu ELE? (Aba "Quem te curtiu")
-  # Free: Não | Plus: Sim | Gold: Sim
+  # Free: Não | Plus: Sim | Gold: Sim | Premium (cupom): Sim
   def can_see_who_liked_me?
+    return true if premium?
     features = (plan.features || {}).with_indifferent_access
     features[:see_who_liked_me] == true
   end
 
   # 2. Pode ver quem ELE curtiu? (Aba "Você curtiu")
-  # Free: Não | Plus: Sim | Gold: Sim
+  # Free: Não | Plus: Sim | Gold: Sim | Premium (cupom): Sim
   def can_see_who_i_liked?
+    return true if premium?
     features = (plan.features || {}).with_indifferent_access
     features[:see_who_i_liked] == true
   end
 
-  # Free: Não | Plus: Não | Gold: Sim
+  # Free: Não | Plus: Não | Gold: Sim | Premium (cupom): Sim
   def can_rewind?
+    return true if premium?
     features = (plan.features || {}).with_indifferent_access
     features[:rewind_profile] == true
   end
 
-  # Free: Não | Plus: Não | Gold: Sim
+  # Free: Não | Plus: Não | Gold: Sim | Premium (cupom): Sim
   def can_search_by_distance?
+    return true if premium?
     features = (plan.features || {}).with_indifferent_access
     features[:search_by_distance] == true
+  end
+
+  # =========================================================
+  # CUPONS
+  # =========================================================
+
+  # Aplica um cupom ao usuário, concedendo dias de acesso premium.
+  # Retorna { success: Boolean, message: String }.
+  def apply_coupon(coupon_code)
+    coupon = Coupon.active.find_by(code: coupon_code.to_s.strip.upcase)
+
+    return { success: false, message: "Cupom inválido ou expirado." } unless coupon
+    return { success: false, message: "Você já usou este cupom." } if user_coupons.exists?(coupon: coupon)
+    return { success: false, message: "Limite de usos para este cupom atingido." } unless coupon.available?
+
+    case coupon.discount_type
+    when 'free_access'
+      # Concede acesso premium por `duration_days`, estendendo a partir do maior
+      # entre o premium atual (se ainda válido) e o momento presente.
+      current_premium_until = premium_until || Time.current
+      new_premium_until     = [current_premium_until, Time.current].max + coupon.duration_days.days
+
+      transaction do
+        update!(premium_until: new_premium_until)
+        coupon.increment_usage!
+        user_coupons.create!(coupon: coupon, applied_at: Time.current)
+      end
+
+      { success: true, message: "Cupom aplicado com sucesso! Você ganhou #{coupon.duration_days} dias de acesso premium." }
+    else
+      { success: false, message: "Tipo de cupom não suportado." }
+    end
+  rescue => e
+    Rails.logger.error "Erro ao aplicar cupom #{coupon_code} para User##{id}: #{e.message}"
+    { success: false, message: "Ocorreu um erro ao aplicar o cupom. Tente novamente." }
   end
 
   private

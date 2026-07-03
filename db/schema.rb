@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_07_01_170527) do
+ActiveRecord::Schema[8.1].define(version: 2026_07_03_185924) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -119,6 +119,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_170527) do
     t.index ["published_at"], name: "index_blog_posts_on_published_at"
     t.index ["slug"], name: "index_blog_posts_on_slug", unique: true
     t.index ["user_id"], name: "index_blog_posts_on_user_id"
+  end
+
+  create_table "coupons", force: :cascade do |t|
+    t.boolean "active", default: true
+    t.string "code", null: false
+    t.datetime "created_at", null: false
+    t.text "description"
+    t.string "discount_type", null: false
+    t.integer "duration_days"
+    t.datetime "expires_at"
+    t.jsonb "plan_codes", default: [], null: false
+    t.datetime "updated_at", null: false
+    t.integer "usage_limit"
+    t.integer "used_count", default: 0
+    t.index ["active"], name: "index_coupons_on_active"
+    t.index ["code"], name: "index_coupons_on_code", unique: true
   end
 
   create_table "favorites", force: :cascade do |t|
@@ -433,6 +449,17 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_170527) do
     t.index ["user_id"], name: "index_stories_on_user_id"
   end
 
+  create_table "user_coupons", force: :cascade do |t|
+    t.datetime "applied_at", null: false
+    t.bigint "coupon_id", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["coupon_id"], name: "index_user_coupons_on_coupon_id"
+    t.index ["user_id", "coupon_id"], name: "index_user_coupons_on_user_id_and_coupon_id", unique: true
+    t.index ["user_id"], name: "index_user_coupons_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "address"
     t.boolean "admin", default: false, null: false
@@ -543,5 +570,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_07_01_170527) do
   add_foreign_key "solid_queue_recurring_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "solid_queue_scheduled_executions", "solid_queue_jobs", column: "job_id", on_delete: :cascade
   add_foreign_key "stories", "users"
+  add_foreign_key "user_coupons", "coupons"
+  add_foreign_key "user_coupons", "users"
   add_foreign_key "users", "plans"
 end

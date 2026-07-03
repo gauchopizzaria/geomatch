@@ -154,6 +154,20 @@
       <%= f.hidden_field :street, data: { address_target: "street" } %>
     </div>
 
+    <%# --- Campo de Cupom (Opcional) --- %>
+    <div class="ob-field-group">
+      <label class="ob-label" for="user_coupon_code">
+        Código do Cupom (opcional)
+      </label>
+      <%= f.text_field :coupon_code,
+            id: "user_coupon_code",
+            class: "ob-input",
+            placeholder: "Ex: PRIMEIROACESSO",
+            autocomplete: "off",
+            style: "text-transform: uppercase;" %>
+      <span class="ob-hint">Se você tiver um código de cupom, insira-o aqui.</span>
+    </div>
+
     <%# --- Botão Enviar --- %>
     <div class="ob-actions">
       <%= f.submit "Entrar no GeoMatch →", class: "ob-btn-submit" %>

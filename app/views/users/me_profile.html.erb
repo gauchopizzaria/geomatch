@@ -170,6 +170,34 @@
     </div>
   </div>
 
+  <%# --- SEÇÃO DE CUPONS --- %>
+  <div class="coupon-section" style="margin: 20px 16px 0; padding: 20px; background: var(--color-section-light); border: 1px solid var(--color-border); border-radius: 16px;">
+    <h3 style="margin: 0 0 4px; font-size: 1rem; font-weight: 700; color: var(--color-text);">
+      <i class="fas fa-ticket-alt" style="color: var(--color-primary); margin-right: 6px;"></i>Aplicar Cupom
+    </h3>
+
+    <% if @user.premium? %>
+      <p style="margin: 0 0 14px; font-size: 0.8rem; color: var(--color-text-secondary);">
+        ✨ Acesso premium ativo até <strong><%= @user.premium_until.strftime('%d/%m/%Y') %></strong>. Um novo cupom soma mais dias.
+      </p>
+    <% else %>
+      <p style="margin: 0 0 14px; font-size: 0.8rem; color: var(--color-text-secondary);">
+        Tem um código promocional? Insira abaixo para desbloquear recursos premium.
+      </p>
+    <% end %>
+
+    <%= form_with url: apply_coupon_path, method: :post do |form| %>
+      <div style="display: flex; gap: 10px; align-items: stretch;">
+        <%= form.text_field :coupon_code,
+              placeholder: "Insira seu código",
+              autocomplete: "off",
+              style: "flex: 1; min-width: 0; padding: 12px 15px; border: 1px solid var(--color-border); border-radius: 12px; background: var(--color-input-bg); color: var(--color-text); font-size: 0.9rem; outline: none; text-transform: uppercase;" %>
+        <%= form.submit "Aplicar",
+              style: "padding: 12px 20px; border: none; border-radius: 12px; background: var(--color-primary); color: #121212; font-weight: 700; font-size: 0.9rem; cursor: pointer; flex-shrink: 0;" %>
+      </div>
+    <% end %>
+  </div>
+
 </div> <%# fecha o upgrade-carousel-container %>
 
   <%# --- 6. AÇÕES DA CONTA (SAIR / EXCLUIR) --- %>
