@@ -146,7 +146,7 @@ class PushNotificationJob < ApplicationJob
       message = {
         token:        recipient.fcm_token,
         notification: { title: title, body: body },
-        data:         { path: url }
+        data:         { path: url, url: url }
       }
 
       response = fcm.send_v1(message)
