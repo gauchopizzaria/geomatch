@@ -22,6 +22,10 @@ Rails.application.routes.draw do
   get 'termos-de-uso', to: 'pages#terms', as: 'terms'
   get 'politica-de-privacidade', to: 'pages#privacy', as: 'privacy'
   get '/suporte', to: 'pages#suporte', as: 'suporte'
+
+  # Exclusão de Conta e Dados — página pública exigida pela Google Play Store
+  get  '/exclusao-de-conta', to: 'account_deletions#new',    as: :account_deletion
+  post '/exclusao-de-conta', to: 'account_deletions#create'
   # -----------------------------------------------------------
 
   # Path configuration para Hotwire Native iOS
