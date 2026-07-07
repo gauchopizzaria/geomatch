@@ -11,7 +11,7 @@ class AccountDeletionsController < ApplicationController
 
   def new
     # Sobrescreve o título/descrição padrão do SEO (mecanismo do ApplicationController)
-    @seo_tags[:title]       = "Exclusão de Conta e Dados — GeoMatch"
+    @seo_tags[:title]       = "GeoMatch - Exclusão de Dados"
     @seo_tags[:description] = "Página oficial para solicitar a exclusão da sua conta e dados do aplicativo GeoMatch."
   end
 
