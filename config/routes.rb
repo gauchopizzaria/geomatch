@@ -22,6 +22,7 @@ Rails.application.routes.draw do
   get 'termos-de-uso', to: 'pages#terms', as: 'terms'
   get 'politica-de-privacidade', to: 'pages#privacy', as: 'privacy'
   get '/suporte', to: 'pages#suporte', as: 'suporte'
+  get '/instalar', to: 'pages#testflight_guide', as: 'testflight_guide'
 
   # Exclusão de Conta e Dados — página pública exigida pela Google Play Store
   get  '/exclusao-de-conta', to: 'account_deletions#new',    as: :account_deletion
