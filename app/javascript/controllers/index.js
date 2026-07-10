@@ -51,3 +51,6 @@ application.register("crop-screen", CropScreenController)
 
 import LandingController from "./landing_controller"
 application.register("landing", LandingController)
+
+import GenderFilterController from "./gender_filter_controller"
+application.register("gender-filter", GenderFilterController)

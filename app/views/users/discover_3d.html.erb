@@ -32,9 +32,7 @@
       <%= image_tag "logo-geomatch-dourada.png", class: "header-logo-img" %>
     </div>
     <div class="header-right">
-      <button id="gender-filter-toggle" class="btn-gender-icon" title="Filtrar Gênero">
-        <%= image_tag "icone-generos.png", class: "icon-generos-img" %>
-      </button>
+      <%= render "gender_filter", selected: "all" %>
     </div>
   </div>
 

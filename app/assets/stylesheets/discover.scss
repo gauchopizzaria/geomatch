@@ -59,8 +59,54 @@
   pointer-events: none;
 }
 .header-logo-img { height: 28px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.8)); pointer-events: auto; }
-.btn-gender-icon { background: transparent; border: none; padding: 0; cursor: pointer; display: flex; align-items: center; pointer-events: auto; -webkit-tap-highlight-color: transparent; -webkit-touch-callout: none; &:active { transform: scale(0.95); } }
-.icon-generos-img { height: 28px; width: auto; object-fit: contain; filter: drop-shadow(0 2px 4px rgba(0,0,0,0.5)); }
+// Filtro de gênero segmentado (pílula de vidro) — 4 opções com estado ativo dourado.
+// pointer-events: auto é obrigatório: o .discover-header-floating tem pointer-events: none.
+.gm-gender-filter {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 3px;
+  border-radius: 999px;
+  background: linear-gradient(160deg, rgba(255,255,255,0.14) 0%, rgba(255,255,255,0.05) 100%);
+  -webkit-backdrop-filter: blur(22px) saturate(1.6);
+  backdrop-filter: blur(22px) saturate(1.6);
+  border: 1px solid rgba(255,255,255,0.16);
+  box-shadow:
+    0 1px 0 rgba(255,255,255,0.16) inset,
+    0 1px 2px rgba(0,0,0,0.25) inset,
+    0 10px 26px rgba(0,0,0,0.4);
+  pointer-events: auto;
+}
+
+.gm-gender-filter__opt {
+  position: relative;
+  appearance: none;
+  border: 0;
+  cursor: pointer;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: transparent;
+  color: rgba(255,255,255,0.72);
+  transition: background 0.18s ease, color 0.18s ease, transform 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+}
+
+.gm-gender-filter__opt svg { width: 16px; height: 16px; }
+.gm-gender-filter__opt:active { transform: scale(0.92); }
+
+.gm-gender-filter__opt[aria-pressed="true"] {
+  background: linear-gradient(135deg, #F4DFC4 0%, #E8C99B 45%, #C9A079 100%);
+  color: #1A1108;
+  box-shadow:
+    0 0 0 1px rgba(244,223,196,0.5) inset,
+    0 4px 12px rgba(201,160,121,0.45);
+}
+
+.gm-gender-filter__opt::after { content: ""; position: absolute; inset: -5px; }
 
 // 3. CONTROLE DE RADAR
 .radar-control-floating {

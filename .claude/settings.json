@@ -1,0 +1,11 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(ruby bin/rails dartsass:build; \"CSS EXIT: $LASTEXITCODE\"; yarn build; \"JS EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails dartsass:build; \"CSS EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails runner \"html = ApplicationController.renderer.render\\(partial: 'users/gender_filter', locals: { selected: 'all' }\\); puts 'partial OK \\(' + html.length.to_s + ' bytes\\)'; puts 'botoes: ' + html.scan\\('gm-gender-filter__opt'\\).size.to_s; puts 'aria-pressed true no all: ' + html.include?\\('data-value=\\\\\"all\\\\\"'\\).to_s; puts 'svgs: ' + html.scan\\('<svg'\\).size.to_s\"; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails runner \"html = UsersController.renderer.render\\(partial: 'users/gender_filter', locals: { selected: 'all' }\\); puts 'partial OK \\(' + html.length.to_s + ' bytes\\)'; puts 'botoes: ' + html.scan\\('gm-gender-filter__opt'\\).size.to_s; puts 'svgs: ' + html.scan\\('<svg'\\).size.to_s; puts 'all pressionado: ' + html.scan\\('aria-pressed=\\\\\"true\\\\\"'\\).size.to_s\"; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_gender_partial.rb\"; \"EXIT: $LASTEXITCODE\")"
+    ]
+  }
+}

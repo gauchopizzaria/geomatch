@@ -20,7 +20,6 @@ const INITIAL_RANGE_METERS = 150;
 const FETCH_COOLDOWN_MS = 10000;
 const STORAGE_KEYS = {
   RANGE: "geomatch_range",
-  GENDER_FILTER: "geomatch_gender_filter",
   INVISIBLE_MODE: "geomatch_invisible_mode",
 };
 
@@ -30,7 +29,9 @@ let mapResizeInterval = null;
 let fixedUserLat = null;
 let fixedUserLng = null;
 let currentRangeMeters = parseInt(localStorage.getItem(STORAGE_KEYS.RANGE)) || INITIAL_RANGE_METERS;
-let currentGenderFilter = localStorage.getItem(STORAGE_KEYS.GENDER_FILTER) || "all";
+// Filtro de gênero SEMPRE inicia em "all" (Todos) — não persiste entre visitas.
+// A escolha vale apenas enquanto o usuário está na tela do mapa.
+let currentGenderFilter = "all";
 let mapboxUserMarkers = {}; // Para gerenciar marcadores de usuários no Mapbox
 let mapboxMarkerDistances = {}; // { userId: distanceKm } — para filtragem client-side por raio
 let mapboxUserData = {}; // { userId: userData } — dados mais recentes por usuário
@@ -1116,7 +1117,6 @@ document.addEventListener("turbo:load", () => {
   const containerElement = document.querySelector('.discover-fullscreen-container');
   const fabCenterMap = document.getElementById("fab-center-map");
   const toggleVisibilityBtn = document.getElementById("toggle-visibility-btn");
-  const genderToggleBtn = document.getElementById("gender-filter-toggle");
   const fabLiveTracking = document.getElementById("fab-live-tracking");
   const closePopupBtn = document.getElementById("close-popup-btn");
   const popupOverlay = document.querySelector(".popup-overlay");
@@ -1152,37 +1152,39 @@ document.addEventListener("turbo:load", () => {
 
   // Radar control é fixo — posicionado pelo CSS, sem drag JS.
 
-  // FILTRO GÊNERO — ciclo circular com HUD imersivo
-  if (genderToggleBtn) {
-    let stateIdx = GENDER_STATES.findIndex(s => s.key === currentGenderFilter);
-    if (stateIdx === -1) stateIdx = 0;
+  // FILTRO GÊNERO — controle segmentado (partial users/_gender_filter + Stimulus
+  // gender-filter). O Stimulus dispara "gm:gender-changed" no document com a chave
+  // canônica (all/male/female/non-binary); aqui limpamos os marcadores e refazemos
+  // o fetch. Reset por visita: o módulo JS sobrevive a navegações Turbo, então sem
+  // isto um filtro escolhido antes de sair da tela "vazaria" para a próxima entrada.
+  currentGenderFilter = "all";
 
-    genderToggleBtn.addEventListener("click", () => {
-      stateIdx = (stateIdx + 1) % GENDER_STATES.length;
-      const state = GENDER_STATES[stateIdx];
-      currentGenderFilter = state.key;
-      localStorage.setItem(STORAGE_KEYS.GENDER_FILTER, currentGenderFilter);
-
-      showGenderHUD(state);
-
-      // Limpa marcadores stale imediatamente — evita desalinhamento visual enquanto
-      // o novo fetch não chega. O fetch cancelará qualquer request anterior.
-      Object.values(mapboxUserMarkers).forEach(m => m.remove());
-      mapboxUserMarkers = {};
-      mapboxMarkerDistances = {};
-      mapboxUserData = {};
-      const _usersList = document.getElementById("users-list");
-      if (_usersList) _usersList.innerHTML = '';
-
-      genderToggleBtn.style.transform = "scale(0.8)";
-      setTimeout(() => {
-        genderToggleBtn.style.transform = "scale(1)";
-        if (fixedUserLat && fixedUserLng) {
-          loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
-        }
-      }, 150);
-    });
+  // Guarda contra listener duplicado — este setup roda a cada turbo:load.
+  if (window._gmGenderHandler) {
+    document.removeEventListener("gm:gender-changed", window._gmGenderHandler);
   }
+  window._gmGenderHandler = (event) => {
+    const key = event.detail?.key || "all";
+    if (key === currentGenderFilter) return;
+    currentGenderFilter = key;
+
+    const state = GENDER_STATES.find(s => s.key === key) || GENDER_STATES[0];
+    showGenderHUD(state);
+
+    // Limpa marcadores stale imediatamente — evita desalinhamento visual enquanto
+    // o novo fetch não chega. O fetch cancelará qualquer request anterior.
+    Object.values(mapboxUserMarkers).forEach(m => m.remove());
+    mapboxUserMarkers = {};
+    mapboxMarkerDistances = {};
+    mapboxUserData = {};
+    const _usersList = document.getElementById("users-list");
+    if (_usersList) _usersList.innerHTML = '';
+
+    if (fixedUserLat && fixedUserLng) {
+      loadNearbyUsers(fixedUserLat, fixedUserLng, currentRangeMeters, currentGenderFilter);
+    }
+  };
+  document.addEventListener("gm:gender-changed", window._gmGenderHandler);
 
   // BOTTOM SHEET
   const bottomSheet = document.querySelector(".users-bottom-sheet");
