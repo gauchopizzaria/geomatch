@@ -63,7 +63,8 @@
     <!-- Mapbox GL (carregado no HEAD para que modules ES6 possam acessar globalmente) -->
     <link href="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.css" rel="stylesheet">
     <script src="https://api.mapbox.com/mapbox-gl-js/v3.0.1/mapbox-gl.js"></script>
-    <script src="https://unpkg.com/@turf/turf@6/turf.min.js"></script>
+    <%# turf é carregado UMA vez (v7, mais abaixo). A carga dupla v6+v7 causava
+        corrida entre CDNs — se uma falhasse, turf.circle quebrava o radar. %>
 
     <!-- CSS principal (preload para LCP) -->
     <link rel="preload" href="<%= asset_path("application.css") %>" as="style">

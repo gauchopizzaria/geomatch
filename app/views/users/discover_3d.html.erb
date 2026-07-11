@@ -231,7 +231,9 @@
     <%# Gradient referenced by all JS-injected gender SVG icons %>
     <svg width="0" height="0" style="position:absolute; overflow:hidden;">
       <defs>
-        <linearGradient id="gm-gold-grad" x1="0%" y1="0%" x2="100%" y2="0%">
+        <%# userSpaceOnUse: gradiente em objectBoundingBox não renderiza em linhas
+            retas (bbox de área zero) — as hastes dos símbolos ♀/⚥ sumiriam %>
+        <linearGradient id="gm-gold-grad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="24" y2="0">
           <stop offset="0%" stop-color="#F4DFC4"/>
           <stop offset="100%" stop-color="#C9A079"/>
         </linearGradient>

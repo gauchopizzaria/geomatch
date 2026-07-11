@@ -51,29 +51,28 @@ const radarLayerId = 'radar-circle-layer';
 
 // --- Gender filter cycle definition ---
 const GENDER_STATES = [
-  { key: "all",        label: "Todos",       svgKeys: ["male", "female", "nonbinary"] },
-  { key: "male",       label: "Homens",      svgKeys: ["male"]       },
-  { key: "female",     label: "Mulheres",    svgKeys: ["female"]     },
-  { key: "non-binary", label: "Não Binário", svgKeys: ["nonbinary"]  },
+  { key: "all",        label: "Todos",       svgKeys: ["all"]       },
+  { key: "male",       label: "Homens",      svgKeys: ["male"]      },
+  { key: "female",     label: "Mulheres",    svgKeys: ["female"]    },
+  { key: "non-binary", label: "Não Binário", svgKeys: ["nonbinary"] },
 ];
 
+// Mesma geometria dos ícones do botão segmentado (users/_gender_filter_icon.html.erb)
+// para o HUD exibir exatamente o símbolo selecionado. O gradiente gm-gold-grad usa
+// gradientUnits="userSpaceOnUse" (0→24) — obrigatório para pintar as linhas retas.
 const GENDER_SVGS = {
-  male: `<svg viewBox="0 0 44 44" fill="none" stroke="url(#gm-gold-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="18" cy="26" r="13"/>
-    <line x1="27" y1="17" x2="40" y2="4"/>
-    <polyline points="30 4 40 4 40 14"/>
+  all: `<svg viewBox="0 0 24 24" fill="none" stroke="url(#gm-gold-grad)" stroke-width="2" stroke-linecap="round" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="8" cy="8" r="4"/><circle cx="16" cy="8" r="4"/>
+    <path d="M3 20c0-3.3 2.7-6 6-6M21 20c0-3.3-2.7-6-6-6" stroke-linejoin="round"/>
   </svg>`,
-  female: `<svg viewBox="0 0 44 44" fill="none" stroke="url(#gm-gold-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="22" cy="17" r="13"/>
-    <line x1="22" y1="30" x2="22" y2="42"/>
-    <line x1="14" y1="37" x2="30" y2="37"/>
+  male: `<svg viewBox="0 0 24 24" fill="none" stroke="url(#gm-gold-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="10" cy="14" r="6"/><path d="M14.5 9.5 20 4M14 4h6v6"/>
   </svg>`,
-  nonbinary: `<svg viewBox="0 0 44 44" fill="none" stroke="url(#gm-gold-grad)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
-    <circle cx="22" cy="22" r="11"/>
-    <line x1="22" y1="33" x2="22" y2="42"/>
-    <line x1="15" y1="39" x2="29" y2="39"/>
-    <line x1="22" y1="11" x2="22" y2="4"/>
-    <polyline points="16 9 22 4 28 9"/>
+  female: `<svg viewBox="0 0 24 24" fill="none" stroke="url(#gm-gold-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <circle cx="12" cy="9" r="6"/><path d="M12 15v7M9 19h6"/>
+  </svg>`,
+  nonbinary: `<svg viewBox="0 0 24 24" fill="none" stroke="url(#gm-gold-grad)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" xmlns="http://www.w3.org/2000/svg">
+    <rect x="5" y="5" width="14" height="14" rx="3" transform="rotate(45 12 12)"/>
   </svg>`,
 };
 
@@ -302,22 +301,28 @@ function updateRadarVisuals() {
   const radiusInPixels = Math.abs(edgePoint.y - point.y);
   container.style.setProperty('--radar-radius', `${radiusInPixels}px`);
 
-  // 3. Círculo Geográfico (Turf.js no Mapbox)
-  if (map.isStyleLoaded()) {
-    const center = [fixedUserLng, fixedUserLat];
-    const circle = turf.circle(center, currentRangeMeters / 1000, { steps: 64, units: 'kilometers' });
+  // 3. Círculo Geográfico (Turf.js no Mapbox) — isolado em try/catch: se o turf
+  // (CDN) não carregar ou o style trocar no meio, a ancoragem CSS acima já rodou
+  // e o círculo continua preso à localização do usuário.
+  try {
+    if (map.isStyleLoaded() && typeof turf !== 'undefined') {
+      const center = [fixedUserLng, fixedUserLat];
+      const circle = turf.circle(center, currentRangeMeters / 1000, { steps: 64, units: 'kilometers' });
 
-    if (map.getSource(radarSourceId)) {
-      map.getSource(radarSourceId).setData(circle);
-    } else {
-      map.addSource(radarSourceId, { 'type': 'geojson', 'data': circle });
-      map.addLayer({
-        'id': radarLayerId,
-        'type': 'fill',
-        'source': radarSourceId,
-        'paint': { 'fill-color': '#F4E4BC', 'fill-opacity': 0.1 }
-      });
+      if (map.getSource(radarSourceId)) {
+        map.getSource(radarSourceId).setData(circle);
+      } else {
+        map.addSource(radarSourceId, { 'type': 'geojson', 'data': circle });
+        map.addLayer({
+          'id': radarLayerId,
+          'type': 'fill',
+          'source': radarSourceId,
+          'paint': { 'fill-color': '#F4E4BC', 'fill-opacity': 0.1 }
+        });
+      }
     }
+  } catch (e) {
+    console.error('[GeoMatch] Falha ao desenhar círculo geojson do radar:', e);
   }
 }
 
@@ -950,14 +955,21 @@ function initializeMapAndLocation() {
     }
   });
 
-  // Throttle via requestAnimationFrame para não recalcular turf.circle() a cada frame
+  // Throttle via requestAnimationFrame para não recalcular turf.circle() a cada frame.
+  // try/finally: se updateRadarVisuals lançar UMA exceção, rafPending ficaria travado
+  // em true e o círculo pararia de seguir o mapa para sempre.
   let rafPending = false;
   map.on('move', () => {
     if (rafPending) return;
     rafPending = true;
     requestAnimationFrame(() => {
-      updateRadarVisuals();
-      rafPending = false;
+      try {
+        updateRadarVisuals();
+      } catch (e) {
+        console.error('[GeoMatch] updateRadarVisuals falhou:', e);
+      } finally {
+        rafPending = false;
+      }
     });
   });
 
