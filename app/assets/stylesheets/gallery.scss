@@ -469,3 +469,36 @@ body.turbo-native .gallery-header { padding-top: 14px; }
   h3 { font-size: 1.1rem; margin: 0 0 6px; color: var(--color-dark); }
   p  { font-size: 0.92rem; color: var(--color-text-secondary); margin: 0; }
 }
+
+// ----- MODO INVISÍVEL (navegação 100% oculta) -----
+.gallery-header-right {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+// Verde = visível | Vermelho = invisível (mesmas cores do FAB do mapa 3D)
+.gallery-visibility-btn {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  background: rgba(15, 209, 24, 0.12);
+  border: 1.5px solid #0fd118;
+  color: #0aa812;
+  transition: all 0.2s ease;
+  -webkit-tap-highlight-color: transparent;
+  -webkit-touch-callout: none;
+
+  svg { flex-shrink: 0; }
+  &:active { transform: scale(0.93); }
+
+  &.is-invisible {
+    background: rgba(255, 77, 77, 0.14);
+    border-color: #ff4d4d;
+    color: #ff4d4d;
+  }
+}

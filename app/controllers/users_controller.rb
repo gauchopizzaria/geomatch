@@ -111,6 +111,14 @@ class UsersController < ApplicationController
       return
     end
 
+    # MODO INVISÍVEL (navegação 100% oculta): perfil de usuário invisível fica
+    # inacessível para todos — some da galeria, do mapa e também da tela de perfil.
+    # O próprio usuário continua vendo o seu perfil normalmente.
+    if @user.invisible? && @user.id != current_user.id
+      redirect_to discover_3d_path, alert: "Perfil indisponível."
+      return
+    end
+
   rescue ActiveRecord::RecordNotFound
     redirect_to discover_3d_path, alert: "Usuário não encontrado."
   end

@@ -54,3 +54,6 @@ application.register("landing", LandingController)
 
 import GenderFilterController from "./gender_filter_controller"
 application.register("gender-filter", GenderFilterController)
+
+import VisibilityToggleController from "./visibility_toggle_controller"
+application.register("visibility-toggle", VisibilityToggleController)
