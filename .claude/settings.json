@@ -21,7 +21,8 @@
       "PowerShell(yarn build; \"JS: $LASTEXITCODE\"; ruby bin/rails assets:precompile 2>&1 | Select-Object -Last 1; \"PRECOMPILE: $LASTEXITCODE\")",
       "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_turf.rb\"; \"EXIT: $LASTEXITCODE\")",
       "PowerShell(yarn build; \"JS: $LASTEXITCODE\"; ruby bin/rails dartsass:build; \"CSS: $LASTEXITCODE\"; ruby bin/rails assets:precompile 2>&1 | Select-Object -Last 1; \"PRECOMPILE: $LASTEXITCODE\")",
-      "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_gallery_invisible.rb\"; \"EXIT: $LASTEXITCODE\")"
+      "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_gallery_invisible.rb\"; \"EXIT: $LASTEXITCODE\")",
+      "PowerShell(ruby bin/rails runner \"C:\\\\Users\\\\Brendo\\\\AppData\\\\Local\\\\Temp\\\\claude\\\\c--Users-Brendo-Documents-DEV-geomatch-ruby-geomatch\\\\15e2ec9e-1923-4dc9-a6af-ba4ead0a7229\\\\scratchpad\\\\test_lead_tiers.rb\"; \"EXIT: $LASTEXITCODE\")"
     ]
   }
 }

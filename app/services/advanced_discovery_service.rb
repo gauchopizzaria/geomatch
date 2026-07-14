@@ -13,7 +13,9 @@ class AdvancedDiscoveryService
 
     # 1. Constrói a query base: Localização (Dinâmica) e Exclusão
     # Usamos search_distance aqui em vez do 10 fixo
-    base_query = User.near([@user.latitude, @user.longitude], search_distance)
+    # User.visible: regra de discovery — usuários em modo invisível não aparecem
+    base_query = User.visible
+                     .near([@user.latitude, @user.longitude], search_distance)
                      .where.not(id: @user.id)
                      .where.not(id: excluded_user_ids)
 
@@ -35,20 +37,13 @@ class AdvancedDiscoveryService
 
     return nil, nil if base_users.empty?
 
-    # 5. Filtro de Hobbies (Mantido igual)
-    user_hobbies = @user.hobbies_list
-    
-    if user_hobbies.any?
-      users_with_common_hobbies = base_users.select do |u|
-        (u.hobbies_list & user_hobbies).any?
-      end
-      eligible_users = users_with_common_hobbies.any? ? users_with_common_hobbies : base_users
-    else
-      eligible_users = base_users
-    end
-
-    # 6. Seleciona aleatório e calcula distância
-    next_user = eligible_users.sample
+    # 5. Prioridade geográfica em camadas:
+    #    1ª) mesma cidade do usuário
+    #    2ª) outras cidades do mesmo estado (quando a cidade esgotar)
+    #    3ª) outros estados (quando o estado esgotar)
+    # "Esgotar" acontece naturalmente: perfis já curtidos/rejeitados chegam em
+    # excluded_user_ids e saem do pool, fazendo a busca descer de camada.
+    next_user = pick_by_location_tier(base_users)
 
     if next_user
       distance = Geocoder::Calculations.distance_between(
@@ -59,5 +54,48 @@ class AdvancedDiscoveryService
     else
       return nil, nil
     end
+  end
+
+  private
+
+  # Percorre as camadas de localização em ordem e sorteia dentro da primeira
+  # camada que tiver candidatos. Usuário sem cidade/estado cadastrado cai
+  # direto na camada geral (comportamento anterior).
+  def pick_by_location_tier(users)
+    city  = @user.city.to_s.strip
+    state = @user.state.to_s.strip
+
+    tiers = []
+    tiers << ->(u) { same_text?(u.city, city) && same_text?(u.state, state) } if city.present? && state.present?
+    tiers << ->(u) { same_text?(u.state, state) }                             if state.present?
+    tiers << ->(_) { true }
+
+    tiers.each do |tier|
+      candidates = users.select(&tier)
+      chosen = pick_with_hobby_preference(candidates)
+      return chosen if chosen
+    end
+
+    nil
+  end
+
+  # Dentro da camada, mantém a preferência existente: quem tem hobbies em comum
+  # vem primeiro; sem ninguém em comum, qualquer um da camada serve.
+  def pick_with_hobby_preference(candidates)
+    return nil if candidates.empty?
+
+    user_hobbies = @user.hobbies_list
+    if user_hobbies.any?
+      with_common = candidates.select { |u| (u.hobbies_list & user_hobbies).any? }
+      return with_common.sample if with_common.any?
+    end
+
+    candidates.sample
+  end
+
+  # Comparação tolerante: ignora maiúsculas/minúsculas e espaços nas pontas
+  # (Geocoder pode gravar "Itabuna" / "itabuna " dependendo da fonte).
+  def same_text?(a, b)
+    a.to_s.strip.casecmp?(b.to_s.strip)
   end
 end
