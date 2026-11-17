@@ -77,7 +77,8 @@ RSpec.describe "Mensagens (/matches)", type: :request do
       expect(row.at_css(".message-status.status-read")).to be_present
 
       expect(page.css("#chat-quick-replies")).to be_empty # já mandei mensagem: sem sugestões
-      expect(page.at_css(".chat-plus-item")["href"]).to eq("/mimos/catalogo?receiver_id=#{felipe.id}")
+      # o Mimo agora fica no painel do "+" (com Fotos e Câmera)
+      expect(page.at_css("#chat-attach .chat-attach-mimo")["href"]).to eq("/mimos/catalogo?receiver_id=#{felipe.id}")
       expect(page.at_css("#message-input")["placeholder"]).to eq("Mensagem")
     end
 

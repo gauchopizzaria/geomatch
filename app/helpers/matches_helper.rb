@@ -55,6 +55,47 @@ module MatchesHelper
     end
   end
 
+  # --- Balões de mídia (o chat_logic.js monta o mesmo HTML para o que chega ao vivo) ---
+
+  AUDIO_ICONS = (
+    '<svg class="msg-audio-icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.6v12.8a1 1 0 0 0 1.52.85l10.2-6.4a1 1 0 0 0 0-1.7l-10.2-6.4a1 1 0 0 0-1.52.85z"/></svg>' \
+    '<svg class="msg-audio-icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>'
+  ).html_safe.freeze
+
+  # Mensagem de voz: tocar/pausar, onda (uma barra por pico) e duração
+  def chat_audio_tag(message)
+    audio = message.audio_preview
+    meta  = content_tag(:span, class: "msg-audio-meta") do
+      content_tag(:span, "", class: "msg-audio-dot") +
+        content_tag(:span, MessageMedia.duration_label(audio[:duration]), class: "msg-audio-time")
+    end
+
+    content_tag(:span, class: "msg-audio",
+                       data: { url: audio[:url], fallback_url: audio[:fallback_url], duration: audio[:duration] }) do
+      content_tag(:button, AUDIO_ICONS, type: "button", class: "msg-audio-play", aria: { label: "Tocar áudio" }) +
+        content_tag(:span, content_tag(:span, audio_wave_bars(audio[:peaks]), class: "msg-audio-wave") + meta,
+                    class: "msg-audio-body")
+    end
+  end
+
+  # Sempre AUDIO_PEAKS barras: os picos gravados são esticados/encolhidos para caber
+  def audio_wave_bars(peaks)
+    count = MessageMedia::AUDIO_PEAKS
+    bars = Array.new(count) do |index|
+      peak = peaks.empty? ? 0 : peaks[(index * peaks.size / count.to_f).floor].to_i
+      # 14% é a barra mínima (silêncio); 100% é a altura toda da onda
+      tag.i(style: "height:#{[ peak, 14 ].max}%")
+    end
+    safe_join(bars)
+  end
+
+  def chat_photo_tag(message)
+    photo = message.photo_preview
+    size  = photo[:width].positive? && photo[:height].positive? ? { width: photo[:width], height: photo[:height] } : {}
+
+    image_tag(photo[:url], { class: "msg-photo", alt: "Foto", loading: "lazy", draggable: "false" }.merge(size))
+  end
+
   private
 
   def mutual_match?(viewer, other)

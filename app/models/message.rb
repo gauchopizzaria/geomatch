@@ -30,6 +30,9 @@ class Message < ApplicationRecord
   belongs_to :reply_to, class_name: "Message", optional: true
   has_many   :reactions, dependent: :destroy
 
+  # Mensagem de voz e foto: anexos do Active Storage + rótulo no content
+  include MessageMedia
+
   validates :content, presence: true
   validate  :reply_to_must_belong_to_same_match
 
@@ -41,8 +44,9 @@ class Message < ApplicationRecord
     has_attribute?(:edited_at) && edited_at.present?
   end
 
+  # Áudio e foto não têm texto para editar (o content deles é só o rótulo)
   def editable_by?(user)
-    Message.chat_controls? && sender_id == user&.id && created_at > EDIT_WINDOW.ago
+    Message.chat_controls? && sender_id == user&.id && created_at > EDIT_WINDOW.ago && !media?
   end
 
   # Só quem enviou; mensagem lida antes de existir read_at conta como vista há
@@ -96,6 +100,26 @@ class Message < ApplicationRecord
     }
   end
 
+  # A mensagem no formato que o chat_logic.js desenha (broadcast e resposta do envio)
+  def chat_payload
+    {
+      id:         id,
+      match_id:   match_id,
+      content:    content,
+      kind:       kind,
+      sender_id:  sender_id,
+      status:     status,
+      created_at: created_at.iso8601,
+      user_name:  sender.display_name || "Usuário",
+      avatar_url: sender.avatar_url || "/assets/avatarfoto.jpg",
+      verified:   sender.verified?,
+      reply_to:   reply_to_preview,
+      prompt:     prompt_preview,
+      audio:      audio_preview,
+      photo:      photo_preview
+    }
+  end
+
   private
 
   # A citação só pode apontar para uma mensagem desta conversa: um reply_to_id
@@ -108,23 +132,7 @@ class Message < ApplicationRecord
   end
 
   def broadcast_message
-    payload = {
-      message: {
-        id:         id,
-        match_id:   match_id,
-        content:    content,
-        sender_id:  sender_id,
-        status:     status,
-        created_at: created_at.iso8601,
-        user_name:  sender.display_name || "Usuário",
-        avatar_url: sender.avatar_url || "/assets/avatarfoto.jpg",
-        verified:   sender.verified?,
-        reply_to:   reply_to_preview,
-        prompt:     prompt_preview
-      }
-    }
-
-    MatchChannel.broadcast_to(match, payload)
+    MatchChannel.broadcast_to(match, { message: chat_payload })
   rescue => e
     Rails.logger.error "[Message#broadcast_message] Falha no broadcast match=#{match_id} error=#{e.class}: #{e.message}"
   end

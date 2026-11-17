@@ -2,6 +2,7 @@
 // CONVERSA (/matches/:id) — layout do mockup (739px de largura → ×0,528 para 390px)
 // Topo branco, balões recebidos brancos e enviados pretos, horário embaixo de cada
 // sequência, "digitando" em balão, respostas rápidas e campo com "+" e enviar dourado.
+// Mensagem de voz, foto, gravador e painel do "+": chat_media.scss.
 // =========================================================
 
 .chat-screen-wrapper, .chat-screen-wrapper * {
@@ -573,8 +574,17 @@
 }
 
 /* --- 3. CAMPO (Fixo no Rodapé) --- */
-.chat-input-dark {
+// O rodapé inteiro: a barra do campo e, embaixo dela, o painel do "+"; durante a gravação
+// travada a barra dá lugar ao gravador (chat_media.scss)
+.chat-composer {
+  position: relative; // ancora o cadeado, que sobe por cima das mensagens
   flex-shrink: 0;
+  width: 100%;
+  background-color: var(--chat-bar);
+}
+
+.chat-input-dark {
+  position: relative; // ancora "0:05 · Deslize para cancelar" por cima do campo
   width: 100%;
   display: flex;
   align-items: center;
@@ -594,14 +604,15 @@
   padding-bottom: 9px;
 }
 
-/* "+" com o menu "Enviar um Mimo" */
-.chat-plus {
-  position: relative;
-  flex-shrink: 0;
+/* Painel do "+" aberto: é ele que fica por último e leva o respiro de safe-area */
+.chat-screen-wrapper.attach-open .chat-input-dark {
+  padding-bottom: 9px;
 }
 
+/* "+": abre o painel de anexos (chat_media.scss) e vira "×" enquanto ele está aberto */
 .chat-plus-btn {
   display: flex;
+  flex-shrink: 0;
   align-items: center;
   justify-content: center;
   width: 43px;
@@ -612,6 +623,7 @@
   background: var(--chat-plus-bg);
   color: var(--chat-text);
   cursor: pointer;
+  transition: background-color 0.18s ease, border-color 0.18s ease, color 0.18s ease;
   -webkit-tap-highlight-color: transparent;
 
   svg {
@@ -621,38 +633,16 @@
     stroke: currentColor;
     stroke-width: 2;
     stroke-linecap: round;
+    transition: transform 0.18s ease;
   }
 
-  &[aria-expanded="true"] { background: #f3eee6; }
-}
+  &[aria-expanded="true"] {
+    border-color: #1c1c1e;
+    background: #1c1c1e;
+    color: #fff;
 
-.chat-plus-menu {
-  position: absolute;
-  bottom: calc(100% + 10px);
-  left: 0;
-  z-index: 50;
-  min-width: 190px;
-  padding: 6px;
-  border-radius: 16px;
-  background: var(--chat-surface);
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.18);
-
-  &[hidden] { display: none; }
-}
-
-.chat-plus-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px;
-  border-radius: 11px;
-  color: var(--chat-text);
-  font-size: 15px;
-  font-weight: 600;
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
-
-  &:active { background: #f6f1e8; }
+    svg { transform: rotate(45deg); }
+  }
 }
 
 .dark-form {
@@ -709,6 +699,9 @@
   }
 
   &:active { transform: scale(0.92); }
+
+  // Microfone e enviar ocupam o mesmo lugar: o chat_logic.js mostra um ou outro
+  &[hidden] { display: none; }
 }
 
 /* --- 4. MENU DOS TRÊS PONTINHOS — chat_menu.scss (gm-*) --- */
@@ -1050,6 +1043,12 @@ html.dark:not(.light-mode) {
   .chat-connection-chip,
   .chat-quick-reply,
   .chat-plus-btn { border-color: #3a3a3c; }
+
+  .chat-plus-btn[aria-expanded="true"] {
+    border-color: #e6d0b6;
+    background: #e6d0b6;
+    color: #1c1c1e;
+  }
 
   .message-row.sent .message-bubble { background: linear-gradient(180deg, #e6d0b6 0%, #b8987b 100%); color: #1c1c1e; }
   .message-row.sent .msg-quote-name { color: #3d2e17; }

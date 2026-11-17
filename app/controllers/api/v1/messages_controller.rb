@@ -10,6 +10,7 @@ module Api
         @messages = @match.messages.visible_to(current_api_user)
           .order(created_at: :asc)
           .includes(:sender, :reactions)
+          .with_attached_audio.with_attached_photo
       end
     end
   end

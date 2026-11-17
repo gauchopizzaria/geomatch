@@ -1,4 +1,7 @@
 import consumer from "./channels/consumer";
+import { createAudioPlayer, formatDuration } from "./chat/audio_player";
+import { createVoiceRecorder } from "./chat/voice_recorder";
+import { preparePhoto, createPhotoViewer } from "./chat/photo";
 
 document.addEventListener('turbo:load', () => {
   const chatWindow = document.getElementById('chat-window');
@@ -30,6 +33,15 @@ document.addEventListener('turbo:load', () => {
   const TYPING_TIMEOUT = 3000;
 
   const csrfToken = () => document.querySelector('meta[name="csrf-token"]').content;
+
+  // Mensagens de voz e fotos (app/javascript/chat/): um player para a conversa toda,
+  // a foto em tela cheia e, mais abaixo, o gravador do microfone
+  const composer    = document.getElementById('chat-composer');
+  const micButton   = document.getElementById('mic-button');
+  const PEAK_COUNT  = parseInt(composer?.dataset.peaks, 10) || 32;
+  const audioPlayer = createAudioPlayer({ onError: () => showToast('Não foi possível tocar este áudio.', true) });
+  const photoViewer = createPhotoViewer();
+  let voiceRecorder = null;
 
   // =======================================================
   //   INJECT OVERLAYS (apenas uma vez por turbo:load)
@@ -131,6 +143,10 @@ document.addEventListener('turbo:load', () => {
   document.addEventListener('turbo:visit', () => {
     readObserver.disconnect();
     matchChannel.unsubscribe();
+    // Gravação em andamento é descartada e o microfone é solto; o áudio para de tocar
+    if (voiceRecorder) voiceRecorder.destroy();
+    audioPlayer.stop();
+    photoViewer.close();
   }, { once: true });
 
   // =======================================================
@@ -190,6 +206,7 @@ document.addEventListener('turbo:load', () => {
       .then(response => {
         if (response.ok) {
           // Mantém o começo da conversa (aviso de segurança + como vocês se conectaram)
+          audioPlayer.stop();
           chatWindow.querySelectorAll('.message-row, .date-separator:not(.is-connection)').forEach(m => m.remove());
           cancelReply();
           closeHeaderMenu();
@@ -291,6 +308,7 @@ document.addEventListener('turbo:load', () => {
     replyPreviewText.textContent = row.dataset.content || '';
     replyPreview.hidden = false;
     messageInput.value = row.dataset.content || '';
+    refreshComposer();
     messageInput.focus();
   }
 
@@ -299,6 +317,7 @@ document.addEventListener('turbo:load', () => {
     editingId = null;
     messageInput.value = '';
     if (replyPreview) replyPreview.hidden = true;
+    refreshComposer();
   }
 
   if (replyPreviewClose) {
@@ -358,7 +377,7 @@ document.addEventListener('turbo:load', () => {
   }
 
   // =======================================================
-  //   RESPOSTAS RÁPIDAS E "+" (ENVIAR UM MIMO)
+  //   RESPOSTAS RÁPIDAS E "+" (PAINEL DE ANEXOS)
   // =======================================================
   // As sugestões são só para puxar assunto: saem depois da primeira mensagem enviada
   function hideQuickReplies() {
@@ -370,21 +389,55 @@ document.addEventListener('turbo:load', () => {
     chip.addEventListener('mousedown', (e) => e.preventDefault()); // não tira o foco do campo
     chip.addEventListener('click', () => {
       messageInput.value = chip.dataset.text || chip.textContent.trim();
+      refreshComposer();
       messageInput.focus();
     });
   });
 
-  const plusBtn  = document.getElementById('chat-plus-btn');
-  const plusMenu = document.getElementById('chat-plus-menu');
-  if (plusBtn && plusMenu) {
-    const closePlus = () => { plusMenu.hidden = true; plusBtn.setAttribute('aria-expanded', 'false'); };
-    plusBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      const open = plusMenu.hidden;
-      plusMenu.hidden = !open;
-      plusBtn.setAttribute('aria-expanded', String(open));
+  // "+": o painel (Fotos, Câmera, Mimo) abre embaixo do campo, no lugar do teclado, e o
+  // "+" vira "×". Fecha ao focar o campo, tocar na conversa ou começar a gravar.
+  const plusBtn     = document.getElementById('chat-plus-btn');
+  const attachPanel = document.getElementById('chat-attach');
+
+  function setAttachOpen(open) {
+    if (!plusBtn || !attachPanel || attachPanel.hidden === !open) return;
+
+    attachPanel.hidden = !open;
+    plusBtn.setAttribute('aria-expanded', String(open));
+    plusBtn.setAttribute('aria-label', open ? 'Fechar anexos' : 'Anexar');
+    chatWindow.closest('.chat-screen-wrapper')?.classList.toggle('attach-open', open);
+    if (open) messageInput.blur();
+    requestAnimationFrame(scrollToBottom);
+  }
+
+  if (plusBtn && attachPanel) {
+    plusBtn.addEventListener('click', () => setAttachOpen(attachPanel.hidden));
+    messageInput.addEventListener('focus', () => setAttachOpen(false));
+
+    // Fotos abre a galeria; Câmera abre direto a câmera do aparelho (capture)
+    const photoInputs = {
+      gallery: document.getElementById('chat-photo-gallery'),
+      camera:  document.getElementById('chat-photo-camera')
+    };
+
+    attachPanel.querySelectorAll('[data-attach]').forEach((card) => {
+      card.addEventListener('click', () => {
+        const input = photoInputs[card.dataset.attach];
+        if (!input) return;
+        input.value = ''; // escolher a mesma foto de novo também dispara o "change"
+        input.click();
+      });
     });
-    document.addEventListener('click', (e) => { if (!plusMenu.hidden && !plusMenu.contains(e.target)) closePlus(); });
+
+    Object.values(photoInputs).forEach((input) => {
+      if (!input) return;
+      input.addEventListener('change', () => {
+        const file = input.files && input.files[0];
+        if (!file) return;
+        setAttachOpen(false);
+        sendPhoto(file);
+      });
+    });
   }
 
   // =======================================================
@@ -404,6 +457,7 @@ document.addEventListener('turbo:load', () => {
     const repliedRow = replyingTo ? document.getElementById(`msg-${replyingTo}`) : null;
 
     messageInput.value = "";
+    refreshComposer();
     cancelReply();
     matchChannel.sendTypingStatus(false);
 
@@ -412,6 +466,7 @@ document.addEventListener('turbo:load', () => {
     // ela simplesmente sumia, sem nenhum sinal para quem estava digitando.
     const restoreUnsent = () => {
       if (!messageInput.value) messageInput.value = content;
+      refreshComposer();
       if (repliedRow && repliedRow.isConnected && !replyingTo) startReply(repliedRow);
       showToast('Não foi possível enviar a mensagem. Tente novamente.', true);
     };
@@ -480,6 +535,135 @@ document.addEventListener('turbo:load', () => {
 
   if (sendButton) sendButton.addEventListener('click', sendMessage);
 
+  // =======================================================
+  //   MICROFONE OU ENVIAR
+  //   Campo vazio: microfone (segurar grava). Com texto ou editando: enviar.
+  // =======================================================
+  function refreshComposer() {
+    const writing = messageInput.value.trim().length > 0 || !!editingId;
+    if (micButton) micButton.hidden = writing;
+    if (sendButton) sendButton.hidden = !!micButton && !writing;
+  }
+
+  messageInput.addEventListener('input', refreshComposer);
+  refreshComposer();
+
+  // =======================================================
+  //   MENSAGEM DE VOZ E FOTO
+  //   O arquivo sobe por multipart para a mesma rota do texto. Enquanto sobe, um balão
+  //   "Enviando…" fica no lugar; se falhar ele continua ali com "Tentar de novo" — o
+  //   áudio gravado (ou a foto escolhida) não se perde.
+  // =======================================================
+  const AUDIO_EXTENSIONS = { 'audio/mp4': 'm4a', 'audio/x-m4a': 'm4a', 'audio/aac': 'aac', 'audio/mpeg': 'mp3', 'audio/webm': 'webm', 'audio/ogg': 'ogg' };
+  const PHOTO_EXTENSIONS = { 'image/jpeg': 'jpg', 'image/png': 'png', 'image/webp': 'webp' };
+
+  function sendMedia({ kind, file, filename, fields, bodyHtml, onDone }) {
+    const replyId = replyingTo;
+    cancelReply();
+
+    const row = document.createElement('div');
+    row.className = 'message message-row sent is-group-end is-pending';
+    row.dataset.kind = kind;
+    row.innerHTML =
+      `<div class="message-bubble is-${kind}">${bodyHtml}</div>` +
+      `<div class="message-meta"></div>`;
+    const meta = row.querySelector('.message-meta');
+    insertInConversation(row);
+    scrollToBottom();
+
+    const finish = () => {
+      audioPlayer.release(row);
+      row.remove();
+      if (onDone) onDone();
+    };
+
+    const fail = (reason) => {
+      row.classList.add('is-failed');
+      meta.innerHTML =
+        `<span class="pending-status">Não enviado</span>` +
+        `<button type="button" class="pending-retry">Tentar de novo</button>` +
+        `<button type="button" class="pending-discard">Descartar</button>`;
+      showToast(reason || 'Não foi possível enviar. Confira a conexão e tente de novo.', true);
+    };
+
+    const attempt = () => {
+      row.classList.remove('is-failed');
+      meta.innerHTML = `<span class="pending-status">Enviando…</span>`;
+
+      const body = new FormData();
+      body.append(`message[${kind}]`, file, filename);
+      Object.entries(fields).forEach(([name, value]) => body.append(`message[${name}]`, value));
+      if (replyId) body.append('message[reply_to_id]', replyId);
+
+      fetch(messagesUrl, {
+        method: 'POST',
+        headers: { 'X-CSRF-Token': csrfToken(), 'Accept': 'application/json' },
+        body
+      })
+      .then(async (response) => {
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) { fail(data.error); return; }
+
+        finish();
+        hideQuickReplies();
+        // Normalmente o broadcast já desenhou o balão; se o WebSocket estiver fora, é
+        // esta resposta que o desenha (appendMessageToDOM ignora mensagem repetida)
+        if (data.chat) appendMessageToDOM(data.chat);
+      })
+      .catch(() => fail());
+    };
+
+    // Os botões do balão que falhou são tratados junto com os toques da conversa
+    row.pendingActions = { retry: attempt, discard: finish };
+    attempt();
+  }
+
+  function sendVoice({ blob, duration, peaks }) {
+    const extension = AUDIO_EXTENSIONS[(blob.type || '').split(';')[0]] || 'm4a';
+
+    sendMedia({
+      kind: 'audio',
+      file: blob,
+      filename: `voz.${extension}`,
+      fields: { audio_duration: duration.toFixed(1), audio_peaks: peaks.join(',') },
+      bodyHtml: audioHtml({ url: '', fallback_url: '', duration, peaks })
+    });
+  }
+
+  function sendPhoto(file) {
+    preparePhoto(file)
+      .then(({ blob, width, height }) => {
+        const previewUrl = URL.createObjectURL(blob);
+
+        sendMedia({
+          kind: 'photo',
+          file: blob,
+          filename: `foto.${PHOTO_EXTENSIONS[blob.type] || 'jpg'}`,
+          fields: { photo_width: width, photo_height: height },
+          bodyHtml: photoHtml({ url: previewUrl, width, height }),
+          onDone: () => URL.revokeObjectURL(previewUrl)
+        });
+      })
+      .catch(() => showToast('Não foi possível abrir essa foto. Escolha uma imagem JPG ou PNG.', true));
+  }
+
+  if (composer && micButton) {
+    voiceRecorder = createVoiceRecorder({
+      composer,
+      micButton,
+      onSend: sendVoice,
+      onNotice: (text, isError) => showToast(text, isError),
+      onStateChange: (state) => {
+        // Começou a gravar: o que estava tocando para (senão o microfone grava o alto-falante)
+        if (state !== 'idle') {
+          audioPlayer.stop();
+          setAttachOpen(false);
+        }
+        requestAnimationFrame(scrollToBottom);
+      }
+    });
+  }
+
   messageInput.addEventListener('keydown', (e) => {
     if (e.key === 'Enter' && !e.shiftKey) {
       e.preventDefault();
@@ -513,6 +697,7 @@ document.addEventListener('turbo:load', () => {
     const el = document.createElement("div");
     el.className = `message message-row ${isSender ? "sent" : "received"} is-group-end`;
     el.id = `msg-${message.id}`;
+    el.dataset.kind = messageKind(message);
     el.dataset.content = message.content || '';
     el.dataset.sentAt = sentAt.toISOString();
     el.dataset.status = message.status || 'sent';
@@ -521,8 +706,9 @@ document.addEventListener('turbo:load', () => {
     const statusHtml = isSender
       ? `<span class="message-status status-${message.status || 'sent'}" data-status-id="${message.id}"></span>`
       : '';
+    const kindClass = el.dataset.kind === 'text' ? '' : ` is-${el.dataset.kind}`;
     el.innerHTML =
-      `<div class="message-bubble">${promptHtml(message.prompt, isSender)}${quoteHtml(message.reply_to)}<span class="msg-text">${escapeHtml(message.content)}</span></div>` +
+      `<div class="message-bubble${kindClass}">${promptHtml(message.prompt, isSender)}${quoteHtml(message.reply_to)}${messageBodyHtml(message)}</div>` +
       `<div class="message-meta"><span class="message-time">${formatTime(message.created_at)}</span>${statusHtml}</div>` +
       `<span class="message-timestamp">${formatTime(message.created_at)}</span>`;
 
@@ -542,9 +728,93 @@ document.addEventListener('turbo:load', () => {
     scrollToBottom();
   }
 
+  // Balões "Enviando…" (is-pending) não contam: ainda não são mensagens da conversa
   function lastMessageRow() {
-    const rows = chatWindow.querySelectorAll('.message-row');
+    const rows = chatWindow.querySelectorAll('.message-row:not(.is-pending)');
     return rows[rows.length - 1] || null;
+  }
+
+  // -------------------------------------------------------
+  //   Corpo do balão: texto, mensagem de voz ou foto
+  //   (o mesmo HTML de MatchesHelper#chat_audio_tag / #chat_photo_tag)
+  // -------------------------------------------------------
+  const AUDIO_ICONS =
+    '<svg class="msg-audio-icon-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8.5 5.6v12.8a1 1 0 0 0 1.52.85l10.2-6.4a1 1 0 0 0 0-1.7l-10.2-6.4a1 1 0 0 0-1.52.85z"/></svg>' +
+    '<svg class="msg-audio-icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>';
+
+  function messageKind(message) {
+    if (message.audio) return 'audio';
+    if (message.photo) return 'photo';
+    return 'text';
+  }
+
+  function messageBodyHtml(message) {
+    if (message.audio) return audioHtml(message.audio);
+    if (message.photo) return photoHtml(message.photo);
+    return `<span class="msg-text">${escapeHtml(message.content)}</span>`;
+  }
+
+  // Sempre PEAK_COUNT barras; 14% é a barra mínima (silêncio)
+  function waveBarsHtml(peaks) {
+    const list = Array.isArray(peaks) ? peaks : [];
+    let html = '';
+    for (let i = 0; i < PEAK_COUNT; i++) {
+      const peak = list.length ? (parseInt(list[Math.floor(i * list.length / PEAK_COUNT)], 10) || 0) : 0;
+      html += `<i style="height:${Math.max(Math.min(peak, 100), 14)}%"></i>`;
+    }
+    return html;
+  }
+
+  function audioHtml(audio) {
+    const duration = Number(audio.duration) || 0;
+    return `<span class="msg-audio" data-url="${escapeHtml(audio.url || '')}" data-fallback-url="${escapeHtml(audio.fallback_url || '')}" data-duration="${duration}">` +
+             `<button type="button" class="msg-audio-play" aria-label="Tocar áudio">${AUDIO_ICONS}</button>` +
+             `<span class="msg-audio-body">` +
+               `<span class="msg-audio-wave">${waveBarsHtml(audio.peaks)}</span>` +
+               `<span class="msg-audio-meta"><span class="msg-audio-dot"></span><span class="msg-audio-time">${formatDuration(duration)}</span></span>` +
+             `</span>` +
+           `</span>`;
+  }
+
+  function photoHtml(photo) {
+    const width  = parseInt(photo.width, 10) || 0;
+    const height = parseInt(photo.height, 10) || 0;
+    const size   = width > 0 && height > 0 ? ` width="${width}" height="${height}"` : '';
+    return `<img class="msg-photo" src="${escapeHtml(photo.url || '')}" alt="Foto" draggable="false"${size}>`;
+  }
+
+  // Toque num balão de mídia (chamado pelos gestos da conversa — as linhas cancelam o
+  // "click" do navegador no touchstart, por causa do toque longo). true = toque tratado.
+  function handleMediaTap(target, x) {
+    if (!target || !target.closest) return false;
+
+    const pendingRow = target.closest('.message-row.is-pending');
+    if (pendingRow) {
+      const actions = pendingRow.pendingActions || {};
+      if (target.closest('.pending-retry')) actions.retry?.();
+      else if (target.closest('.pending-discard')) actions.discard?.();
+      return true; // ainda enviando: não há o que tocar ou abrir
+    }
+
+    const audio = target.closest('.msg-audio');
+    if (audio) {
+      const wave = target.closest('.msg-audio-wave');
+      if (wave && typeof x === 'number') {
+        const rect = wave.getBoundingClientRect();
+        audioPlayer.seek(audio, rect.width ? (x - rect.left) / rect.width : 0);
+      } else {
+        audioPlayer.toggle(audio);
+      }
+      return true;
+    }
+
+    const photo = target.closest('img.msg-photo');
+    if (photo) {
+      photoViewer.open(photo.currentSrc || photo.src);
+      return true;
+    }
+
+    return false;
   }
 
   // Antes do balão de "digitando", que fica sempre por último
@@ -564,6 +834,7 @@ document.addEventListener('turbo:load', () => {
 
     const previous = el.previousElementSibling;
     const wasGroupEnd = el.classList.contains('is-group-end');
+    audioPlayer.release(el); // era o áudio que estava tocando
     el.remove();
     if (wasGroupEnd && previous && previous.classList.contains('message-row')) {
       previous.classList.add('is-group-end');
@@ -661,7 +932,11 @@ document.addEventListener('turbo:load', () => {
     const sentAt  = new Date(row.dataset.sentAt || Date.now());
     const now     = Date.now();
 
-    const canEdit = isSent && CHAT_CONTROLS && now - sentAt < EDIT_WINDOW_MS;
+    // Áudio e foto: o "conteúdo" é só o rótulo — não há texto para copiar nem editar
+    const kind    = row.dataset.kind || 'text';
+    const isMedia = kind === 'audio' || kind === 'photo';
+
+    const canEdit = isSent && !isMedia && CHAT_CONTROLS && now - sentAt < EDIT_WINDOW_MS;
     const readAt  = row.dataset.readAt ? new Date(row.dataset.readAt) : null;
     const canDeleteForAll = isSent &&
       (row.dataset.status !== 'read' || (readAt && now - readAt < DELETE_WINDOW_MS));
@@ -677,13 +952,13 @@ document.addEventListener('turbo:load', () => {
     }
 
     // ----- Balão em foco + horário -----
-    html += `<div class="msg-context-bubble ${isSent ? 'is-sent' : 'is-received'}">${bubble.innerHTML}</div>`;
+    html += `<div class="msg-context-bubble ${isSent ? 'is-sent' : 'is-received'}${isMedia ? ` is-${kind}` : ''}">${bubble.innerHTML}</div>`;
     html += `<div class="msg-context-meta">${contextMetaHtml(row, isSent, sentAt)}</div>`;
 
     // ----- Ações -----
     const actions = [];
     actions.push(['reply', 'Responder', ICONS.reply]);
-    actions.push(['copy', 'Copiar', ICONS.copy]);
+    if (!isMedia) actions.push(['copy', 'Copiar', ICONS.copy]);
     if (canEdit) actions.push(['edit', 'Editar', ICONS.edit]);
     actions.push('separator');
     if (CHAT_CONTROLS) actions.push(['hide', 'Apagar para mim', ICONS.trash, 'danger']);
@@ -788,7 +1063,10 @@ document.addEventListener('turbo:load', () => {
   }
 
   document.addEventListener('keydown', (e) => {
-    if (e.key === 'Escape') closeContextMenu();
+    if (e.key !== 'Escape') return;
+    closeContextMenu();
+    photoViewer.close();
+    setAttachOpen(false);
   });
 
   // =======================================================
@@ -1190,12 +1468,17 @@ document.addEventListener('turbo:load', () => {
       if (directionLocked) return; // foi rolagem vertical — teclado já fechado
 
       // Toque simples
+      const quick = Date.now() - startTime < TAP_MAX_MS;
       const quote = startTarget && startTarget.closest ? startTarget.closest('.msg-quote') : null;
-      if (quote && Date.now() - startTime < TAP_MAX_MS) {
+      if (quote && quick) {
         jumpToMessage(quote.dataset.replyToId);
         return;
       }
+      // Tocar/pausar o áudio, ir a um ponto da onda, abrir a foto, "Tentar de novo"
+      if (quick && handleMediaTap(startTarget, startX)) return;
+
       blurInput();
+      setAttachOpen(false);
     }
 
     function onCancel() {
@@ -1238,11 +1521,13 @@ document.addEventListener('turbo:load', () => {
     chatWindow.addEventListener('mouseup',   () => { if (!justTouched()) onEnd(); });
     chatWindow.addEventListener('mouseleave', onCancel);
 
-    // — Teclado: Enter/Espaço na citação focada (clique sem ponteiro tem detail 0)
+    // — Teclado: Enter/Espaço na citação ou no botão do áudio em foco (clique sem
+    //   ponteiro tem detail 0)
     chatWindow.addEventListener('click', (e) => {
       if (e.detail !== 0) return;
       const quote = e.target.closest && e.target.closest('.msg-quote');
-      if (quote) jumpToMessage(quote.dataset.replyToId);
+      if (quote) { jumpToMessage(quote.dataset.replyToId); return; }
+      handleMediaTap(e.target);
     });
   })();
 });

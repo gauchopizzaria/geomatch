@@ -52,9 +52,11 @@ class MatchesController < ApplicationController
   end
 
   def show
-    # reply_to: :sender — cada resposta desenha a citação (autor + trecho) sem N+1
+    # reply_to: :sender — cada resposta desenha a citação (autor + trecho) sem N+1;
+    # áudio e foto vêm junto pelo mesmo motivo (o balão lê o metadata do arquivo)
     @messages = @match.messages.visible_to(current_user)
-                      .includes(:reactions, reply_to: :sender).order(created_at: :asc)
+                      .includes(:reactions, reply_to: :sender)
+                      .with_attached_audio.with_attached_photo.order(created_at: :asc)
     @message  = Message.new
     @other_user = @match.other_user(current_user)
     # Sugestões de mensagem só no começo: somem depois da primeira mensagem

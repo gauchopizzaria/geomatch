@@ -19,25 +19,36 @@ class MessagesController < ApplicationController
     }
   end
 
+  # POST /matches/:match_id/messages — texto (JSON) ou mídia (multipart):
+  #   message[content]                                        texto
+  #   message[audio] + message[audio_duration] + audio_peaks  mensagem de voz
+  #   message[photo] + message[photo_width] + photo_height    foto
+  # A resposta traz em "chat" a mensagem no formato do broadcast: quem enviou mídia troca
+  # o balão "Enviando…" pelo definitivo sem depender do WebSocket.
   def create
     unless @match.participant?(current_user)
       return head :forbidden
     end
 
-    @message = @match.messages.build(message_params)
-    @message.sender = current_user
+    @message = @match.messages.build(sender: current_user)
     @message.reply_to = quoted_message
 
-    if @message.save
-      render json: @message.as_json(only: [:id, :content, :sender_id, :reply_to_id, :created_at])
+    if fill_message(@message) && @message.save
+      render json: @message.as_json(only: [ :id, :content, :sender_id, :reply_to_id, :created_at ])
+                           .merge(chat: @message.chat_payload)
     else
-      render json: { errors: @message.errors.full_messages }, status: :unprocessable_entity
+      @message.discard_uploaded_media
+      render json: { errors: @message.errors.full_messages, error: @message.errors.full_messages.first },
+             status: :unprocessable_entity
     end
   end
 
   # PATCH /matches/:match_id/messages/:id — "Editar" (só quem enviou, até 15 min)
   def update
     return head :forbidden unless @message.sender_id == current_user.id
+    if @message.media?
+      return render json: { error: "Áudios e fotos não podem ser editados." }, status: :unprocessable_entity
+    end
     unless @message.editable_by?(current_user)
       return render json: { error: "Só dá para editar até 15 minutos depois de enviar." }, status: :unprocessable_entity
     end
@@ -108,6 +119,22 @@ class MessagesController < ApplicationController
 
   def message_params
     params.require(:message).permit(:content)
+  end
+
+  # Preenche a mensagem com o que veio: áudio, foto ou texto. false = mídia recusada
+  # (o motivo fica em message.errors).
+  def fill_message(message)
+    fields = params[:message]
+    fields = ActionController::Parameters.new unless fields.is_a?(ActionController::Parameters)
+
+    if fields[:audio].present?
+      message.attach_voice(fields[:audio], duration: fields[:audio_duration], peaks: fields[:audio_peaks])
+    elsif fields[:photo].present?
+      message.attach_picture(fields[:photo], width: fields[:photo_width], height: fields[:photo_height])
+    else
+      message.content = message_params[:content]
+      true
+    end
   end
 
   # Mensagem citada ao responder (arrastar para a direita no chat). A busca é
