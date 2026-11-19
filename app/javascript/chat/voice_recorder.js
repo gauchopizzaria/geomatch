@@ -9,8 +9,12 @@
 // desenhado com esses picos, sem precisar abrir o áudio de novo.
 //
 // Estados: idle → starting (pedindo o microfone) → holding | locked → idle
+//
+// Vibrações (chat/haptics.js), como no WhatsApp: ao começar a gravar, ao travar, ao
+// cancelar, ao enviar, ao pausar/continuar e no toque rápido ("segure para gravar").
 
 import { formatDuration } from "./audio_player";
+import { haptic } from "./haptics";
 
 // Em ordem de preferência. AAC em mp4 toca em qualquer aparelho; webm/opus é o que os
 // navegadores sem mp4 gravam (o servidor converte na entrega quando precisa).
@@ -90,7 +94,6 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
   let audioContext = null; // medidor de volume (um só por conversa)
 
   const notice = (text, isError = false) => { if (onNotice) onNotice(text, isError); };
-  const buzz = (ms) => { if (navigator.vibrate) navigator.vibrate(ms); };
 
   function setState(next) {
     state = next;
@@ -267,7 +270,7 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
     recording.segmentStart = performance.now();
     recording.timer = setInterval(() => tick(recording), LEVEL_INTERVAL);
     if (pauseBtn) pauseBtn.hidden = typeof recording.recorder.pause !== "function";
-    buzz(12);
+    haptic("start"); // o microfone abriu: está gravando a partir daqui
     setState(recording.mode === "hold" ? "holding" : "locked");
   }
 
@@ -289,6 +292,7 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
     if (!recording.paused) togglePause();
     composer.classList.add("is-limit");
     if (pauseBtn) pauseBtn.disabled = true;
+    haptic("limit");
     notice(`O áudio chegou ao limite de ${Math.round(MAX_MS / 60000)} minutos. Envie ou apague.`);
   }
 
@@ -355,10 +359,12 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
     const elapsed = elapsedMs(recording);
     if (elapsed < MIN_MS) {
       abandon();
+      haptic("tap");
       notice(HOLD_HINT);
       return;
     }
 
+    haptic("send");
     const peaks = buildPeaks(recording.levels, PEAKS);
     session = null;
     releasePointer();
@@ -410,10 +416,10 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
     const dy = Math.min(0, event.clientY - pointer.y);
 
     if (-dx >= CANCEL_DISTANCE && -dx > -dy) {
-      buzz(20);
+      haptic("cancel");
       abandon();
     } else if (-dy >= LOCK_DISTANCE && -dy >= -dx) {
-      buzz(12);
+      haptic("lock");
       lock();
     } else {
       setDrag(dx, dy);
@@ -425,7 +431,10 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
     pointer = null;
 
     if (state === "starting") {
-      if (session && session.mode === "hold") session.released = true;
+      if (session && session.mode === "hold") {
+        session.released = true;
+        haptic("tap");
+      }
       return;
     }
     if (state !== "holding") return;
@@ -446,8 +455,8 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
   // ---------------------------------------------------------------
   //   GRAVAÇÃO TRAVADA: apagar, pausar/continuar, enviar
   // ---------------------------------------------------------------
-  if (trashBtn) trashBtn.addEventListener("click", () => { buzz(20); abandon(); });
-  if (pauseBtn) pauseBtn.addEventListener("click", togglePause);
+  if (trashBtn) trashBtn.addEventListener("click", () => { haptic("cancel"); abandon(); });
+  if (pauseBtn) pauseBtn.addEventListener("click", () => { haptic("tick"); togglePause(); });
   if (sendBtn) sendBtn.addEventListener("click", finish);
 
   // App em segundo plano: o sistema corta o microfone. Trava e pausa para não perder

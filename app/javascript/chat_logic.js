@@ -2,6 +2,7 @@ import consumer from "./channels/consumer";
 import { createAudioPlayer, formatDuration } from "./chat/audio_player";
 import { createVoiceRecorder } from "./chat/voice_recorder";
 import { preparePhoto, createPhotoViewer } from "./chat/photo";
+import { haptic } from "./chat/haptics";
 
 document.addEventListener('turbo:load', () => {
   const chatWindow = document.getElementById('chat-window');
@@ -919,7 +920,7 @@ document.addEventListener('turbo:load', () => {
   };
 
   function openContextMenu(row) {
-    if (navigator.vibrate) navigator.vibrate(35);
+    haptic('menu');
 
     const overlay = document.getElementById('msg-context-overlay');
     const menu    = document.getElementById('msg-context-menu');
@@ -1436,7 +1437,7 @@ document.addEventListener('turbo:load', () => {
       swipeRow.style.setProperty('--reply-progress', Math.min(offset / REPLY_THRESHOLD, 1).toFixed(2));
 
       const armed = offset >= REPLY_THRESHOLD;
-      if (armed && !replyArmed && navigator.vibrate) navigator.vibrate(12);
+      if (armed && !replyArmed) haptic('reply');
       replyArmed = armed;
     }
 
