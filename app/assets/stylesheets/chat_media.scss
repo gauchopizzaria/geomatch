@@ -525,6 +525,37 @@ $rec-red: #e5484d;
 }
 
 /* =========================================================
+   5.5 VIBRAÇÃO NO IPHONE SEM O HANDLER NATIVO (chat/haptics.js)
+   O rótulo transparente cobre o botão; o toque real do dedo passa por ele até o
+   interruptor escondido e o iOS vibra. O clique continua chegando ao botão (o rótulo
+   está dentro dele). Fora do iPhone o rótulo nem aparece.
+   ========================================================= */
+.haptic-switch {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 1px;
+  height: 1px;
+  margin: 0;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.haptic-tap { display: none; }
+
+.chat-composer.use-switch-haptics .haptic-tap {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  display: block;
+  border-radius: inherit;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.rec-btn { position: relative; }
+
+/* =========================================================
    6. PAINEL DO "+" — Fotos, Câmera (e Mimo), no lugar do teclado
    ========================================================= */
 .chat-attach {

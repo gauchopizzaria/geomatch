@@ -10,11 +10,12 @@
 //
 // Estados: idle → starting (pedindo o microfone) → holding | locked → idle
 //
-// Vibrações (chat/haptics.js), como no WhatsApp: ao começar a gravar, ao travar, ao
-// cancelar, ao enviar, ao pausar/continuar e no toque rápido ("segure para gravar").
+// Vibrações (chat/haptics.js), como no WhatsApp: ao encostar no microfone, ao travar,
+// ao cancelar, ao enviar e ao pausar/continuar. No iPhone sem o handler nativo só os
+// toques vibram (rótulos .haptic-tap no microfone e nos botões da gravação).
 
 import { formatDuration } from "./audio_player";
-import { haptic } from "./haptics";
+import { haptic, setupTapHaptics } from "./haptics";
 
 // Em ordem de preferência. AAC em mp4 toca em qualquer aparelho; webm/opus é o que os
 // navegadores sem mp4 gravam (o servidor converte na entrega quando precisa).
@@ -94,6 +95,9 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
   let audioContext = null; // medidor de volume (um só por conversa)
 
   const notice = (text, isError = false) => { if (onNotice) onNotice(text, isError); };
+
+  // iPhone sem handler nativo: liga os rótulos que vibram no toque
+  setupTapHaptics(composer);
 
   function setState(next) {
     state = next;
@@ -270,7 +274,6 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
     recording.segmentStart = performance.now();
     recording.timer = setInterval(() => tick(recording), LEVEL_INTERVAL);
     if (pauseBtn) pauseBtn.hidden = typeof recording.recorder.pause !== "function";
-    haptic("start"); // o microfone abriu: está gravando a partir daqui
     setState(recording.mode === "hold" ? "holding" : "locked");
   }
 
@@ -359,7 +362,6 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
     const elapsed = elapsedMs(recording);
     if (elapsed < MIN_MS) {
       abandon();
-      haptic("tap");
       notice(HOLD_HINT);
       return;
     }
@@ -406,6 +408,7 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
     event.preventDefault(); // não tira o foco do campo (o teclado fica como está)
     try { micButton.setPointerCapture(event.pointerId); } catch (_) { /* sem captura: segue pelos eventos do botão */ }
     pointer = { id: event.pointerId, x: event.clientX, y: event.clientY };
+    haptic("start");
     begin("hold");
   });
 
@@ -431,10 +434,7 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
     pointer = null;
 
     if (state === "starting") {
-      if (session && session.mode === "hold") {
-        session.released = true;
-        haptic("tap");
-      }
+      if (session && session.mode === "hold") session.released = true;
       return;
     }
     if (state !== "holding") return;
@@ -449,7 +449,10 @@ export function createVoiceRecorder({ composer, micButton, onSend, onNotice, onS
 
   // Teclado / leitor de tela (clique sem ponteiro tem detail 0)
   micButton.addEventListener("click", (event) => {
-    if (event.detail === 0) begin("locked");
+    if (event.detail === 0 && state === "idle") {
+      haptic("start");
+      begin("locked");
+    }
   });
 
   // ---------------------------------------------------------------

@@ -237,6 +237,12 @@ RSpec.describe "Mídia no chat (áudio e foto)", type: :request do
       expect(page.at_css("#rec-hold .rec-slide").text.squish).to eq("Deslize para cancelar")
       expect(page.css("#rec-locked button").map { |b| b["aria-label"] }).to eq([ "Apagar gravação", "Pausar gravação", "Enviar áudio" ])
 
+      # Vibração no iPhone sem o handler nativo: rótulos no microfone e nos botões da
+      # gravação apontando para o interruptor escondido (ver chat/haptics.js)
+      expect(page.at_css("input#chat-haptic-switch[type=checkbox][switch]")).to be_present
+      expect(page.css("label.haptic-tap[for=chat-haptic-switch]").map { |l| l.parent["id"] })
+        .to eq(%w[mic-button rec-trash rec-pause rec-send])
+
       expect(page.css("#chat-attach .chat-attach-card strong").map(&:text)).to eq(%w[Fotos Câmera])
       expect(page.css("#chat-attach .chat-attach-card > span:last-child").map(&:text)).to eq([ "Da sua galeria", "Tirar foto agora" ])
       expect(page.at_css("#chat-attach .chat-attach-note").text.squish).to eq("Só envie fotos que você se sentiria bem em mostrar")

@@ -207,6 +207,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
       </button>
       <button type="button" id="mic-button" class="btn-send btn-mic" aria-label="Gravar áudio">
+        <label class="haptic-tap" for="chat-haptic-switch" aria-hidden="true"></label>
         <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>
       </button>
 
@@ -235,17 +236,25 @@
       </div>
       <div class="rec-actions">
         <button type="button" class="rec-btn rec-trash" id="rec-trash" aria-label="Apagar gravação">
+          <label class="haptic-tap" for="chat-haptic-switch" aria-hidden="true"></label>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M9.5 7V5a1 1 0 0 1 1-1h3a1 1 0 0 1 1 1v2M6.5 7l.8 11.2a2 2 0 0 0 2 1.8h5.4a2 2 0 0 0 2-1.8L17.5 7M10 11v5M14 11v5"/></svg>
         </button>
         <button type="button" class="rec-btn rec-pause" id="rec-pause" aria-label="Pausar gravação">
+          <label class="haptic-tap" for="chat-haptic-switch" aria-hidden="true"></label>
           <svg class="rec-icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="7.5" y="6" width="3" height="12" rx="1"/><rect x="13.5" y="6" width="3" height="12" rx="1"/></svg>
           <svg class="rec-icon-resume" viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/></svg>
         </button>
         <button type="button" class="rec-btn rec-send" id="rec-send" aria-label="Enviar áudio">
+          <label class="haptic-tap" for="chat-haptic-switch" aria-hidden="true"></label>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
         </button>
       </div>
     </div>
+
+    <%# Vibração no iPhone sem o handler nativo do app: os rótulos .haptic-tap (no
+        microfone e nos botões da gravação) apontam para este interruptor; o toque real
+        do dedo nele faz o iOS vibrar. Ver app/javascript/chat/haptics.js. %>
+    <input type="checkbox" switch class="haptic-switch" id="chat-haptic-switch" tabindex="-1" aria-hidden="true">
 
     <%# Painel do "+": abre no lugar do teclado %>
     <div class="chat-attach" id="chat-attach" hidden>
