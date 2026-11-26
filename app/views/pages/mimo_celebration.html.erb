@@ -20,7 +20,11 @@
 
   <span class="mg-glow" aria-hidden="true"></span>
 
-  <%= link_to mimo_wallet_page_path, class: "mg-close", aria: { label: "Fechar" }, data: { action: "mimo-gift#close" } do %>
+  <%# X: vai para a conversa com quem enviou o mimo (onde está o balão do mimo); sem
+      conversa (bloqueio, mimo antigo), volta para onde estava %>
+  <%= link_to (@conversation ? match_path(@conversation) : mimo_wallet_page_path), class: "mg-close",
+              aria: { label: @conversation ? "Fechar e ir para a conversa" : "Fechar" },
+              data: { action: "mimo-gift#close", mimo_gift_target: "closeLink", conversation: @conversation.present? } do %>
     <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
   <% end %>
 

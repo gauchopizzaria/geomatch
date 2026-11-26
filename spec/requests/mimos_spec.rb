@@ -333,7 +333,22 @@ RSpec.describe "Mimos", type: :request do
       expect(page.at_css("[data-mimo-gift-target=thankButton]").text.squish).to eq("Agradecer a Maria Clara")
       expect(page.at_css(".mg-btn--outline")["href"]).to eq("/users/#{clara.id}")
       expect(page.at_css(".mg-link")["href"]).to eq("/carteira")
+      # X do topo: vai para a conversa com quem enviou (aberta pelo mimo)
+      conversation = MimoChatService.conversation_between(luan, clara)
+      expect(page.at_css("a.mg-close")["href"]).to eq("/matches/#{conversation.id}")
+      expect(page.at_css("a.mg-close")["data-conversation"]).to eq("true")
       expect(page.css(".mg-quick-btn").map(&:text)).to eq([ "Muito obrigado! 🥰", "Adorei, bora! 😍", "Você é demais ❤️", "Que surpresa boa! ✨" ])
+    end
+
+    it "sem conversa (ex.: bloqueio), o X volta para onde estava" do
+      mimo
+      Match.for_user(luan.id).destroy_all
+
+      get "/mimos/recebido/#{mimo.id}"
+      close = Nokogiri::HTML(response.body).at_css("a.mg-close")
+
+      expect(close["href"]).to eq("/carteira")
+      expect(close["data-conversation"]).to eq("false")
     end
 
     it "no Mimo do seu jeito mostra a caixa de presente no lugar do emoji" do

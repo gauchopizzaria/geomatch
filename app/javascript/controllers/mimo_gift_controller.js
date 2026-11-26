@@ -11,7 +11,7 @@ import { csrfToken } from "./mimo/deliver"
 const TOAST_MS = 4500
 
 export default class extends Controller {
-  static targets = ["thankButton", "toast", "toastLink", "sheet", "quick", "message", "count", "error", "send"]
+  static targets = ["thankButton", "toast", "toastLink", "sheet", "quick", "message", "count", "error", "send", "closeLink"]
   static values = { thanksUrl: String, closeUrl: String }
 
   connect() {
@@ -29,8 +29,10 @@ export default class extends Controller {
     document.documentElement.classList.remove("ms-lock")
   }
 
-  // X do topo: volta para onde estava; sem histórico, vai para a carteira
+  // X do topo: vai para a conversa com quem enviou o mimo (o link já aponta para ela).
+  // Sem conversa, volta para onde estava; sem histórico, vai para a carteira.
   close(event) {
+    if (event.currentTarget.dataset.conversation === "true") return
     if (window.history.length > 1) {
       event.preventDefault()
       window.history.back()
@@ -128,7 +130,12 @@ export default class extends Controller {
 
     this.closeThanks()
     this.markThanked()
-    if (data.match_url) this.toastLinkTarget.href = data.match_url
+    if (data.match_url) {
+      this.toastLinkTarget.href = data.match_url
+      // a conversa pode ter acabado de ser criada pelo agradecimento: o X passa a ir para ela
+      this.closeLinkTarget.href = data.match_url
+      this.closeLinkTarget.dataset.conversation = "true"
+    }
     this.showToast()
   }
 
