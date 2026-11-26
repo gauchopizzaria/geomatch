@@ -1,45 +1,144 @@
-<div class="gm-mimo-wrapper"
-     data-controller="mimo"
-     data-mimo-receiver-id-value="<%= @receiver_id %>"
-     data-mimo-catalog-url-value="<%= mimo_items_catalog_path %>"
-     data-mimo-wallet-url-value="<%= wallet_path %>"
-     data-mimo-confirm-url-value="<%= mimo_confirm_page_path %>">
+<%# "Enviar um Mimo" (/mimos/catalogo?receiver_id=…). Estilos .ms-* em mimo.scss.
+    mimo_send_controller.js: chips que levam à categoria (e acendem conforme a rolagem),
+    seleção do mimo, folha "escolha o tamanho" (Simples · Especial · Premium, com o
+    Especial marcado), recadinho, envio (saldo ou Pix/cartão) e a tela "Como funcionam
+    os Mimos?" do botão (i). %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<% end %>
 
-  <div class="gm-mimo-appbar">
-    <%= link_to (@receiver ? user_path(@receiver) : my_profile_path), class: "gm-mimo-back" do %>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg>
+<% first_item = @catalog.first&.dig(:items, 0) %>
+<div class="ms"
+     data-controller="mimo-send"
+     data-mimo-send-deliver-url-value="<%= deliver_mimo_path %>"
+     data-mimo-send-receiver-id-value="<%= @receiver&.id %>"
+     data-mimo-send-balance-value="<%= @balance %>"
+     data-mimo-send-done-url-value="<%= @back_path %>">
+
+  <header class="ms-top">
+    <%= link_to @back_path, class: "ms-back", aria: { label: "Voltar" } do %>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
     <% end %>
-    <h1>Enviar um Mimo<%= " para #{@receiver.display_name}" if @receiver %></h1>
-    <span class="gm-mimo-appbar-spacer"></span>
-  </div>
-
-  <% if @receiver.blank? %>
-    <div class="gm-mimo-recipient-tabs">
-      <button type="button" class="gm-mimo-tab is-active" data-mimo-target="tabUser" data-action="mimo#showUserTab">Para um contato</button>
-      <button type="button" class="gm-mimo-tab" data-mimo-target="tabPhone" data-action="mimo#showPhoneTab">Presentear via Telefone</button>
+    <div class="ms-heading">
+      <h1 class="ms-title">Enviar um Mimo</h1>
+      <% if @receiver %>
+        <p class="ms-subtitle">para <strong><%= @receiver.display_name %></strong></p>
+      <% end %>
     </div>
+    <button type="button" class="ms-info-btn" data-action="mimo-send#openInfo"
+            aria-label="Como funcionam os Mimos?" aria-haspopup="dialog">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 11v5.5"/><circle cx="12" cy="7.6" r="0.6" class="ms-dot"/></svg>
+    </button>
+  </header>
 
-    <div class="gm-mimo-phone-section" data-mimo-target="phoneSection" hidden>
-      <label class="gm-mimo-phone-label" for="mimo-phone-input">Celular de quem vai receber</label>
-      <input type="tel"
-             id="mimo-phone-input"
-             class="gm-mimo-phone-input"
-             data-mimo-target="phoneInput"
-             data-action="input->mimo#maskPhone"
-             inputmode="numeric"
-             autocomplete="tel-national"
-             placeholder="(00) 00000-0000">
-      <p class="gm-mimo-phone-hint">A pessoa ainda não tem conta no GeoMatch? Sem problema — enviamos um SMS com o convite para resgatar o Mimo.</p>
-      <div class="gm-mimo-error-banner" data-mimo-target="phoneError"></div>
-    </div>
+  <%# Sem destinatário (link antigo do perfil): convite por celular, pago no Mercado Pago %>
+  <% unless @receiver %>
+    <label class="ms-phone">
+      <span>Celular de quem vai receber</span>
+      <input type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="(00) 00000-0000"
+             data-mimo-send-target="phone" data-action="input->mimo-send#maskPhone">
+      <small>A pessoa ainda não tem GeoMatch? Ela recebe um SMS para resgatar o mimo.</small>
+    </label>
   <% end %>
 
-  <div class="gm-mimo-grid" data-mimo-target="grid">
-    <div class="gm-mimo-empty">Carregando catálogo...</div>
+  <div class="ms-balance">
+    <span class="ms-balance-label">Seu saldo</span>
+    <strong class="ms-balance-value"><%= mimo_money(@balance) %></strong>
+    <%= link_to "+ Adicionar", mimo_deposit_page_path, class: "ms-balance-add" %>
   </div>
 
-  <div class="gm-mimo-saldo-banner">
-    <span>Saldo disponível: <strong data-mimo-target="balance">—</strong></span>
-    <%= link_to "Adicionar saldo", mimo_deposit_page_path %>
+  <nav class="ms-chips" aria-label="Categorias" data-mimo-send-target="chips">
+    <% @catalog.each_with_index do |category, index| %>
+      <button type="button" class="ms-chip<%= " is-active" if index.zero? %>"
+              data-mimo-send-target="chip" data-category="<%= category[:key] %>"
+              data-action="mimo-send#jump"><%= category[:chip] %></button>
+    <% end %>
+  </nav>
+
+  <%= link_to mimo_custom_page_path(receiver_id: @receiver&.id, depois: @back_path), class: "ms-custom" do %>
+    <span class="ms-custom-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M15.2 5.2l3.6 3.6M4 20l1-4.4L16.1 4.5a2 2 0 0 1 2.8 0l.6.6a2 2 0 0 1 0 2.8L8.4 19 4 20z"/></svg>
+    </span>
+    <span class="ms-custom-text">
+      <strong>Mimo do seu jeito</strong>
+      <span>Não achou o mimo ideal? Escreva o nome e escolha o valor.</span>
+    </span>
+    <svg class="ms-custom-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6.5 5.5 5.5-5.5 5.5"/></svg>
+  <% end %>
+
+  <% if @catalog.empty? %>
+    <p class="ms-empty">Nenhum mimo disponível no momento.</p>
+  <% end %>
+
+  <% @catalog.each do |category| %>
+    <section class="ms-section<%= " is-vip" if category[:key] == "vip" %>" id="ms-cat-<%= category[:key] %>"
+             data-mimo-send-target="section" data-category="<%= category[:key] %>"
+             aria-labelledby="ms-cat-title-<%= category[:key] %>">
+      <header class="ms-section-head">
+        <h2 id="ms-cat-title-<%= category[:key] %>">
+          <%= category[:title] %>
+          <% if category[:key] == "vip" %><span class="ms-vip-badge">VIP</span><% end %>
+        </h2>
+        <span><%= pluralize(category[:items].size, "mimo", plural: "mimos") %></span>
+      </header>
+
+      <div class="ms-grid">
+        <% category[:items].each do |item| %>
+          <% tiers = item.tier_list.map { |t| t.merge(price: mimo_money(t[:price_cents])) } %>
+          <button type="button" class="ms-card<%= " is-selected" if item == first_item %>"
+                  data-mimo-send-target="card"
+                  data-action="mimo-send#choose"
+                  data-item-id="<%= item.id %>"
+                  data-name="<%= item.name %>"
+                  data-icon="<%= item.icon %>"
+                  data-tiers="<%= tiers.to_json %>"
+                  aria-haspopup="dialog">
+            <span class="ms-card-icon" aria-hidden="true"><%= item.icon %></span>
+            <strong class="ms-card-name"><%= item.name %></strong>
+            <span class="ms-card-price">a partir de <%= mimo_money(item.starting_price_cents) %></span>
+          </button>
+        <% end %>
+      </div>
+    </section>
+  <% end %>
+
+  <%# Barra de baixo: o mimo marcado e "Continuar" (abre a folha de tamanhos) %>
+  <div class="ms-bar"<%= " hidden" unless first_item %> data-mimo-send-target="bar">
+    <span class="ms-bar-icon" aria-hidden="true" data-mimo-send-target="barIcon"><%= first_item&.icon %></span>
+    <span class="ms-bar-text">
+      <strong data-mimo-send-target="barName"><%= first_item&.name %></strong>
+      <span>toque para escolher o tamanho</span>
+    </span>
+    <button type="button" class="ms-bar-btn" data-action="mimo-send#openSheet">Continuar</button>
   </div>
+
+  <%# Folha "escolha o tamanho": Simples · Especial · Premium + recadinho + Enviar %>
+  <div class="ms-sheet" data-mimo-send-target="sheet" hidden>
+    <div class="ms-sheet-backdrop" data-action="click->mimo-send#closeSheet"></div>
+    <div class="ms-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="ms-sheet-title">
+      <span class="ms-sheet-handle" aria-hidden="true"></span>
+      <div class="ms-sheet-head">
+        <span class="ms-sheet-icon" aria-hidden="true" data-mimo-send-target="sheetIcon"></span>
+        <strong id="ms-sheet-title" data-mimo-send-target="sheetName"></strong>
+        <span>escolha o tamanho</span>
+      </div>
+
+      <div class="ms-tiers" role="radiogroup" aria-label="Tamanho do mimo" data-mimo-send-target="tiers"></div>
+
+      <input type="text" class="ms-note-input" maxlength="<%= MimoSelection::MESSAGE_MAX %>"
+             placeholder="Escreva um recadinho (opcional)" aria-label="Recadinho (opcional)"
+             enterkeyhint="send" data-mimo-send-target="message">
+
+      <p class="ms-sheet-error" role="alert" data-mimo-send-target="error" hidden></p>
+
+      <button type="button" class="ms-send" data-mimo-send-target="send" data-action="mimo-send#send">
+        <span data-mimo-send-target="sendLabel">Enviar</span>
+      </button>
+      <p class="ms-pay-hint" data-mimo-send-target="payHint" hidden>Seu saldo não cobre este mimo: você paga com Pix ou cartão.</p>
+    </div>
+  </div>
+
+  <%= render "pages/mimo_info" %>
 </div>

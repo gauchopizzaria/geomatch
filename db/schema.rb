@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_10_130000) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_26_120100) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -203,6 +203,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_130000) do
 
   create_table "mimo_items", force: :cascade do |t|
     t.boolean "active", default: true, null: false
+    t.string "category"
     t.datetime "created_at", null: false
     t.text "description"
     t.string "icon"
@@ -212,8 +213,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_130000) do
     t.string "price_currency", default: "BRL", null: false
     t.integer "receiver_value_cents", default: 0, null: false
     t.string "receiver_value_currency", default: "BRL", null: false
+    t.jsonb "tiers", default: [], null: false
     t.datetime "updated_at", null: false
     t.index ["active"], name: "index_mimo_items_on_active"
+    t.index ["category"], name: "index_mimo_items_on_category"
     t.index ["name"], name: "index_mimo_items_on_name", unique: true
     t.index ["position"], name: "index_mimo_items_on_position"
   end
@@ -222,8 +225,9 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_130000) do
     t.datetime "claimed_at"
     t.datetime "created_at", null: false
     t.string "invite_token"
+    t.string "item_label"
     t.text "message"
-    t.bigint "mimo_item_id", null: false
+    t.bigint "mimo_item_id"
     t.integer "mp_fee_cents", default: 0, null: false
     t.uuid "payment_id"
     t.integer "platform_fee_cents", default: 0, null: false
@@ -235,6 +239,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_10_130000) do
     t.string "receiver_value_currency", default: "BRL", null: false
     t.bigint "sender_id", null: false
     t.string "status", default: "pending", null: false
+    t.datetime "thanked_at"
+    t.string "tier"
     t.datetime "updated_at", null: false
     t.index ["created_at"], name: "index_mimo_transactions_on_created_at"
     t.index ["invite_token"], name: "index_mimo_transactions_on_invite_token", unique: true

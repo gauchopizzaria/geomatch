@@ -16,13 +16,16 @@ class MimoWalletPaymentService
   class InvalidRecipientError    < StandardError; end
   class ItemUnavailableError     < StandardError; end
 
-  def self.call(sender:, receiver:, mimo_item:, message: nil)
-    new(sender: sender, receiver: receiver, mimo_item: mimo_item, message: message).call
+  # selection: o que foi escolhido (nível do catálogo ou "Mimo do seu jeito", ver
+  # MimoSelection). mimo_item: atalho do app mobile antigo (sem nível).
+  def self.call(sender:, receiver:, selection: nil, mimo_item: nil, message: nil)
+    new(sender: sender, receiver: receiver, selection: selection, mimo_item: mimo_item, message: message).call
   end
 
-  def initialize(sender:, receiver:, mimo_item:, message: nil)
+  def initialize(sender:, receiver:, selection: nil, mimo_item: nil, message: nil)
     @sender    = sender
     @receiver  = receiver
+    @selection = selection
     @mimo_item = mimo_item
     @message   = message
   end
@@ -36,6 +39,9 @@ class MimoWalletPaymentService
       create_completed_transaction!
     end
 
+    # Depois do commit: notificação no app + push ("Fulano te enviou um Mimo"), que
+    # abrem a tela "Você ganhou um mimo"
+    MimoNotificationService.call(mimo_transaction: mimo_transaction)
     mimo_transaction
   rescue => e
     Rails.logger.error "[MimoWalletPaymentService] Falha ao transferir saldo — sender=#{sender&.id} receiver=#{receiver&.id} error=#{e.class}: #{e.message}"
@@ -46,16 +52,22 @@ class MimoWalletPaymentService
 
   attr_reader :sender, :receiver, :mimo_item, :message, :mimo_transaction
 
+  def selection
+    @selection ||= MimoSelection.from_item(mimo_item)
+  rescue MimoSelection::InvalidError => e
+    raise ItemUnavailableError, e.message
+  end
+
   def fee_breakdown
-    # apply_mp_fee: false — não há cobrança de cartão/Pix nesta transferência,
-    # só a margem da própria plataforma.
-    @fee_breakdown ||= MimoFeeCalculator.call(mimo_item.price_cents, apply_mp_fee: false)
+    # apply_mp_fee: false — não há cobrança de cartão/Pix nesta transferência
+    # (os 12% do serviço ficam inteiros com a plataforma, ver MimoFeeCalculator).
+    @fee_breakdown ||= MimoFeeCalculator.call(selection.price_cents, apply_mp_fee: false)
   end
 
   def validate!
     raise InvalidRecipientError, "informe um destinatário cadastrado para pagar com o saldo da carteira" if receiver.nil?
     raise InvalidRecipientError, "remetente e destinatário não podem ser o mesmo usuário" if sender.id == receiver.id
-    raise ItemUnavailableError, "este Mimo não está disponível no momento" unless mimo_item.active?
+    raise ItemUnavailableError, "este Mimo não está disponível no momento" if selection.mimo_item && !selection.mimo_item.active?
   end
 
   def debit_sender!
@@ -86,7 +98,9 @@ class MimoWalletPaymentService
     @mimo_transaction = MimoTransaction.create!(
       sender: sender,
       receiver: receiver,
-      mimo_item: mimo_item,
+      mimo_item: selection.mimo_item,
+      tier: selection.tier,
+      item_label: selection.label,
       message: message,
       price_cents: fee_breakdown.gross_cents,
       mp_fee_cents: fee_breakdown.mp_fee_cents,

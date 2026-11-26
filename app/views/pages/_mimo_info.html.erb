@@ -1,0 +1,68 @@
+<%# "Como funcionam os Mimos?" — aberta pelo (i) de "Enviar um Mimo". Os números vêm das
+    regras do sistema (MimoFeeCalculator, UserWallet, WithdrawalService). %>
+<div class="ms-info" data-mimo-send-target="info" role="dialog" aria-modal="true" aria-labelledby="ms-info-title" hidden>
+  <header class="ms-top ms-info-top">
+    <button type="button" class="ms-back" data-action="mimo-send#closeInfo" aria-label="Voltar">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    </button>
+    <div class="ms-heading">
+      <h1 class="ms-title" id="ms-info-title">Como funcionam os Mimos?</h1>
+      <p class="ms-subtitle">Um jeito carinhoso de chamar atenção.</p>
+    </div>
+  </header>
+
+  <ul class="ms-info-list">
+    <li>
+      <span class="ms-info-icon is-dark" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.2C7 8 9.5 8 12 8zM12 8c1.5-3 5-3.5 5-1.2C17 8 14.5 8 12 8z"/></svg>
+      </span>
+      <div>
+        <strong>Enviou um mimo?</strong>
+        <p>Seu mimo vira saldo na carteira de quem recebeu. Uma pequena parte (<%= mimo_fee_percent %>) cobre os custos do serviço.</p>
+      </div>
+    </li>
+    <li>
+      <span class="ms-info-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><rect x="3.5" y="6" width="17" height="13" rx="2.5"/><path d="M3.5 10h17M15.5 14.5h2"/></svg>
+      </span>
+      <div>
+        <strong>Recebeu um mimo?</strong>
+        <p>O valor entra na sua carteira e fica disponível para saque <%= mimo_hold_days %> dias após o recebimento.</p>
+      </div>
+    </li>
+    <li>
+      <span class="ms-info-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M3.5 9.5 12 4l8.5 5.5M5 10v8M9.5 10v8M14.5 10v8M19 10v8M3.5 20.5h17"/></svg>
+      </span>
+      <div>
+        <strong>Saque</strong>
+        <p>A partir de <%= mimo_withdraw_minimum %>, via Pix, para uma chave no seu próprio CPF. Simples, sem burocracia e direto na sua conta.</p>
+      </div>
+    </li>
+    <li>
+      <span class="ms-info-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M10 3.5l1.6 4.4L16 9.5l-4.4 1.6L10 15.5l-1.6-4.4L4 9.5l4.4-1.6zM17.5 14l.8 2.2 2.2.8-2.2.8-.8 2.2-.8-2.2-2.2-.8 2.2-.8z"/></svg>
+      </span>
+      <div>
+        <strong>Também dá para usar o saldo</strong>
+        <p>Assine o GeoMatch Plus ou Gold com o que você recebeu.</p>
+      </div>
+    </li>
+    <li>
+      <span class="ms-info-icon" aria-hidden="true">
+        <svg viewBox="0 0 24 24"><path d="M12 21s7-3.5 7-9V6l-7-3-7 3v6c0 5.5 7 9 7 9z"/><path d="m9 12 2 2 4-4"/></svg>
+      </span>
+      <div>
+        <strong>Transação segura</strong>
+        <p>Todos os pagamentos são criptografados e processados por um parceiro de pagamento certificado. Seu saldo fica protegido até o saque.</p>
+      </div>
+    </li>
+  </ul>
+
+  <p class="ms-info-warning">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 4 2.8 19.5h18.4z"/><path d="M12 10v4.5M12 17v.3"/></svg>
+    Os mimos são presentes simbólicos em forma de valor. Você não está comprando o produto ilustrado.
+  </p>
+
+  <button type="button" class="ms-send ms-info-ok" data-action="mimo-send#closeInfo">Entendi</button>
+</div>

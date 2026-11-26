@@ -107,7 +107,12 @@ class WalletsController < ApplicationController
   # saldo subia sem nenhuma linha correspondente no histórico — o usuário não
   # tinha como conferir se o PIX que pagou virou saldo.
   def transactions
-    mimos_in    = mobile_current_user.mimo_transactions_received.completed.recent.limit(50).to_a
+    mimos_in    = mobile_current_user.mimo_transactions_received.completed
+                                     .includes(:sender, :mimo_item).recent.limit(50).to_a
+    # Mimos pagos com o saldo (sem Payment do Mercado Pago): saíram da carteira e
+    # precisam aparecer no extrato — sem a linha, o saldo caía sem explicação
+    mimos_out   = mobile_current_user.mimo_transactions_sent.completed.where(payment_id: nil)
+                                     .includes(:receiver, :mimo_item).recent.limit(50).to_a
     withdrawals = mobile_current_user.withdrawal_requests.recent.limit(50).to_a
     deposits    = mobile_current_user.payments
                                      .wallet_deposit
@@ -117,6 +122,7 @@ class WalletsController < ApplicationController
                                      .to_a
 
     entries = (mimos_in.map { |mt| mimo_entry(mt) } +
+               mimos_out.map { |mt| mimo_sent_entry(mt) } +
                withdrawals.map { |wr| withdrawal_entry(wr) } +
                deposits.map { |p| deposit_entry(p) })
               .sort_by { |entry| entry[:created_at] }
@@ -184,6 +190,9 @@ class WalletsController < ApplicationController
       balance_cents: @wallet.balance_cents,
       balance_formatted: @wallet.balance.format,
       available_balance_cents: @wallet.available_balance_cents,
+      # Mimos recebidos nos últimos 2 dias só podem ser sacados depois (UserWallet#on_hold_cents)
+      withdrawable_cents: @wallet.withdrawable_cents,
+      on_hold_cents: @wallet.on_hold_cents,
       pending_withdrawal_cents: @wallet.pending_withdrawal_cents,
       lifetime_earned_cents: @wallet.lifetime_earned_cents,
       lifetime_withdrawn_cents: @wallet.lifetime_withdrawn_cents,
@@ -197,8 +206,22 @@ class WalletsController < ApplicationController
       type: "mimo_received",
       id: mt.id,
       amount_cents: mt.receiver_value_cents,
-      description: "Mimo de #{mt.sender.display_name}: #{mt.mimo_item.name}",
+      description: "Mimo de #{mt.sender.display_name}: #{mt.display_label}",
       status: mt.status,
+      # Tocar na linha abre a tela do mimo recebido (agradecer, ver perfil)
+      url: mimo_celebration_page_path(mt.id),
+      created_at: mt.created_at
+    }
+  end
+
+  def mimo_sent_entry(mt)
+    {
+      type: "mimo_sent",
+      id: mt.id,
+      amount_cents: -mt.price_cents,
+      description: "Mimo para #{mt.receiver&.display_name}: #{mt.display_label}",
+      status: mt.status,
+      settled: true,
       created_at: mt.created_at
     }
   end

@@ -1,0 +1,25 @@
+<%# Caixa de presente preta com laço dourado — o "ícone" do Mimo do seu jeito (que não
+    tem emoji). Usada na prévia "Como … vai ver" e na tela "Você ganhou um mimo".
+    locals: css (classe), uid (prefixo único dos gradientes) %>
+<svg class="<%= css %>" viewBox="0 0 120 104" aria-hidden="true" focusable="false">
+  <defs>
+    <linearGradient id="<%= uid %>-box" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#3a3a3d"/>
+      <stop offset="1" stop-color="#141416"/>
+    </linearGradient>
+    <linearGradient id="<%= uid %>-lid" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#4a4a4e"/>
+      <stop offset="1" stop-color="#1e1e21"/>
+    </linearGradient>
+    <linearGradient id="<%= uid %>-gold" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0" stop-color="#ead2a0"/>
+      <stop offset="1" stop-color="#c39553"/>
+    </linearGradient>
+  </defs>
+  <path d="M60 30c-6-12-24-17-27-8-2 7 10 9 27 8z" fill="url(#<%= uid %>-gold)"/>
+  <path d="M60 30c6-12 24-17 27-8 2 7-10 9-27 8z" fill="url(#<%= uid %>-gold)"/>
+  <rect x="21" y="44" width="78" height="56" rx="9" fill="url(#<%= uid %>-box)"/>
+  <rect x="12" y="29" width="96" height="21" rx="7.5" fill="url(#<%= uid %>-lid)"/>
+  <rect x="54" y="29" width="12" height="71" fill="url(#<%= uid %>-gold)"/>
+  <ellipse cx="60" cy="29.5" rx="6.5" ry="5" fill="url(#<%= uid %>-gold)"/>
+</svg>

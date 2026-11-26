@@ -1,0 +1,99 @@
+<%# "Mimo do seu jeito" (/mimos/do-seu-jeito?receiver_id=…): quem envia escreve o que
+    quer dar e escolhe o valor. Quem recebe vê a caixa de presente preta com o texto.
+    Estilos .ms-* em mimo.scss; mimo_custom_controller.js (prévia ao vivo, contadores,
+    valor, envio). Limites em MimoSelection. %>
+<% content_for :head do %>
+  <meta name="turbo-cache-control" content="no-cache">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<% end %>
+
+<% default_cents = 10_000 %>
+<% presets = [ 10_000, 20_000, 30_000, 50_000 ] %>
+<% who = @receiver ? mimo_first_name(@receiver) : nil %>
+<div class="ms ms--custom"
+     data-controller="mimo-custom"
+     data-mimo-custom-deliver-url-value="<%= deliver_mimo_path %>"
+     data-mimo-custom-receiver-id-value="<%= @receiver&.id %>"
+     data-mimo-custom-balance-value="<%= @balance %>"
+     data-mimo-custom-done-url-value="<%= @done_path %>"
+     data-mimo-custom-min-value="<%= MimoSelection::CUSTOM_MIN_CENTS %>"
+     data-mimo-custom-max-value="<%= MimoSelection::CUSTOM_MAX_CENTS %>">
+
+  <header class="ms-top">
+    <%= link_to @back_path, class: "ms-back", aria: { label: "Voltar" } do %>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+    <% end %>
+    <div class="ms-heading">
+      <h1 class="ms-title">Mimo do seu jeito</h1>
+      <% if @receiver %>
+        <p class="ms-subtitle">para <strong><%= @receiver.display_name %></strong></p>
+      <% end %>
+    </div>
+  </header>
+
+  <%# Prévia: o que quem recebe vai ver %>
+  <div class="ms-preview" aria-live="polite">
+    <span class="ms-preview-art"><%= render "pages/mimo_gift_box", css: "ms-gift-box", uid: "msp" %></span>
+    <span class="ms-preview-text">
+      <span class="ms-preview-kicker"><%= who ? "Como #{who} vai ver" : "Como vai aparecer" %></span>
+      <strong class="ms-preview-label is-empty" data-mimo-custom-target="previewLabel">Seu mimo</strong>
+      <span class="ms-preview-price" data-mimo-custom-target="previewPrice"><%= mimo_money(default_cents) %></span>
+    </span>
+  </div>
+
+  <% unless @receiver %>
+    <label class="ms-phone ms-phone--custom">
+      <span>Celular de quem vai receber</span>
+      <input type="tel" inputmode="numeric" autocomplete="tel-national" placeholder="(00) 00000-0000"
+             data-mimo-custom-target="phone" data-action="input->mimo-custom#maskPhone">
+    </label>
+  <% end %>
+
+  <label class="ms-field-label" for="ms-custom-label">O que você quer dar?</label>
+  <div class="ms-field ms-field--strong">
+    <input id="ms-custom-label" type="text" maxlength="<%= MimoSelection::CUSTOM_LABEL_MAX %>" autocomplete="off"
+           autocapitalize="sentences" placeholder="Um jantar no Rio Vermelho"
+           data-mimo-custom-target="label" data-action="input->mimo-custom#refresh">
+    <span class="ms-count" data-mimo-custom-target="labelCount">0/<%= MimoSelection::CUSTOM_LABEL_MAX %></span>
+  </div>
+  <p class="ms-field-hint">Ex.: um sorvete na orla, ingresso do show, um chopp</p>
+
+  <label class="ms-field-label" for="ms-custom-amount">Valor</label>
+  <div class="ms-amount">
+    <span class="ms-amount-currency">R$</span>
+    <input id="ms-custom-amount" type="text" inputmode="numeric" autocomplete="off"
+           value="<%= number_with_precision(default_cents / 100.0, precision: 2, separator: ",", delimiter: ".") %>"
+           data-mimo-custom-target="amount" data-action="input->mimo-custom#typeAmount focus->mimo-custom#focusAmount">
+  </div>
+  <div class="ms-presets" role="group" aria-label="Valores sugeridos">
+    <% presets.each do |cents| %>
+      <button type="button" class="ms-preset<%= " is-active" if cents == default_cents %>" data-cents="<%= cents %>"
+              data-mimo-custom-target="preset" data-action="mimo-custom#preset"><%= mimo_money(cents).sub(",00", "") %></button>
+    <% end %>
+  </div>
+  <p class="ms-field-hint" data-mimo-custom-target="range">
+    De <%= mimo_money(MimoSelection::CUSTOM_MIN_CENTS) %> a <%= mimo_money(MimoSelection::CUSTOM_MAX_CENTS) %> · seu saldo: <%= mimo_money(@balance) %>
+  </p>
+
+  <label class="ms-field-label" for="ms-custom-note">Recadinho <span>(opcional)</span></label>
+  <div class="ms-field">
+    <input id="ms-custom-note" type="text" maxlength="<%= MimoSelection::MESSAGE_MAX %>" autocomplete="off"
+           placeholder="Bora? Te espero lá 😉" data-mimo-custom-target="note" data-action="input->mimo-custom#refresh">
+    <span class="ms-count" data-mimo-custom-target="noteCount">0/<%= MimoSelection::MESSAGE_MAX %></span>
+  </div>
+  <p class="ms-field-hint">Uma mensagem que vai junto com o presente</p>
+
+  <div class="ms-custom-footer">
+    <p class="ms-custom-fee">
+      <%= who ? "#{who} recebe" : "Quem recebe ganha" %> o valor na carteira GeoMatch (taxa de <%= mimo_fee_percent %>).
+    </p>
+    <p class="ms-sheet-error" role="alert" data-mimo-custom-target="error" hidden></p>
+    <button type="button" class="ms-send" disabled data-mimo-custom-target="send" data-action="mimo-custom#send">
+      <span data-mimo-custom-target="sendLabel">Enviar mimo · <%= mimo_money(default_cents) %></span>
+    </button>
+    <p class="ms-pay-hint" data-mimo-custom-target="payHint"<%= " hidden" if @receiver && @balance >= default_cents %>>
+      <%= @receiver ? "Seu saldo não cobre este valor: você paga com Pix ou cartão." : "O pagamento é por Pix ou cartão." %>
+    </p>
+  </div>
+</div>

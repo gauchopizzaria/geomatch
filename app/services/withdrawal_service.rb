@@ -9,7 +9,10 @@ class WithdrawalService
   class InvalidStateError        < StandardError; end
   class MissingPixKeyError       < StandardError; end
 
-  MINIMUM_AMOUNT_CENTS = 500 # R$ 5,00 — mesmo piso do depósito (WalletDepositService::MINIMUM_DEPOSIT_CENTS)
+  # Regras da tela "Como funcionam os Mimos?": saque a partir de R$ 300, via Pix, para
+  # uma chave no próprio CPF; mimo recebido só pode ser sacado 2 dias depois
+  # (UserWallet::RECEIVED_MIMO_HOLD).
+  MINIMUM_AMOUNT_CENTS = 30_000 # R$ 300,00
   COOLDOWN             = 24.hours
 
   # pix_key/pix_key_type são opcionais aqui: se omitidos, usa o que estiver
@@ -92,6 +95,12 @@ class WithdrawalService
           raise InsufficientBalanceError, "saldo disponível insuficiente para este saque"
         end
 
+        if amount_cents > wallet.withdrawable_cents
+          on_hold = Money.new(wallet.on_hold_cents, "BRL").format
+          raise InsufficientBalanceError,
+                "#{on_hold} de mimos recebidos ficam disponíveis para saque 2 dias depois do recebimento"
+        end
+
         @withdrawal_request = user.withdrawal_requests.create!(
           amount_cents: amount_cents,
           pix_key: effective_pix_key,
@@ -115,6 +124,27 @@ class WithdrawalService
 
     if effective_pix_key.blank?
       raise MissingPixKeyError, "cadastre uma chave PIX antes de solicitar o saque"
+    end
+
+    # O saque só vai para uma chave Pix do tipo CPF (a do próprio titular).
+    # O GeoMatch não guarda o CPF da conta, então aqui só dá para conferir o tipo e os
+    # dígitos verificadores — quem é o dono da chave fica para a revisão do saque.
+    unless effective_pix_key_type == "cpf" && self.class.valid_cpf?(effective_pix_key)
+      raise MissingPixKeyError, "o saque vai para uma chave Pix no seu CPF — confira o número"
+    end
+  end
+
+  # Dígitos verificadores do CPF (aceita com ou sem pontuação)
+  def self.valid_cpf?(value)
+    digits = value.to_s.gsub(/\D/, "")
+    return false unless digits.length == 11 && digits.squeeze.length > 1
+
+    numbers = digits.chars.map(&:to_i)
+    [ 9, 10 ].all? do |size|
+      sum   = numbers.first(size).each_with_index.sum { |digit, index| digit * (size + 1 - index) }
+      check = (sum * 10) % 11
+      check = 0 if check == 10
+      check == numbers[size]
     end
   end
 

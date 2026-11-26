@@ -1,6 +1,6 @@
 class PagesController < ApplicationController
   before_action :authenticate_user!, only: [
-    :mimo_catalog, :mimo_confirm, :mimo_celebration, :mimo_wallet, :mimo_withdraw, :mimo_deposit
+    :mimo_catalog, :mimo_custom, :mimo_confirm, :mimo_celebration, :mimo_wallet, :mimo_withdraw, :mimo_deposit
   ]
 
   def landing
@@ -29,41 +29,51 @@ class PagesController < ApplicationController
   # JSON de MimosController/WalletsController (Fase 3) via fetch().
   # =========================================================
 
-  # Catálogo de itens — o Stimulus controller busca os itens em /mimo_items/catalog.
+  # "Enviar um Mimo": catálogo por categoria (Rápidos, Bebidas…), cada mimo com Simples,
+  # Especial e Premium. Tudo vem desenhado do servidor; mimo_send_controller.js cuida da
+  # seleção, da folha "escolha o tamanho", da tela de informações e do envio.
   def mimo_catalog
     @hide_sidebar = true
-    @receiver_id  = params[:receiver_id]
-    @receiver     = User.find_by(id: @receiver_id)
+    @receiver     = User.find_by(id: params[:receiver_id])
+    @catalog      = MimoItem.catalog
+    @balance      = current_user.wallet&.available_balance_cents.to_i
+    @back_path    = mimo_back_path
   end
 
-  # Tela de confirmação antes do checkout — recebe os dados do item escolhido
-  # via query string (evita um round-trip extra à API só para exibir o card).
-  # Aceita EXATAMENTE um destino: receiver_id (usuário já cadastrado) OU phone
-  # (convite por SMS — ver MimoInviteService/MimoPaymentService, Fase 2/3).
+  # "Mimo do seu jeito": quem envia digita o que quer dar e o valor (R$ 5 a R$ 500).
+  def mimo_custom
+    @hide_sidebar = true
+    @receiver     = User.find_by(id: params[:receiver_id])
+    @balance      = current_user.wallet&.available_balance_cents.to_i
+    @back_path    = safe_return_path(params[:voltar]) || mimo_catalog_page_path(receiver_id: @receiver&.id)
+    # Para onde ir depois de enviar: a tela que abriu o catálogo (conversa, perfil)
+    @done_path    = safe_return_path(params[:depois]) || (@receiver ? user_path(@receiver) : matches_path)
+  end
+
+  # A tela de confirmação antiga virou a folha "escolha o tamanho" do catálogo.
+  # Links antigos continuam funcionando: voltam para o catálogo da mesma pessoa.
   def mimo_confirm
-    @hide_sidebar   = true
-    @receiver_id    = params[:receiver_id].presence
-    @receiver_phone = params[:phone].presence
-    @receiver       = User.find(@receiver_id) if @receiver_id
-
-    raise ActiveRecord::RecordNotFound if @receiver_id.blank? && @receiver_phone.blank?
-
-    @mimo_item_id    = params.require(:mimo_item_id)
-    @mimo_item_name  = params[:name]
-    @mimo_item_price = params[:price_formatted]
-    @mimo_item_icon  = params[:icon]
-  rescue ActionController::ParameterMissing, ActiveRecord::RecordNotFound
-    redirect_to mimo_catalog_page_path, alert: "Selecione um Mimo e um destinatário para continuar."
+    redirect_to mimo_catalog_page_path(receiver_id: params[:receiver_id].presence)
   end
 
-  # Exibida quando o destinatário abre um Mimo recebido (ex.: a partir da notificação).
+  # "Você ganhou um mimo" — aberta pela notificação/push e pelo extrato da carteira.
+  # Mostra o emoji do mimo (ou a caixa de presente no Mimo do seu jeito), quanto entrou
+  # na carteira e os botões Agradecer / Ver perfil.
   def mimo_celebration
     @hide_sidebar     = true
-    @mimo_transaction = MimoTransaction.find(params[:id])
+    @mimo_transaction = MimoTransaction.includes(:sender, :mimo_item).find(params[:id])
 
     unless @mimo_transaction.receiver_id == current_user.id
       redirect_to mimo_wallet_page_path, alert: "Este Mimo não pertence a você." and return
     end
+    # Pagamento ainda não aprovado (ou estornado): o valor não está na carteira
+    unless @mimo_transaction.completed?
+      redirect_to mimo_wallet_page_path, alert: "Este mimo ainda não está disponível." and return
+    end
+
+    @sender       = @mimo_transaction.sender
+    @conversation = Match.for_user(current_user.id)
+                         .where("user_id = :id OR matched_user_id = :id", id: @sender.id).first
   rescue ActiveRecord::RecordNotFound
     redirect_to mimo_wallet_page_path, alert: "Mimo não encontrado."
   end
@@ -89,5 +99,32 @@ class PagesController < ApplicationController
   def mimo_withdraw
     @hide_sidebar = true
     @wallet       = current_user.wallet
+  end
+
+  private
+
+  # De onde a pessoa abriu o catálogo (a conversa, o perfil): o "voltar" e o destino
+  # depois de enviar. Só caminhos internos; as próprias telas de Mimo não contam.
+  def mimo_back_path
+    safe_return_path(params[:voltar]) ||
+      safe_return_path(referer_path) ||
+      (@receiver ? user_path(@receiver) : my_profile_path)
+  end
+
+  def referer_path
+    uri = URI.parse(request.referer.to_s)
+    return nil if uri.host.present? && uri.host != request.host
+
+    [ uri.path, uri.query ].compact.join("?")
+  rescue URI::InvalidURIError
+    nil
+  end
+
+  def safe_return_path(path)
+    path = path.to_s
+    return nil unless path.start_with?("/") && !path.start_with?("//")
+    return nil if path.start_with?("/mimos")
+
+    path
   end
 end

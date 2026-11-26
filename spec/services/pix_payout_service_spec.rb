@@ -3,8 +3,8 @@ require "rails_helper"
 RSpec.describe PixPayoutService do
   let(:user) { create(:user) }
 
-  def withdrawal(amount_cents: 2_340, **attrs)
-    user.wallet || user.create_wallet!(balance_cents: amount_cents, pix_key: "chave@pix.com", pix_key_type: "email")
+  def withdrawal(amount_cents: 32_340, **attrs)
+    user.wallet || user.create_wallet!(balance_cents: amount_cents, pix_key: "529.982.247-25", pix_key_type: "cpf")
     request = WithdrawalService.request!(user: user, amount_cents: amount_cents)
     request.update!(**attrs) if attrs.any?
     request
@@ -68,7 +68,7 @@ RSpec.describe PixPayoutService do
       described_class.call(request)
 
       expect(adapter).to have_received(:send_pix).with(
-        hash_including(idempotency_key: request.id, amount_cents: 2_340, pix_key: "chave@pix.com", pix_key_type: "email")
+        hash_including(idempotency_key: request.id, amount_cents: 32_340, pix_key: "529.982.247-25", pix_key_type: "cpf")
       )
     end
 

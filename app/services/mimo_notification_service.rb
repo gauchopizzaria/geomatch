@@ -29,7 +29,7 @@ class MimoNotificationService
     notification = Notification.create!(
       recipient: mimo_transaction.receiver,
       actor: mimo_transaction.sender,
-      action: "te enviou um Mimo: #{mimo_transaction.mimo_item.name}",
+      action: "te enviou um Mimo: #{mimo_transaction.display_label}",
       notifiable: mimo_transaction
     )
     NotificationBroadcastJob.perform_later(notification)

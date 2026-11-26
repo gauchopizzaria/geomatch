@@ -17,6 +17,7 @@ const MAX_DIGITS   = 9 // até R$ 9.999.999,99
 const ENTRY_STYLES = {
   withdrawal:    { title: "Saque para Pix",   icon: '<path d="M12 19V5M6 11l6-6 6 6"/>', tone: "out" },
   deposit:       { title: "Saldo adicionado", icon: '<path d="M12 5v14M5 12h14"/>', tone: "add", detail: "via Mercado Pago" },
+  mimo_sent:     { icon: '<rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.2C7 8 9.5 8 12 8zM12 8c1.5-3 5-3.5 5-1.2C17 8 14.5 8 12 8z"/>', tone: "out" },
   mimo_received: { icon: '<rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.2C7 8 9.5 8 12 8zM12 8c1.5-3 5-3.5 5-1.2C17 8 14.5 8 12 8z"/>', tone: "gift" }
 }
 
@@ -183,15 +184,19 @@ export default class extends Controller {
     const detail = entry.status_label || style.detail
     const meta = [this.formatShortDate(entry.created_at), detail].filter(Boolean).join(" · ")
 
-    return `
-      <li class="wl-tx">
+    const body = `
         <span class="wl-tx-icon is-${style.tone}" aria-hidden="true"><svg viewBox="0 0 24 24">${style.icon}</svg></span>
         <span class="wl-tx-main">
           <strong>${this.escapeHtml(title)}</strong>
           <small>${this.escapeHtml(meta)}</small>
         </span>
-        <span class="wl-tx-value ${isIn ? "is-in" : "is-out"}">${isIn ? "+" : "−"} ${this.formatCents(Math.abs(entry.amount_cents))}</span>
-      </li>`
+        <span class="wl-tx-value ${isIn ? "is-in" : "is-out"}">${isIn ? "+" : "−"} ${this.formatCents(Math.abs(entry.amount_cents))}</span>`
+
+    // Mimo recebido: a linha abre a tela do mimo (agradecer, ver perfil)
+    const url = typeof entry.url === "string" && entry.url.startsWith("/") ? entry.url : null
+    return url
+      ? `<li class="wl-tx"><a class="wl-tx-link" href="${this.escapeHtml(url)}">${body}</a></li>`
+      : `<li class="wl-tx">${body}</li>`
   }
 
   emptyHtml(title, text) {

@@ -13,10 +13,16 @@ class NotificationBroadcastJob < ApplicationJob
     recipient = notification.recipient
     return unless recipient
 
-    NotificationChannel.broadcast_to(
-      recipient,
+    payload = {
       kind:  notification.notifiable_type.to_s.underscore, # like / match / mimo_transaction
       count: recipient.unseen_likes_count
-    )
+    }
+    # Mimo recebido com o app aberto: o aviso no topo leva à tela "Você ganhou um mimo"
+    if notification.notifiable.is_a?(MimoTransaction)
+      payload[:url]   = Rails.application.routes.url_helpers.mimo_celebration_page_path(notification.notifiable_id)
+      payload[:title] = "#{notification.actor&.display_name} te enviou um mimo 🎁"
+    end
+
+    NotificationChannel.broadcast_to(recipient, **payload)
   end
 end

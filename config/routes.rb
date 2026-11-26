@@ -182,6 +182,8 @@ Rails.application.routes.draw do
   # na instância do controller — mesmo cuidado já aplicado aos eventos AASM na Fase 2.
   post "/mimo/send",          to: "mimos#create",           as: :send_mimo
   post "/mimo/send_with_wallet", to: "mimos#send_with_wallet", as: :send_mimo_with_wallet
+  # Botão "Enviar …" da tela nova: paga com o saldo ou, sem saldo, abre o checkout do MP
+  post "/mimo/enviar",           to: "mimos#deliver",          as: :deliver_mimo
 
   get   "/wallet",                to: "wallets#show",           as: :wallet
   post  "/wallet/withdraw",       to: "wallets#withdraw",       as: :withdraw_wallet
@@ -195,7 +197,10 @@ Rails.application.routes.draw do
   # --- Views HTML do fluxo de Mimos (consomem os endpoints JSON acima via fetch) ---
   get "/mimos/catalogo",     to: "pages#mimo_catalog",     as: :mimo_catalog_page
   get "/mimos/confirmar",    to: "pages#mimo_confirm",     as: :mimo_confirm_page
+  get "/mimos/do-seu-jeito", to: "pages#mimo_custom",      as: :mimo_custom_page
   get "/mimos/recebido/:id", to: "pages#mimo_celebration", as: :mimo_celebration_page
+  # "Agradecer a Fulano": a mensagem vai para a conversa de vocês
+  post "/mimos/recebido/:id/agradecer", to: "mimo_thanks#create", as: :mimo_thanks
   get "/mimos/depositar",    to: "pages#mimo_deposit",     as: :mimo_deposit_page
   get "/carteira",           to: "pages#mimo_wallet",      as: :mimo_wallet_page
   get "/carteira/sacar",     to: "pages#mimo_withdraw",    as: :mimo_withdraw_page

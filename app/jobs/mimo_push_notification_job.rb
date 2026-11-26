@@ -16,8 +16,9 @@ class MimoPushNotificationJob < ApplicationJob
     return unless recipient
 
     title = mimo_transaction.sender.display_name
-    body  = "te enviou um Mimo: #{mimo_transaction.mimo_item.name} 🎁"
-    url   = "/meu-perfil"
+    body  = "te enviou um Mimo: #{mimo_transaction.display_label} 🎁"
+    # Tocar no aviso abre a tela "Você ganhou um mimo" (com Agradecer / Ver perfil)
+    url   = Rails.application.routes.url_helpers.mimo_celebration_page_path(mimo_transaction.id)
 
     # Os três canais são completamente independentes — falha em um não afeta os outros.
     send_web_push(recipient, mimo_transaction_id, title, body, url)

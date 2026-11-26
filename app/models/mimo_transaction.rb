@@ -3,7 +3,8 @@ class MimoTransaction < ApplicationRecord
 
   belongs_to :sender,    class_name: "User"
   belongs_to :receiver,  class_name: "User", optional: true
-  belongs_to :mimo_item
+  # Vazio no "Mimo do seu jeito" (o nome e o valor foram digitados por quem enviou)
+  belongs_to :mimo_item, optional: true
   belongs_to :payment, optional: true
 
   monetize :price_cents
@@ -50,6 +51,27 @@ class MimoTransaction < ApplicationRecord
 
   def guest_invite?
     receiver_id.nil? && receiver_phone.present?
+  end
+
+  # "Mimo do seu jeito": não veio do catálogo
+  def custom?
+    mimo_item_id.nil?
+  end
+
+  # O que quem recebe lê: "Rosa vermelha", "Um jantar no Rio Vermelho". Mimos de antes
+  # dos níveis não têm item_label e mostram o nome do item.
+  def display_label
+    text = item_label.presence || mimo_item&.name || "Mimo"
+    text[0].upcase + text[1..]
+  end
+
+  # Emoji do mimo; o do seu jeito não tem (a tela mostra a caixa de presente)
+  def display_icon
+    mimo_item&.icon.presence
+  end
+
+  def thanked?
+    thanked_at.present?
   end
 
   private

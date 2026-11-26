@@ -18,12 +18,29 @@ class UserWallet < ApplicationRecord
   validate :pending_withdrawal_cannot_exceed_balance
 
   PIX_KEY_TYPES = %w[cpf cnpj email phone random].freeze
+
+  # "Recebeu um mimo? O valor entra na sua carteira e fica disponível para saque 2 dias
+  # após o recebimento." Dá para usar no app na hora (enviar mimos); sacar, só depois.
+  RECEIVED_MIMO_HOLD = 2.days
   validates :pix_key_type, inclusion: { in: PIX_KEY_TYPES }, allow_nil: true
 
   # Saldo realmente livre para uma nova solicitação de saque
   # (o que já está reservado em withdrawal_requests pendentes não conta de novo).
   def available_balance_cents
     balance_cents - pending_withdrawal_cents
+  end
+
+  # Mimos recebidos nos últimos 2 dias: ainda não podem ser sacados
+  def on_hold_cents
+    received = user.mimo_transactions_received.completed
+                   .where(created_at: RECEIVED_MIMO_HOLD.ago..)
+                   .sum(:receiver_value_cents)
+    received.clamp(0, [ available_balance_cents, 0 ].max)
+  end
+
+  # O que dá para pedir num saque agora
+  def withdrawable_cents
+    [ available_balance_cents - on_hold_cents, 0 ].max
   end
 
   private

@@ -1,38 +1,131 @@
-<%# Lottie carregado só nesta view (web component <lottie-player>), fora do
-    bundle esbuild global — mesmo padrão já usado para Mapbox/Turf.js no layout:
-    lib de terceiros pontual entra via <script> na página que a usa, não no JS
-    compartilhado por todo o app. %>
+<%# "Você ganhou um mimo" (/mimos/recebido/:id) — aberta pela notificação/push e pelo
+    extrato da carteira. O emoji do mimo aparece grande; no Mimo do seu jeito (sem
+    emoji), a caixa de presente preta. Estilos .mg-* em mimo.scss.
+    mimo_gift_controller.js: folha "Agradecer a Fulano" (respostas rápidas + mensagem,
+    que vai para a conversa de vocês) e o aviso "Agradecimento enviado". %>
 <% content_for :head do %>
-  <script type="module" src="https://unpkg.com/@lottiefiles/lottie-player@2.0.8/dist/lottie-player.js"></script>
+  <meta name="turbo-cache-control" content="no-cache">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <% end %>
 
-<div class="gm-mimo-wrapper" data-controller="mimo" data-mimo-celebrate-value="true">
-  <div class="gm-mimo-celebrate">
-    <div class="gm-mimo-lottie-stage" data-mimo-target="lottieStage">
-      <%# src aponta para um asset local (fornecido pelo time de design, em
-          app/assets/images/ — mesmo load path já usado por PNG/SVG do projeto).
-          Enquanto o arquivo real não existir, o player não renderiza nada e o
-          fallback estático abaixo assume visualmente (ver mimo_controller.js). %>
-      <lottie-player
-        src="<%= asset_path('mimo_celebration.lottie.json') rescue '' %>"
-        background="transparent"
-        speed="1"
-        autoplay
-        data-mimo-target="lottiePlayer">
-      </lottie-player>
-      <div class="gm-mimo-gift-fallback" data-mimo-target="fallback" style="display:none">🎁</div>
-    </div>
+<% mimo   = @mimo_transaction %>
+<% sender = @sender %>
+<% name   = sender.display_name %>
+<% quick_replies = [ "Muito obrigado! 🥰", "Adorei, bora! 😍", "Você é demais ❤️", "Que surpresa boa! ✨" ] %>
+<div class="mg"
+     data-controller="mimo-gift"
+     data-mimo-gift-thanks-url-value="<%= mimo_thanks_path(mimo) %>"
+     data-mimo-gift-close-url-value="<%= mimo_wallet_page_path %>">
 
-    <div class="gm-mimo-celeb-title">Você recebeu um Mimo!</div>
-    <div class="gm-mimo-celeb-sub"><%= @mimo_transaction.mimo_item.name %></div>
-    <div class="gm-mimo-celeb-from">De: <%= @mimo_transaction.sender.display_name %></div>
+  <span class="mg-glow" aria-hidden="true"></span>
 
-    <% if @mimo_transaction.message.present? %>
-      <p class="gm-mimo-celeb-message">"<%= @mimo_transaction.message %>"</p>
+  <%= link_to mimo_wallet_page_path, class: "mg-close", aria: { label: "Fechar" }, data: { action: "mimo-gift#close" } do %>
+    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+  <% end %>
+
+  <div class="mg-stage">
+    <svg class="mg-sparkles" viewBox="0 0 320 220" aria-hidden="true">
+      <path d="M40 66l3.5 9.5L53 79l-9.5 3.5L40 92l-3.5-9.5L27 79l9.5-3.5z"/>
+      <path d="M272 30l2.6 7 7 2.6-7 2.6-2.6 7-2.6-7-7-2.6 7-2.6z"/>
+      <path d="M262 150l3.6 9.4 9.4 3.6-9.4 3.6-3.6 9.4-3.6-9.4-9.4-3.6 9.4-3.6z"/>
+      <path d="M86 172l2.4 6.6 6.6 2.4-6.6 2.4-2.4 6.6-2.4-6.6-6.6-2.4 6.6-2.4z"/>
+    </svg>
+    <% if mimo.display_icon %>
+      <span class="mg-emoji" aria-hidden="true"><%= mimo.display_icon %></span>
+    <% else %>
+      <%= render "pages/mimo_gift_box", css: "mg-gift-box", uid: "mgb" %>
     <% end %>
+  </div>
 
-    <div class="gm-mimo-celeb-cta">
-      <%= link_to "Ver carteira", mimo_wallet_page_path, class: "gm-mimo-btn gm-mimo-btn--gold" %>
+  <span class="mg-pill">🎁 Você ganhou um mimo</span>
+  <h1 class="mg-from"><%= name %> te enviou</h1>
+  <p class="mg-label"><%= mimo.display_label %></p>
+  <p class="mg-value">no valor de <%= mimo_money(mimo.price_cents) %></p>
+
+  <% if mimo.message.present? %>
+    <div class="mg-note">
+      <%= mimo_avatar(sender, "mg-avatar") %>
+      <p><%= mimo.message %></p>
+    </div>
+  <% end %>
+
+  <p class="mg-wallet">
+    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="6" width="17" height="13" rx="2.5"/><path d="M3.5 10h17M15.5 14.5h2"/></svg>
+    <span><strong><%= mimo_money(mimo.receiver_value_cents) %></strong> entraram na sua carteira</span>
+  </p>
+
+  <div class="mg-actions">
+    <button type="button" class="mg-btn mg-btn--dark<%= " is-done" if mimo.thanked? %>" data-mimo-gift-target="thankButton"
+            data-action="mimo-gift#openThanks" <%= "disabled" if mimo.thanked? %>>
+      <% if mimo.thanked? %>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 12.5 4.5 4.5L19 7.5"/></svg>
+        Agradecimento enviado
+      <% else %>
+        Agradecer a <%= name %>
+      <% end %>
+    </button>
+    <%= link_to user_path(sender), class: "mg-btn mg-btn--outline" do %>
+      <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.2-3.8 4-5.5 7.5-5.5s6.3 1.7 7.5 5.5"/></svg>
+      Ver perfil de <%= name %>
+    <% end %>
+    <%= link_to "Ver minha carteira", mimo_wallet_page_path, class: "mg-link" %>
+  </div>
+
+  <%# Aviso no topo depois de agradecer (some sozinho) %>
+  <div class="mg-toast" data-mimo-gift-target="toast" role="status" aria-live="polite" hidden>
+    <span class="mg-toast-icon" aria-hidden="true">
+      <svg viewBox="0 0 24 24"><path d="M12 20s-7-4.4-7-10a4 4 0 0 1 7-2.6A4 4 0 0 1 19 10c0 5.6-7 10-7 10z"/></svg>
+    </span>
+    <span class="mg-toast-text">
+      <strong>Agradecimento enviado</strong>
+      <span><%= name %> vai ver na conversa de vocês</span>
+    </span>
+    <a class="mg-toast-btn" href="<%= @conversation ? match_path(@conversation) : matches_path %>" data-mimo-gift-target="toastLink">Ver conversa</a>
+  </div>
+
+  <%# Folha "Agradecer a Fulano" %>
+  <div class="mg-sheet" data-mimo-gift-target="sheet" hidden>
+    <div class="mg-sheet-backdrop" data-action="click->mimo-gift#closeThanks"></div>
+    <div class="mg-sheet-panel" role="dialog" aria-modal="true" aria-labelledby="mg-sheet-title">
+      <span class="mg-sheet-handle" aria-hidden="true"></span>
+      <div class="mg-sheet-head">
+        <%= mimo_avatar(sender, "mg-avatar mg-avatar--lg") %>
+        <span class="mg-sheet-title-wrap">
+          <strong id="mg-sheet-title">Agradecer a <%= name %></strong>
+          <span>pelo mimo: <em><%= mimo.display_label %></em></span>
+        </span>
+        <button type="button" class="mg-sheet-close" data-action="mimo-gift#closeThanks" aria-label="Fechar">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        </button>
+      </div>
+
+      <p class="mg-kicker">Respostas rápidas</p>
+      <div class="mg-quick" role="group" aria-label="Respostas rápidas">
+        <% quick_replies.each do |text| %>
+          <button type="button" class="mg-quick-btn" data-mimo-gift-target="quick" data-text="<%= text %>"
+                  data-action="mimo-gift#quick" aria-pressed="false"><%= text %></button>
+        <% end %>
+      </div>
+
+      <label class="mg-field-label" for="mg-message">Sua mensagem</label>
+      <div class="mg-textarea">
+        <textarea id="mg-message" rows="4" maxlength="<%= MimoThanksController::MESSAGE_MAX %>"
+                  placeholder="Escreva seu agradecimento" data-mimo-gift-target="message"
+                  data-action="input->mimo-gift#typed"></textarea>
+        <span class="mg-count" data-mimo-gift-target="count">0/<%= MimoThanksController::MESSAGE_MAX %></span>
+      </div>
+      <p class="mg-hint">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 5.5h14a1.5 1.5 0 0 1 1.5 1.5v8.5A1.5 1.5 0 0 1 19 17H10l-4.5 3.5V17H5a1.5 1.5 0 0 1-1.5-1.5V7A1.5 1.5 0 0 1 5 5.5z"/></svg>
+        A mensagem vai para a conversa de vocês
+      </p>
+
+      <p class="mg-error" role="alert" data-mimo-gift-target="error" hidden></p>
+
+      <button type="button" class="mg-send" data-mimo-gift-target="send" data-action="mimo-gift#send" disabled>
+        Enviar agradecimento
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg>
+      </button>
     </div>
   </div>
 </div>

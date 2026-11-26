@@ -1,448 +1,1535 @@
 // =========================================================
-// MIMOS — Presentes Virtuais (Catálogo, Confirmação, Celebração, Carteira, Saque)
-// Estrutura adaptada do mockup do designer; paleta e tema reescritos para usar
-// os tokens --color-* / --gold-primary já existentes no GeoMatch (dourado, não
-// coral) — dark/light mode automáticos via .dark-mode / .light-mode no <html>,
-// exatamente como o resto do app (nada de data-theme paralelo).
+// MIMOS — layout dos mockups (739px de largura → ×0,528 para 390px; Inter)
+//   .ms-*  "Enviar um Mimo" (catálogo + folha "escolha o tamanho"), "Como funcionam
+//          os Mimos?" e "Mimo do seu jeito"   → pages/mimo_catalog, _mimo_info, mimo_custom
+//   .mg-*  "Você ganhou um mimo" + folha "Agradecer" + aviso → pages/mimo_celebration
+// Carteira, adicionar saldo e saque ficam em wallet.scss (.wl-*).
 // =========================================================
 
-.gm-mimo-wrapper {
-  min-height: 100vh;
-  background: var(--color-background);
-  color: var(--color-text);
-  font-family: 'Poppins', sans-serif;
-  display: flex;
-  flex-direction: column;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
+// Campos de texto dos Mimos: o input[type="text"] global (profile.scss, mais específico
+// que uma classe) e o :focus dele (borda + brilho dourado) não podem vazar para cá
+@mixin mm-field-reset {
+  margin: 0;
+  box-shadow: none;
+  transition: none;
+  -webkit-appearance: none;
+  appearance: none;
+
+  &:focus { outline: none; box-shadow: none; }
 }
 
-// --- App bar (voltar + título centralizado) — mesmo padrão de edit_profile/chat ---
-.gm-mimo-appbar {
+// Bolinha girando no lugar do texto do botão enquanto envia
+@mixin mm-spinner {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 20px;
+  height: 20px;
+  margin: -10px 0 0 -10px;
+  border: 2.5px solid rgba(28, 28, 30, 0.22);
+  border-top-color: #1c1c1e;
+  border-radius: 50%;
+  animation: mm-spin 0.7s linear infinite;
+}
+
+@keyframes mm-spin {
+  to { transform: rotate(360deg); }
+}
+
+.ms,
+.mg,
+.ms-info {
+  --mm-bg: #f8f1e7;
+  --mm-surface: #fff;
+  --mm-text: #1c1c1e;
+  --mm-muted: #6b6560;
+  --mm-soft: #8a847e;
+  --mm-line: #ece3d6;
+  --mm-cream: #f5ecdf;          // círculo do emoji, fundo do nível marcado
+  --mm-beige: #efe6d8;          // aviso, "entraram na sua carteira", X
+  --mm-gold: #94723f;           // cabeçalhos dourados ("MIMOS RÁPIDOS")
+  --mm-gold-line: #c9a052;      // borda do card marcado
+  --mm-dark: #1c1c1e;           // saldo, chip ativo, botões pretos
+  --mm-on-dark: #fff;
+  --mm-title: linear-gradient(180deg, #b08a52 0%, #7f5d2c 100%);
+  --mm-button: linear-gradient(180deg, #ead3a3 0%, #c9a15c 100%);
+  --mm-error: #c0302a;
+  --mm-on-gold: #1c1c1e;        // texto dos botões dourados (igual nos dois temas)
+
+  box-sizing: border-box;
+  color: var(--mm-text);
+  font-family: "Inter", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  line-height: 1.3;
+  -webkit-font-smoothing: antialiased;
+
+  *, *::before, *::after { box-sizing: border-box; }
+
+  // Só a família da fonte: tamanho e peso vêm da classe de cada botão (:where não
+  // soma especificidade — com `font: inherit` aqui, o negrito dos botões sumia)
+  :where(button, input, textarea) { font-family: inherit; }
+}
+
+// Folha ou tela por cima aberta: a página de trás não rola
+html.ms-lock,
+html.ms-lock body { overflow: hidden; }
+
+// =========================================================
+// 1. "ENVIAR UM MIMO"
+// =========================================================
+.ms {
+  min-height: 100vh;
+  min-height: 100dvh;
+  margin: 0 auto;
+  padding: 0 20px calc(108px + env(safe-area-inset-bottom, 0px));
+  max-width: 560px;
+  background: var(--mm-bg);
+}
+
+body:has(.ms),
+body:has(.mg) { background: var(--mm-bg); }
+
+// ---- topo: voltar · título dourado · (i)
+.ms-top {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 26px 0 0;
+}
+
+.ms-back {
+  display: grid;
   flex-shrink: 0;
+  place-items: center;
+  width: 32px;
+  height: 36px;
+  margin: 1px 0 0 -6px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--mm-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.ms-heading {
+  flex: 1;
+  min-width: 0;
+}
+
+.ms-title {
+  margin: 0;
+  background: var(--mm-title);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  line-height: 1.12;
+}
+
+.ms-subtitle {
+  margin: 3px 0 0;
+  color: var(--mm-muted);
+  font-size: 14px;
+
+  strong { color: var(--mm-text); font-weight: 700; }
+}
+
+.ms-info-btn {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 43px;
+  height: 43px;
+  margin-top: -2px;
+  padding: 0;
+  border: 1px solid var(--mm-line);
+  border-radius: 50%;
+  background: var(--mm-surface);
+  color: var(--mm-text);
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  svg {
+    width: 21px;
+    height: 21px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.9;
+    stroke-linecap: round;
+  }
+
+  .ms-dot { fill: currentColor; stroke-width: 2.4; }
+}
+
+// ---- convite por celular (link sem destinatário)
+.ms-phone {
+  display: block;
+  margin-top: 16px;
+
+  span { display: block; margin-bottom: 6px; font-size: 13.5px; font-weight: 700; }
+
+  input {
+    width: 100%;
+    height: 46px;
+    padding: 0 16px;
+    border: 1px solid var(--mm-line);
+    border-radius: 14px;
+    background: var(--mm-surface);
+    color: var(--mm-text);
+    font: inherit;
+    font-size: 16px;
+    outline: none;
+
+    &:focus { border-color: var(--mm-dark); }
+  }
+
+  small { display: block; margin-top: 6px; color: var(--mm-soft); font-size: 12px; }
+}
+
+.ms-phone--custom { margin-top: 18px; }
+
+// ---- "Seu saldo R$ 250,00   + Adicionar"
+.ms-balance {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  padding: 14px 12px;
-  padding-top: calc(14px + env(safe-area-inset-top));
-  border-bottom: 1px solid var(--color-border);
-  background: var(--color-background);
-  position: sticky;
-  top: 0;
-  z-index: 20;
-
-  h1 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 700;
-    color: var(--color-text);
-    text-align: center;
-    flex: 1;
-  }
-
-  .gm-mimo-back {
-    width: 34px;
-    height: 34px;
-    border-radius: 50%;
-    border: none;
-    background: transparent;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    color: var(--color-text);
-    cursor: pointer;
-    text-decoration: none;
-    -webkit-tap-highlight-color: transparent;
-
-    svg { width: 18px; height: 18px; }
-  }
-
-  .gm-mimo-appbar-spacer { width: 34px; }
+  gap: 8px;
+  height: 48px;
+  margin-top: 18px;
+  padding: 0 7px 0 17px;
+  border-radius: 999px;
+  background: var(--mm-dark);
+  color: var(--mm-on-dark);
 }
 
-// --- Seletor de destinatário (usuário x telefone) — só aparece quando o
-// catálogo é aberto sem um receiver_id fixo (ver PagesController#mimo_catalog) ---
-.gm-mimo-recipient-tabs {
-  flex-shrink: 0;
+.ms-balance-label {
+  color: #cfc8bd;
+  font-size: 13.5px;
+}
+
+.ms-balance-value {
+  font-size: 16.5px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+}
+
+.ms-balance-add {
+  margin-left: auto;
+  padding: 8px 14px;
+  border-radius: 999px;
+  background: var(--mm-button);
+  color: var(--mm-on-gold);
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { color: var(--mm-on-gold); }
+}
+
+// ---- chips de categoria (grudam no topo ao rolar)
+.ms-chips {
+  position: sticky;
+  top: env(safe-area-inset-top, 0px);
+  z-index: 20;
   display: flex;
   gap: 8px;
-  margin: 14px 14px 0;
+  margin: 0 -20px;
+  padding: 16px 20px 10px;
+  overflow-x: auto;
+  background: var(--mm-bg);
+  scrollbar-width: none;
+  -webkit-overflow-scrolling: touch;
+
+  &::-webkit-scrollbar { display: none; }
 }
 
-.gm-mimo-tab {
-  flex: 1;
-  border: 1.5px solid var(--color-border);
-  background: transparent;
-  color: var(--color-text-secondary);
-  font-family: 'Poppins', sans-serif;
-  font-weight: 700;
-  font-size: 0.78rem;
-  padding: 10px 8px;
+.ms-chip {
+  flex-shrink: 0;
+  height: 38px;
+  padding: 0 16px;
+  border: 1px solid var(--mm-line);
   border-radius: 999px;
+  background: var(--mm-surface);
+  color: var(--mm-text);
+  font-size: 14px;
+  font-weight: 600;
   cursor: pointer;
-  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 
   &.is-active {
-    border-color: var(--color-primary);
-    background: rgba(212, 175, 55, 0.1);
-    color: var(--color-primary);
+    border-color: var(--mm-dark);
+    background: var(--mm-dark);
+    color: var(--mm-on-dark);
   }
 }
 
-.gm-mimo-phone-section {
+// ---- "Mimo do seu jeito"
+.ms-custom {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+  padding: 13px 14px;
+  border: 1px solid #e3cfa6;
+  border-radius: 18px;
+  background: linear-gradient(135deg, #fbf3e3 0%, #f4e6cc 100%);
+  color: var(--mm-text);
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover { color: var(--mm-text); }
+  &:active { transform: scale(0.99); }
+}
+
+.ms-custom-icon {
+  display: grid;
   flex-shrink: 0;
-  margin: 12px 14px 0;
-  padding: 14px;
-  border-radius: 16px;
-  background: var(--color-section-light);
-  border: 1px solid var(--color-border);
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: var(--mm-surface);
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: var(--mm-text);
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.ms-custom-text {
+  flex: 1;
+  min-width: 0;
+
+  strong { display: block; font-size: 14.5px; font-weight: 800; }
+  span { display: block; margin-top: 2px; color: var(--mm-muted); font-size: 12.5px; line-height: 1.35; }
+}
+
+.ms-custom-chevron {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: var(--mm-gold);
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.ms-empty {
+  margin: 40px 0;
+  color: var(--mm-muted);
+  text-align: center;
+}
+
+// ---- seções e cards
+.ms-section {
+  margin-top: 22px;
+  // o chip grudado no topo não cobre o título ao pular para a seção
+  scroll-margin-top: calc(66px + env(safe-area-inset-top, 0px));
+}
+
+.ms-section-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 11px;
+
+  h2 {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin: 0;
+    color: var(--mm-gold);
+    font-size: 12.5px;
+    font-weight: 800;
+    letter-spacing: 0.6px;
+    text-transform: uppercase;
+  }
+
+  > span { color: var(--mm-soft); font-size: 12px; }
+}
+
+.ms-vip-badge {
+  padding: 2px 7px;
+  border-radius: 999px;
+  background: var(--mm-dark);
+  color: #ead3a3;
+  font-size: 10px;
+  letter-spacing: 0.4px;
+}
+
+.ms-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 11px;
+}
+
+.ms-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 136px;
+  padding: 14px 6px 12px;
+  border: 1.5px solid var(--mm-line);
+  border-radius: 18px;
+  background: var(--mm-surface);
+  color: var(--mm-text);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease, transform 0.1s ease;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active { transform: scale(0.97); }
+
+  &.is-selected {
+    border-color: var(--mm-gold-line);
+    box-shadow: 0 6px 18px rgba(148, 114, 63, 0.18);
+  }
+}
+
+.ms-card-icon {
+  display: grid;
+  place-items: center;
+  width: 51px;
+  height: 51px;
+  border-radius: 50%;
+  background: var(--mm-cream);
+  font-size: 26px;
+  line-height: 1;
+}
+
+.ms-card-name {
+  margin-top: 9px;
+  font-size: 14px;
+  font-weight: 800;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+
+.ms-card-price {
+  margin-top: 4px;
+  color: var(--mm-muted);
+  font-size: 11.5px;
+  line-height: 1.3;
+}
+
+// VIP: ícone no círculo preto com anel dourado
+.ms-section.is-vip .ms-card-icon {
+  background: var(--mm-dark);
+  box-shadow: 0 0 0 2px #d9b77a;
+}
+
+// ---- barra de baixo: o mimo marcado + Continuar
+.ms-bar {
+  position: fixed;
+  right: 0;
+  bottom: 0;
+  left: 0;
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 11px;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 12px 20px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom, 0px));
+  border-top: 1px solid var(--mm-line);
+  background: var(--mm-surface);
+  box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.06);
 
   &[hidden] { display: none; }
 }
 
-.gm-mimo-phone-label {
-  display: block;
-  font-size: 0.72rem;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  color: var(--color-text-secondary);
-  margin-bottom: 8px;
+.ms-bar-icon {
+  flex-shrink: 0;
+  font-size: 26px;
+  line-height: 1;
 }
 
-.gm-mimo-phone-input {
-  width: 100%;
-  border: 1px solid var(--color-border);
-  background: var(--color-input-bg);
-  border-radius: 12px;
-  padding: 12px 14px;
-  color: var(--color-text);
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.95rem;
-  font-weight: 700;
-  outline: none;
-  box-sizing: border-box;
-
-  &:focus { border-color: var(--color-primary); }
-}
-
-.gm-mimo-phone-hint {
-  margin: 8px 0 0;
-  font-size: 0.72rem;
-  line-height: 1.5;
-  color: var(--color-text-secondary);
-}
-
-.gm-mimo-phone-section .gm-mimo-error-banner {
-  margin-top: 10px;
-}
-
-// --- 1. CATÁLOGO ---
-.gm-mimo-grid {
+.ms-bar-text {
   flex: 1;
-  padding: 16px 14px 8px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-  overflow-y: auto;
+  min-width: 0;
+
+  strong { display: block; overflow: hidden; font-size: 15px; font-weight: 800; text-overflow: ellipsis; white-space: nowrap; }
+  span { display: block; color: var(--mm-muted); font-size: 12px; }
 }
 
-.gm-mimo-card {
-  background: var(--color-section-light);
-  border: 1px solid var(--color-border);
-  border-radius: 18px;
-  padding: 16px 12px;
+.ms-bar-btn {
+  flex-shrink: 0;
+  height: 44px;
+  padding: 0 22px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mm-button);
+  color: var(--mm-on-gold);
+  font-size: 14.5px;
+  font-weight: 800;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &:active { transform: scale(0.97); }
+}
+
+// ---- folha "escolha o tamanho"
+.ms-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 9000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+
+  &[hidden] { display: none; }
+}
+
+.ms-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(28, 24, 20, 0.38);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  .is-open > & { opacity: 1; }
+}
+
+.ms-sheet-panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  padding: 10px 16px 16px;
+  padding-bottom: max(18px, env(safe-area-inset-bottom, 0px));
+  border-radius: 28px 28px 0 0;
+  background: var(--mm-surface);
+  box-shadow: 0 -10px 30px rgba(0, 0, 0, 0.12);
+  transform: translateY(100%);
+  transition: transform 0.26s cubic-bezier(0.2, 0.9, 0.3, 1);
+
+  .is-open > & { transform: none; }
+}
+
+.ms-sheet-handle {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 14px;
+  border-radius: 2px;
+  background: #ddd6cb;
+}
+
+.ms-sheet-head {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+  padding: 0 2px;
+
+  strong { font-size: 17px; font-weight: 800; }
+  > span:last-child { color: var(--mm-muted); font-size: 13px; }
+}
+
+.ms-sheet-icon {
+  align-self: center;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.ms-tiers {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 9px;
+  margin-top: 15px;
+}
+
+.ms-tier {
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 8px;
+  justify-content: center;
+  gap: 2px;
+  min-height: 79px;
+  padding: 9px 5px;
+  border: 1.5px solid var(--mm-line);
+  border-radius: 16px;
+  background: var(--mm-surface);
+  color: var(--mm-text);
   text-align: center;
-  text-decoration: none;
   cursor: pointer;
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 
-  &:active { transform: scale(0.96); }
-
-  &.is-loading { opacity: 0.55; pointer-events: none; }
-}
-
-.gm-mimo-card-icon {
-  width: 60px;
-  height: 60px;
-  display: grid;
-  place-items: center;
-  border-radius: 18px;
-  font-size: 1.9rem;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.22), transparent 70%);
-}
-
-.gm-mimo-card h4 {
-  margin: 0;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--color-text);
-}
-
-.gm-mimo-card .gm-mimo-price {
-  font-size: 0.8rem;
-  font-weight: 800;
-  color: var(--color-primary);
-}
-
-.gm-mimo-saldo-banner {
-  flex-shrink: 0;
-  margin: 0 14px 14px;
-  padding: 12px 16px;
-  border-radius: 16px;
-  background: linear-gradient(135deg, rgba(212, 175, 55, 0.16), rgba(212, 175, 55, 0.05));
-  border: 1px solid var(--color-border);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-
-  strong { color: var(--color-primary); font-size: 0.95rem; }
-
-  a {
-    color: var(--color-primary);
-    font-weight: 700;
-    text-decoration: none;
-    font-size: 0.75rem;
+  &.is-active {
+    border: 2px solid var(--mm-dark);
+    background: #faf3e8;
   }
 }
 
-.gm-mimo-empty {
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 40px 20px;
-  color: var(--color-text-secondary);
-  text-align: center;
-  grid-column: 1 / -1;
-}
-
-// --- 2. CONFIRMAÇÃO ---
-.gm-mimo-confirm-body {
-  flex: 1;
-  padding: 24px 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 16px;
-  overflow-y: auto;
-}
-
-.gm-mimo-confirm-illus {
-  width: 120px;
-  height: 120px;
-  border-radius: 28px;
-  display: grid;
-  place-items: center;
-  margin-top: 6px;
-  font-size: 3.4rem;
-  background: radial-gradient(circle, rgba(212, 175, 55, 0.28), transparent 70%);
-}
-
-.gm-mimo-confirm-title {
+.ms-tier-name {
+  color: var(--mm-gold);
+  font-size: 11px;
   font-weight: 800;
-  font-size: 1.1rem;
-  text-align: center;
-  color: var(--color-text);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
-.gm-mimo-confirm-recipient {
-  font-size: 0.85rem;
-  color: var(--color-text-secondary);
-  text-align: center;
+.ms-tier-label {
+  font-size: 13px;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
 }
 
-.gm-mimo-confirm-price {
-  font-size: 1.3rem;
+.ms-tier-price {
+  font-size: 16px;
   font-weight: 800;
-  color: var(--color-primary);
+  letter-spacing: -0.2px;
 }
 
-.gm-mimo-msg-field {
+.ms .ms-note-input {
+  @include mm-field-reset;
   width: 100%;
-  border: 1px solid var(--color-border);
-  background: var(--color-input-bg);
-  border-radius: 14px;
-  padding: 12px 14px;
-  color: var(--color-text);
-  font-family: 'Poppins', sans-serif;
-  font-size: 0.85rem;
-  resize: none;
+  height: 44px;
+  margin-top: 13px;
+  padding: 0 17px;
+  border: 1px solid var(--mm-line);
+  border-radius: 999px;
+  background: #fbf7f1;
+  color: var(--mm-text);
+  font: inherit;
+  font-size: 16px;
   outline: none;
 
-  &::placeholder { color: var(--color-text-secondary); }
-  &:focus { border-color: var(--color-primary); }
+  &::placeholder { color: var(--mm-soft); }
+  &:focus { border-color: var(--mm-gold-line); }
 }
 
-.gm-mimo-confirm-cta {
-  width: 100%;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin-top: auto;
-  padding-top: 12px;
+.ms .ms-phone input { @include mm-field-reset; }
+
+.ms-sheet-error {
+  margin: 10px 4px 0;
+  color: var(--mm-error);
+  font-size: 13px;
+  line-height: 1.35;
+
+  &[hidden] { display: none; }
 }
 
-// --- Botões compartilhados (Mimos + Carteira) — cantos totalmente arredondados,
-// alto contraste, sombra elegante; reaproveita a mesma linguagem visual do .btn-primary ---
-.gm-mimo-btn {
-  width: 100%;
-  border: none;
-  border-radius: 999px;
-  padding: 15px 0;
-  font-family: 'Poppins', sans-serif;
-  font-weight: 700;
-  font-size: 0.95rem;
-  cursor: pointer;
+// Botão dourado grande ("Enviar rosa vermelha · R$ 4,90", "Entendi", "Enviar mimo")
+.ms-send {
+  position: relative;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  transition: transform 0.15s ease, opacity 0.15s ease;
+  width: 100%;
+  height: 54px;
+  margin-top: 13px;
+  padding: 0 18px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--mm-button);
+  box-shadow: 0 8px 20px rgba(169, 128, 64, 0.25);
+  color: var(--mm-on-gold);
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -0.2px;
+  cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 
+  > span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
   &:active { transform: scale(0.98); }
-
-  &[disabled] { opacity: 0.6; pointer-events: none; }
+  &:disabled { opacity: 0.5; box-shadow: none; cursor: default; transform: none; }
+  &.is-loading { color: transparent; }
+  &.is-loading::after { @include mm-spinner; }
 }
 
-.gm-mimo-btn--gold {
-  background: linear-gradient(135deg, #F4DFC4 0%, #C9A079 60%, var(--color-primary) 100%);
-  color: #1A1108;
-  box-shadow: 0 8px 20px rgba(201, 160, 121, 0.35);
-}
-
-.gm-mimo-btn--outline {
-  background: transparent;
-  border: 1.5px solid var(--color-border);
-  color: var(--color-text);
-}
-
-.gm-mimo-link-secondary {
-  background: none;
-  border: none;
-  color: var(--color-text-secondary);
-  font-size: 0.8rem;
-  font-family: 'Poppins', sans-serif;
-  text-decoration: underline;
-  cursor: pointer;
-  padding: 4px;
-}
-
-.gm-mimo-error-banner {
-  width: 100%;
-  padding: 10px 14px;
-  border-radius: 12px;
-  background: rgba(239, 68, 68, 0.1);
-  border: 1px solid rgba(239, 68, 68, 0.3);
-  color: #ef4444;
-  font-size: 0.8rem;
+.ms-pay-hint {
+  margin: 9px 0 0;
+  color: var(--mm-muted);
+  font-size: 12px;
   text-align: center;
-  display: none;
 
-  &.is-visible { display: block; }
+  &[hidden] { display: none; }
 }
 
-// --- 3. CELEBRAÇÃO (animação de recebimento) ---
-.gm-mimo-celebrate {
+// =========================================================
+// 2. "COMO FUNCIONAM OS MIMOS?" (tela por cima do catálogo)
+// =========================================================
+.ms-info {
+  position: fixed;
+  inset: 0;
+  z-index: 9100;
+  overflow-y: auto;
+  padding: 0 20px max(20px, env(safe-area-inset-bottom, 0px));
+  padding-top: env(safe-area-inset-top, 0px);
+  background: var(--mm-bg);
+  -webkit-overflow-scrolling: touch;
+
+  &[hidden] { display: none; }
+
+  > * { max-width: 520px; margin-right: auto; margin-left: auto; }
+
+  .ms-title { font-size: 29px; }
+}
+
+.ms-info-list {
+  margin-top: 22px;
+  margin-bottom: 0;
+  padding: 6px 20px;
+  border: 1px solid var(--mm-line);
+  border-radius: 24px;
+  background: var(--mm-surface);
+  list-style: none;
+
+  li {
+    display: flex;
+    gap: 14px;
+    padding: 16px 0;
+
+    & + li { border-top: 1px solid var(--mm-line); }
+  }
+
+  strong { display: block; font-size: 15px; font-weight: 800; }
+  p { margin: 4px 0 0; color: #4a4642; font-size: 14px; line-height: 1.45; }
+}
+
+.ms-info-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 12px;
+  background: var(--mm-cream);
+  color: var(--mm-gold);
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &.is-dark { background: var(--mm-dark); color: #ead3a3; }
+}
+
+.ms-info-warning {
+  display: flex;
+  gap: 11px;
+  margin-top: 14px;
+  margin-bottom: 0;
+  padding: 15px 17px;
+  border-radius: 18px;
+  background: var(--mm-beige);
+  color: #4a4642;
+  font-size: 13.5px;
+  line-height: 1.45;
+
+  svg {
+    flex-shrink: 0;
+    width: 19px;
+    height: 19px;
+    margin-top: 1px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.ms-info-ok { margin-top: 18px; }
+
+// =========================================================
+// 3. "MIMO DO SEU JEITO"
+// =========================================================
+.ms--custom { padding-bottom: max(24px, env(safe-area-inset-bottom, 0px)); }
+
+.ms-preview {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+  margin-top: 20px;
+  padding: 14px 16px;
+  border: 1px solid var(--mm-line);
+  border-radius: 22px;
+  background: var(--mm-surface);
+}
+
+.ms-preview-art {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 64px;
+  height: 64px;
+  border-radius: 18px;
+  background: linear-gradient(160deg, #f8ecd4 0%, #ecd7b0 100%);
+}
+
+.ms-gift-box { width: 44px; height: 40px; }
+
+.ms-preview-text {
   flex: 1;
+  min-width: 0;
+}
+
+.ms-preview-kicker {
+  display: block;
+  color: var(--mm-gold);
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.ms-preview-label {
+  display: block;
+  margin-top: 3px;
+  font-size: 16px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+
+  &.is-empty { color: #b9b2a8; }
+}
+
+.ms-preview-price {
+  display: block;
+  margin-top: 2px;
+  color: var(--mm-muted);
+  font-size: 13px;
+  font-weight: 700;
+}
+
+.ms-field-label {
+  display: block;
+  margin-top: 22px;
+  margin-bottom: 9px;
+  font-size: 14px;
+  font-weight: 800;
+
+  span { color: var(--mm-soft); font-weight: 600; }
+}
+
+.ms-field {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 53px;
+  padding: 0 18px;
+  border: 1px solid var(--mm-line);
+  border-radius: 999px;
+  background: var(--mm-surface);
+
+  &:focus-within { border-color: var(--mm-gold-line); }
+
+  .ms & input {
+    @include mm-field-reset;
+    flex: 1;
+    min-width: 0;
+    height: 100%;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--mm-text);
+    font: inherit;
+    font-size: 16px;
+    outline: none;
+
+    &::placeholder { color: #b9b2a8; }
+  }
+}
+
+// "O que você quer dar?" — campo principal, com a borda preta do mockup
+.ms-field--strong {
+  height: 55px;
+  border: 2px solid var(--mm-dark);
+  border-radius: 21px;
+
+  &:focus-within { border-color: var(--mm-dark); }
+}
+
+.ms-count {
+  flex-shrink: 0;
+  color: var(--mm-soft);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.ms-field-hint {
+  margin: 7px 0 0;
+  color: var(--mm-soft);
+  font-size: 12px;
+
+  &.is-invalid { color: var(--mm-error); }
+}
+
+.ms-amount {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  height: 66px;
+  padding: 0 19px;
+  border: 1px solid var(--mm-line);
+  border-radius: 21px;
+  background: var(--mm-surface);
+
+  &:focus-within { border-color: var(--mm-gold-line); }
+
+  .ms & input {
+    @include mm-field-reset;
+    flex: 1;
+    min-width: 0;
+    padding: 0;
+    border: 0;
+    background: none;
+    color: var(--mm-text);
+    font: inherit;
+    font-size: 27px;
+    font-variant-numeric: tabular-nums;
+    font-weight: 800;
+    letter-spacing: -0.6px;
+    outline: none;
+  }
+}
+
+.ms-amount-currency {
+  color: var(--mm-soft);
+  font-size: 18px;
+  font-weight: 800;
+}
+
+.ms-presets {
+  display: flex;
+  gap: 8px;
+  margin-top: 11px;
+}
+
+.ms-preset {
+  flex: 1;
+  height: 39px;
+  padding: 0 6px;
+  border: 1px solid var(--mm-line);
+  border-radius: 999px;
+  background: var(--mm-surface);
+  color: var(--mm-text);
+  font-size: 14px;
+  font-weight: 800;
+  white-space: nowrap;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &.is-active {
+    border-color: var(--mm-dark);
+    background: var(--mm-dark);
+    color: var(--mm-on-dark);
+  }
+}
+
+.ms-custom-footer {
+  margin-top: 30px;
+}
+
+.ms-custom-fee {
+  margin: 0;
+  color: var(--mm-muted);
+  font-size: 12px;
+  text-align: center;
+}
+
+// =========================================================
+// 4. "VOCÊ GANHOU UM MIMO"
+// =========================================================
+.mg {
   position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
-  gap: 10px;
-  overflow: hidden;
-  text-align: center;
-  padding: 0 24px;
   min-height: 100vh;
+  min-height: 100dvh;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: 0 24px max(26px, env(safe-area-inset-bottom, 0px));
+  overflow-x: hidden;
+  background: var(--mm-bg);
+  text-align: center;
 }
 
-.gm-mimo-lottie-stage {
-  width: 220px;
-  height: 220px;
-  display: grid;
-  place-items: center;
-  margin-bottom: 4px;
-
-  lottie-player { width: 100%; height: 100%; }
-}
-
-// Caixa de presente estática — usada como fallback caso o asset Lottie não carregue
-.gm-mimo-gift-fallback {
-  width: 96px;
-  height: 96px;
-  border-radius: 24px;
-  background: linear-gradient(150deg, #FFE9BE, var(--color-primary) 55%, #C9A079);
-  display: grid;
-  place-items: center;
-  font-size: 2.6rem;
-  box-shadow: 0 0 50px rgba(212, 175, 55, 0.45);
-}
-
-.gm-mimo-celeb-title {
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--color-text);
-}
-
-.gm-mimo-celeb-sub {
-  font-size: 1rem;
-  font-weight: 700;
-  color: var(--color-primary);
-}
-
-.gm-mimo-celeb-from {
-  font-size: 0.8rem;
-  color: var(--color-text-secondary);
-}
-
-.gm-mimo-celeb-message {
-  margin-top: 6px;
-  padding: 12px 16px;
-  border-radius: 14px;
-  background: var(--color-section-light);
-  border: 1px solid var(--color-border);
-  color: var(--color-text-secondary);
-  font-size: 0.85rem;
-  font-style: italic;
-  max-width: 300px;
-}
-
-.gm-mimo-celeb-cta {
+.mg-glow {
   position: absolute;
-  bottom: calc(26px + env(safe-area-inset-bottom));
-  left: 24px;
-  right: 24px;
-}
-
-// --- 4/5/6. CARTEIRA, SAQUE E DEPÓSITO --- telas /carteira, /carteira/sacar e /mimos/depositar: wallet.scss
-
-// --- Loading spinner reutilizado nos botões durante requisições fetch ---
-.gm-mimo-spinner {
-  width: 16px;
-  height: 16px;
-  border: 2px solid rgba(0, 0, 0, 0.25);
-  border-top-color: currentColor;
+  top: -80px;
+  left: 50%;
+  width: 520px;
+  height: 520px;
   border-radius: 50%;
-  animation: gm-mimo-spin 0.7s linear infinite;
-  display: none;
-
-  .is-loading & { display: inline-block; }
+  background: radial-gradient(circle, rgba(228, 205, 160, 0.55) 0%, rgba(228, 205, 160, 0) 65%);
+  pointer-events: none;
+  transform: translateX(-50%);
 }
 
-@keyframes gm-mimo-spin {
-  to { transform: rotate(360deg); }
+.mg-close {
+  position: absolute;
+  top: 26px;
+  right: 18px;
+  z-index: 2;
+  display: grid;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: rgba(214, 205, 192, 0.55);
+  color: var(--mm-text);
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover { color: var(--mm-text); }
+
+  svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.2;
+    stroke-linecap: round;
+  }
 }
 
-.gm-mimo-btn.is-loading .gm-mimo-btn-label { opacity: 0.7; }
+.mg-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 230px;
+  margin-top: 64px;
+}
 
-// --- Ponto de entrada: botão "Enviar Mimo" (presente) no perfil do mapa — user_profile.scss (.up-gift) ---
+.mg-sparkles {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+
+  path { fill: #d4a95c; }
+}
+
+.mg-emoji {
+  position: relative;
+  font-size: 104px;
+  line-height: 1;
+  filter: drop-shadow(0 16px 22px rgba(120, 90, 40, 0.22));
+}
+
+.mg-gift-box {
+  position: relative;
+  width: 124px;
+  height: 108px;
+  filter: drop-shadow(0 18px 24px rgba(60, 40, 10, 0.28));
+}
+
+.mg-pill {
+  position: relative;
+  margin-top: 6px;
+  padding: 6px 13px;
+  border-radius: 999px;
+  background: var(--mm-dark);
+  color: #ead3a3;
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.mg-from {
+  position: relative;
+  margin: 15px 0 0;
+  font-size: 25px;
+  font-weight: 800;
+  letter-spacing: -0.6px;
+  line-height: 1.15;
+}
+
+.mg-label {
+  position: relative;
+  max-width: 100%;
+  margin: 10px 0 0;
+  background: var(--mm-title);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+  font-size: 28px;
+  font-weight: 800;
+  letter-spacing: -0.8px;
+  line-height: 1.15;
+  overflow-wrap: anywhere;
+}
+
+.mg-value {
+  margin: 10px 0 0;
+  color: #5e5852;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.mg-note {
+  display: flex;
+  align-items: center;
+  gap: 13px;
+  width: 100%;
+  margin-top: 22px;
+  padding: 14px 16px;
+  border: 1px solid var(--mm-line);
+  border-radius: 20px;
+  background: var(--mm-surface);
+  text-align: left;
+
+  p {
+    margin: 0;
+    font-size: 14.5px;
+    line-height: 1.4;
+    overflow-wrap: anywhere;
+  }
+}
+
+.mg-avatar {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: linear-gradient(160deg, #cfb08a 0%, #8f6e4d 100%);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 800;
+  object-fit: cover;
+}
+
+.mg-avatar--lg {
+  width: 48px;
+  height: 48px;
+  font-size: 17px;
+}
+
+.mg-wallet {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  margin: 12px 0 0;
+  padding: 12px 16px;
+  border-radius: 18px;
+  background: var(--mm-beige);
+  color: #3a3631;
+  font-size: 13px;
+  text-align: left;
+
+  svg {
+    flex-shrink: 0;
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+  }
+
+  strong { font-weight: 800; }
+}
+
+.mg-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 10px;
+  width: 100%;
+  margin-top: 30px;
+}
+
+.mg-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  min-height: 56px;
+  padding: 0 20px;
+  border-radius: 999px;
+  font-size: 15.5px;
+  font-weight: 800;
+  text-decoration: none;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  svg {
+    width: 20px;
+    height: 20px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:active { transform: scale(0.98); }
+}
+
+.mg-btn--dark {
+  border: 0;
+  background: var(--mm-dark);
+  color: var(--mm-on-dark);
+
+  // depois de agradecer
+  &.is-done,
+  &:disabled {
+    background: var(--mm-beige);
+    color: #6b5530;
+    cursor: default;
+    transform: none;
+  }
+}
+
+.mg-btn--outline {
+  border: 1.5px solid var(--mm-dark);
+  background: var(--mm-surface);
+  color: var(--mm-text);
+
+  &:hover { color: var(--mm-text); }
+}
+
+.mg-link {
+  margin-top: 6px;
+  padding: 6px;
+  color: #6b5530;
+  font-size: 14px;
+  font-weight: 800;
+  text-decoration: none;
+
+  &:hover { color: #6b5530; }
+}
+
+// ---- aviso "Agradecimento enviado" no topo
+.mg-toast {
+  position: fixed;
+  top: calc(14px + env(safe-area-inset-top, 0px));
+  left: 50%;
+  z-index: 9300;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: calc(100% - 32px);
+  max-width: 460px;
+  padding: 12px 12px 12px 13px;
+  border-radius: 22px;
+  background: var(--mm-surface);
+  box-shadow: 0 14px 40px rgba(0, 0, 0, 0.16);
+  text-align: left;
+  opacity: 0;
+  transform: translate(-50%, -16px);
+  transition: opacity 0.25s ease, transform 0.25s ease;
+
+  &.is-visible { opacity: 1; transform: translate(-50%, 0); }
+  &[hidden] { display: none; }
+}
+
+.mg-toast-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--mm-dark);
+
+  svg { width: 18px; height: 18px; fill: #ead3a3; }
+}
+
+.mg-toast-text {
+  flex: 1;
+  min-width: 0;
+
+  strong { display: block; font-size: 13.5px; font-weight: 800; white-space: nowrap; }
+  span { display: block; margin-top: 1px; color: var(--mm-muted); font-size: 12.5px; line-height: 1.3; }
+}
+
+.mg-toast-btn {
+  flex-shrink: 0;
+  padding: 9px 12px;
+  border-radius: 999px;
+  background: var(--mm-dark);
+  color: var(--mm-on-dark);
+  font-size: 12.5px;
+  font-weight: 800;
+  text-decoration: none;
+  white-space: nowrap;
+
+  &:hover { color: var(--mm-on-dark); }
+}
+
+// ---- folha "Agradecer a Fulano"
+.mg-sheet {
+  position: fixed;
+  inset: 0;
+  z-index: 9200;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  text-align: left;
+
+  &[hidden] { display: none; }
+}
+
+.mg-sheet-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(60, 55, 48, 0.5);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+
+  .is-open > & { opacity: 1; }
+}
+
+.mg-sheet-panel {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  max-height: calc(100dvh - 40px);
+  overflow-y: auto;
+  padding: 10px 20px 18px;
+  padding-bottom: max(20px, env(safe-area-inset-bottom, 0px));
+  border-radius: 30px 30px 0 0;
+  background: var(--mm-surface);
+  transform: translateY(100%);
+  transition: transform 0.26s cubic-bezier(0.2, 0.9, 0.3, 1);
+
+  .is-open > & { transform: none; }
+}
+
+.mg-sheet-handle {
+  display: block;
+  width: 40px;
+  height: 4px;
+  margin: 0 auto 16px;
+  border-radius: 2px;
+  background: #ddd6cb;
+}
+
+.mg-sheet-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mg-sheet-title-wrap {
+  flex: 1;
+  min-width: 0;
+
+  strong { display: block; font-size: 19px; font-weight: 800; letter-spacing: -0.4px; line-height: 1.2; }
+  span { display: block; margin-top: 2px; color: var(--mm-muted); font-size: 13px; }
+  em { color: var(--mm-gold); font-style: normal; font-weight: 800; }
+}
+
+.mg-sheet-close {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 35px;
+  height: 35px;
+  padding: 0;
+  border: 0;
+  border-radius: 50%;
+  background: #f3eee6;
+  color: var(--mm-text);
+  cursor: pointer;
+
+  svg {
+    width: 16px;
+    height: 16px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.3;
+    stroke-linecap: round;
+  }
+}
+
+.mg-kicker {
+  margin: 20px 0 10px;
+  color: var(--mm-gold);
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.6px;
+  text-transform: uppercase;
+}
+
+.mg-quick {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mg-quick-btn {
+  height: 40px;
+  padding: 0 13px;
+  border: 1px solid var(--mm-line);
+  border-radius: 999px;
+  background: var(--mm-surface);
+  color: var(--mm-text);
+  font-size: 13.5px;
+  font-weight: 700;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+
+  &.is-active {
+    border-color: var(--mm-dark);
+    background: var(--mm-dark);
+    color: var(--mm-on-dark);
+  }
+}
+
+.mg-field-label {
+  display: block;
+  margin: 20px 0 9px;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.mg-textarea {
+  position: relative;
+  border: 2px solid var(--mm-dark);
+  border-radius: 18px;
+  background: var(--mm-surface);
+
+  .mg & textarea {
+    @include mm-field-reset;
+    display: block;
+    width: 100%;
+    min-height: 130px;
+    padding: 15px 16px 30px;
+    border: 0;
+    border-radius: 18px;
+    background: none;
+    color: var(--mm-text);
+    font: inherit;
+    font-size: 16px;
+    line-height: 1.4;
+    resize: none;
+    outline: none;
+
+    &::placeholder { color: #b9b2a8; }
+  }
+}
+
+.mg-count {
+  position: absolute;
+  right: 14px;
+  bottom: 9px;
+  color: var(--mm-soft);
+  font-size: 12.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.mg-hint {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  margin: 9px 0 0;
+  color: var(--mm-soft);
+  font-size: 12.5px;
+
+  svg {
+    flex-shrink: 0;
+    width: 15px;
+    height: 15px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linejoin: round;
+  }
+}
+
+.mg-error {
+  margin: 10px 2px 0;
+  color: var(--mm-error);
+  font-size: 13px;
+
+  &[hidden] { display: none; }
+}
+
+.mg-send {
+  @extend .ms-send;
+  margin-top: 18px;
+
+  svg {
+    width: 19px;
+    height: 19px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2.3;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &.is-loading svg { opacity: 0; }
+}
+
+// =========================================================
+// 5. MODO ESCURO — mesmo layout, superfícies do tema
+// =========================================================
+.dark-mode,
+html.dark:not(.light-mode) {
+  .ms,
+  .mg,
+  .ms-info {
+    --mm-bg: #141414;
+    --mm-surface: #1f1f21;
+    --mm-text: #f2efe9;
+    --mm-muted: #a8a29a;
+    --mm-soft: #8a847e;
+    --mm-line: #2f2f32;
+    --mm-cream: #2a2620;
+    --mm-beige: #26231f;
+    --mm-gold: #d9b77a;
+    --mm-dark: #f2efe9;
+    --mm-on-dark: #141414;
+    --mm-title: linear-gradient(180deg, #ecd3a1 0%, #c49a58 100%);
+  }
+
+  .ms-balance { background: #26231f; color: #f2efe9; }
+  .ms-balance-label { color: #a8a29a; }
+  .ms-custom { border-color: #4a3d28; background: linear-gradient(135deg, #2a2620 0%, #231f1a 100%); }
+  .ms-tier.is-active { background: #2a2620; }
+  .ms-note-input { background: #1a1a1c; }
+  .ms-info-list p,
+  .ms-info-warning,
+  .mg-wallet { color: #cfc8bd; }
+  .ms-info-icon.is-dark,
+  .ms-vip-badge,
+  .mg-pill,
+  .mg-toast-icon { background: #0d0d0e; }
+  .ms-section.is-vip .ms-card-icon { background: #0d0d0e; }
+  .mg-value { color: #cfc8bd; }
+  .mg-btn--dark.is-done,
+  .mg-btn--dark:disabled,
+  .mg-link { color: #d9b77a; }
+  .mg-glow { background: radial-gradient(circle, rgba(201, 160, 82, 0.18) 0%, rgba(201, 160, 82, 0) 65%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ms-sheet-panel,
+  .mg-sheet-panel,
+  .mg-toast { transition: none; }
+}

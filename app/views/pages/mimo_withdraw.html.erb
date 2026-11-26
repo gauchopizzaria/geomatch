@@ -2,12 +2,15 @@
     wallet_controller.js (mode "withdraw"): o valor grande é editável e começa no disponível;
     "Sacar tudo" volta a ele. A chave Pix salva já vem preenchida. "Sacar R$ X" envia
     POST /wallet/withdraw e volta para a Carteira. %>
-<% available_cents = @wallet ? @wallet.available_balance_cents : 0 %>
+<%# Regras (WithdrawalService / UserWallet): saque a partir de R$ 300, só para chave Pix
+    no CPF, e mimo recebido nos últimos 2 dias ainda não entra no "Disponível". %>
+<% available_cents = @wallet ? @wallet.withdrawable_cents : 0 %>
+<% on_hold_cents   = @wallet ? @wallet.on_hold_cents : 0 %>
 <% minimum_cents   = WithdrawalService::MINIMUM_AMOUNT_CENTS %>
-<% key_types = [ [ "cpf", "CPF", "000.000.000-00", "numeric" ], [ "email", "E-mail", "seunome@email.com", "email" ],
-                 [ "phone", "Telefone", "(00) 00000-0000", "tel" ], [ "random", "Aleatória", "Cole sua chave aleatória", "text" ] ] %>
-<% key_type = key_types.map(&:first).include?(@wallet&.pix_key_type) ? @wallet.pix_key_type : "cpf" %>
-<% current  = key_types.find { |k| k.first == key_type } %>
+<% key_types = [ [ "cpf", "CPF", "000.000.000-00", "numeric" ] ] %>
+<% key_type = "cpf" %>
+<% current  = key_types.first %>
+<% saved_key = @wallet&.pix_key_type == "cpf" ? @wallet.pix_key : nil %>
 <% money = ->(cents) { number_to_currency(cents / 100.0, unit: "R$ ", separator: ",", delimiter: ".") } %>
 <div class="wl-page wl-page--form"
      data-controller="wallet"
@@ -35,9 +38,12 @@
       Disponível: <strong><%= money.(available_cents) %></strong>
       <button type="button" class="wl-all" data-action="wallet#withdrawAll">Sacar tudo</button>
     </p>
+    <% if on_hold_cents.positive? %>
+      <p class="wl-on-hold"><%= money.(on_hold_cents) %> de mimos recebidos liberam para saque 2 dias depois do recebimento.</p>
+    <% end %>
   </section>
 
-  <h2 class="wl-section-title" id="wl-key-title">Para onde vai o dinheiro?</h2>
+  <h2 class="wl-section-title" id="wl-key-title">Para onde vai o dinheiro? <small>Chave Pix no seu CPF</small></h2>
   <div class="wl-keys" role="group" aria-labelledby="wl-key-title">
     <% key_types.each do |value, label, placeholder, inputmode| %>
       <button type="button" class="wl-key<%= " is-active" if value == key_type %>" aria-pressed="<%= value == key_type %>"
@@ -47,12 +53,12 @@
   </div>
   <input class="wl-key-input" type="text" autocomplete="off" autocapitalize="off" spellcheck="false"
          aria-label="Chave Pix" placeholder="<%= current[2] %>" inputmode="<%= current[3] %>"
-         value="<%= @wallet&.pix_key %>" data-wallet-target="keyInput">
+         value="<%= saved_key %>" data-wallet-target="keyInput">
 
   <p class="wl-note">
     <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
     <%# Lê a constante do serviço para o texto nunca divergir da regra aplicada. %>
-    <span>Saque mínimo de <strong><%= money.(minimum_cents) %></strong>. O valor cai na sua conta em até 1 dia útil.</span>
+    <span>Saque mínimo de <strong><%= money.(minimum_cents) %></strong>, para uma chave Pix no seu próprio CPF. O valor cai na sua conta em até 1 dia útil.</span>
   </p>
 
   <p class="wl-error" role="alert" data-wallet-target="error"></p>

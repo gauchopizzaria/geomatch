@@ -4,8 +4,9 @@ RSpec.describe ProcessWithdrawalJob do
   let(:admin) { create(:user, admin: true) }
   let(:user)  { create(:user) }
 
-  def approved_withdrawal(amount_cents: 2_340)
-    user.create_wallet!(balance_cents: amount_cents, pix_key: "chave@pix.com", pix_key_type: "email")
+  # Valores acima do saque mínimo (R$ 300) e chave Pix no CPF — regras do WithdrawalService
+  def approved_withdrawal(amount_cents: 32_340)
+    user.create_wallet!(balance_cents: amount_cents, pix_key: "529.982.247-25", pix_key_type: "cpf")
     request = WithdrawalService.request!(user: user, amount_cents: amount_cents)
     request.update!(processed_by: admin)
     request.approve!
@@ -29,7 +30,7 @@ RSpec.describe ProcessWithdrawalJob do
     expect(request.reload).to be_paid
     expect(wallet.balance_cents).to eq(0)
     expect(wallet.pending_withdrawal_cents).to eq(0)
-    expect(wallet.lifetime_withdrawn_cents).to eq(2_340)
+    expect(wallet.lifetime_withdrawn_cents).to eq(32_340)
   end
 
   # O caso perigoso: dar baixa num PIX que ainda não saiu faria o usuário perder
@@ -43,8 +44,8 @@ RSpec.describe ProcessWithdrawalJob do
     described_class.new.perform(request.id)
 
     expect(request.reload).to be_approved
-    expect(user.reload.wallet.balance_cents).to eq(2_340)
-    expect(user.wallet.pending_withdrawal_cents).to eq(2_340)
+    expect(user.reload.wallet.balance_cents).to eq(32_340)
+    expect(user.wallet.pending_withdrawal_cents).to eq(32_340)
   end
 
   it "NÃO dá baixa quando o payout falha" do
@@ -56,7 +57,7 @@ RSpec.describe ProcessWithdrawalJob do
     described_class.new.perform(request.id)
 
     expect(request.reload).to be_approved
-    expect(user.reload.wallet.balance_cents).to eq(2_340)
+    expect(user.reload.wallet.balance_cents).to eq(32_340)
   end
 
   # Modo manual (padrão): comportamento histórico preservado.
@@ -67,12 +68,12 @@ RSpec.describe ProcessWithdrawalJob do
     described_class.new.perform(request.id)
 
     expect(request.reload).to be_approved
-    expect(user.reload.wallet.balance_cents).to eq(2_340)
+    expect(user.reload.wallet.balance_cents).to eq(32_340)
   end
 
   it "ignora solicitações que não estão aprovadas" do
-    user.create_wallet!(balance_cents: 2_340, pix_key: "chave@pix.com", pix_key_type: "email")
-    request = WithdrawalService.request!(user: user, amount_cents: 2_340)
+    user.create_wallet!(balance_cents: 32_340, pix_key: "529.982.247-25", pix_key_type: "cpf")
+    request = WithdrawalService.request!(user: user, amount_cents: 32_340)
 
     expect(PixPayoutService).not_to receive(:call)
     described_class.new.perform(request.id)

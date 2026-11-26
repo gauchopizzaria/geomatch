@@ -20,20 +20,24 @@ class MimoPaymentService
   class InvalidRecipientError < StandardError; end
   class ItemUnavailableError  < StandardError; end
 
-  def self.call(sender:, mimo_item:, receiver: nil, receiver_phone: nil, message: nil)
+  # selection: o que foi escolhido (nível do catálogo ou "Mimo do seu jeito", ver
+  # MimoSelection). mimo_item: atalho do app mobile antigo (sem nível).
+  def self.call(sender:, selection: nil, mimo_item: nil, receiver: nil, receiver_phone: nil, message: nil)
     new(
       sender: sender,
       receiver: receiver,
       receiver_phone: receiver_phone,
+      selection: selection,
       mimo_item: mimo_item,
       message: message
     ).call
   end
 
-  def initialize(sender:, mimo_item:, receiver: nil, receiver_phone: nil, message: nil)
+  def initialize(sender:, selection: nil, mimo_item: nil, receiver: nil, receiver_phone: nil, message: nil)
     @sender         = sender
     @receiver       = receiver
     @receiver_phone = receiver_phone.presence
+    @selection      = selection
     @mimo_item      = mimo_item
     @message        = message
   end
@@ -74,6 +78,9 @@ class MimoPaymentService
 
         mimo_transaction.complete!
       end
+
+      # Depois do commit: notificação no app + push para quem recebeu
+      MimoNotificationService.call(mimo_transaction: mimo_transaction)
     end
 
     move_value_to_pool_account(mimo_transaction)
@@ -101,7 +108,7 @@ class MimoPaymentService
       amount_cents: mimo_transaction.receiver_value_cents,
       direction: :to_pool,
       external_reference: mimo_transaction.id,
-      description: "Mimo ##{mimo_transaction.id} — #{mimo_transaction.mimo_item.name}"
+      description: "Mimo ##{mimo_transaction.id} — #{mimo_transaction.display_label}"
     )
   rescue MpTransferService::ConfigurationError => e
     Rails.logger.warn "[MimoPaymentService] MpTransferService não configurado — #{e.message}"
@@ -120,11 +127,17 @@ class MimoPaymentService
     end
 
     raise InvalidRecipientError, "remetente e destinatário não podem ser o mesmo usuário" if receiver && sender.id == receiver.id
-    raise ItemUnavailableError, "este Mimo não está disponível no momento" unless mimo_item.active?
+    raise ItemUnavailableError, "este Mimo não está disponível no momento" if selection.mimo_item && !selection.mimo_item.active?
+  end
+
+  def selection
+    @selection ||= MimoSelection.from_item(mimo_item)
+  rescue MimoSelection::InvalidError => e
+    raise ItemUnavailableError, e.message
   end
 
   def fee_breakdown
-    @fee_breakdown ||= MimoFeeCalculator.call(mimo_item.price_cents)
+    @fee_breakdown ||= MimoFeeCalculator.call(selection.price_cents)
   end
 
   # Payment + MimoTransaction nascem juntos, atomicamente — nunca existe um sem o outro.
@@ -136,7 +149,9 @@ class MimoPaymentService
         receiver: receiver,
         receiver_phone: receiver_phone,
         invite_token: (receiver_phone.present? ? SecureRandom.urlsafe_base64(16) : nil),
-        mimo_item: mimo_item,
+        mimo_item: selection.mimo_item,
+        tier: selection.tier,
+        item_label: selection.label,
         payment: payment,
         message: message,
         price_cents: fee_breakdown.gross_cents,
@@ -179,8 +194,8 @@ class MimoPaymentService
     {
       items: [
         {
-          id: "mimo_#{mimo_item.id}",
-          title: "Mimo: #{mimo_item.name}",
+          id: selection.custom? ? "mimo_custom" : "mimo_#{selection.mimo_item.id}",
+          title: "Mimo: #{selection.description}".truncate(120),
           description: recipient_description,
           quantity: 1,
           currency_id: "BRL",
@@ -206,7 +221,8 @@ class MimoPaymentService
         sender_id: sender.id,
         receiver_id: receiver&.id,
         receiver_phone: receiver_phone,
-        mimo_item_id: mimo_item.id
+        mimo_item_id: selection.mimo_item&.id,
+        tier: selection.tier
       },
       expires: true,
       expiration_date_from: Time.current.iso8601,

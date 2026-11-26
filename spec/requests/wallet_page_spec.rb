@@ -93,31 +93,51 @@ RSpec.describe "Sacar via Pix (/carteira/sacar)", type: :request do
 
   before { sign_in user, scope: :user }
 
-  it "começa no disponível, com a chave Pix salva e o mínimo do serviço" do
+  it "começa no que dá para sacar, só com chave CPF e as regras do saque" do
     user.create_wallet!(balance_cents: 30_000, pending_withdrawal_cents: 5_000,
-                        pix_key: "samuel@example.com", pix_key_type: "email")
+                        pix_key: "529.982.247-25", pix_key_type: "cpf")
     get "/carteira/sacar"
     page = Nokogiri::HTML(response.body)
     root = page.at_css('[data-controller="wallet"]')
 
     expect(root["data-wallet-mode-value"]).to eq("withdraw")
     expect(root["data-wallet-available-value"]).to eq("25000")
-    expect(root["data-wallet-key-type-value"]).to eq("email")
+    expect(root["data-wallet-key-type-value"]).to eq("cpf")
     expect(page.at_css(".wl-title").text).to eq("Sacar via Pix")
     expect(page.at_css(".wl-subtitle").text).to eq("O dinheiro vai direto para a sua conta.")
     expect(page.at_css(".wl-amount-card-label").text).to eq("Quanto você quer sacar?")
     expect(page.at_css("#wl-amount")["value"]).to eq("250,00")
     expect(page.at_css(".wl-available").text.squish).to eq("Disponível: R$ 250,00 Sacar tudo")
-    expect(page.at_css(".wl-section-title").text).to eq("Para onde vai o dinheiro?")
-    expect(page.css(".wl-key").map { |b| [ b.text, b["data-key-type"] ] })
-      .to eq([ %w[CPF cpf], %w[E-mail email], %w[Telefone phone], %w[Aleatória random] ])
-    expect(page.at_css(".wl-key.is-active").text).to eq("E-mail")
-    expect(page.at_css(".wl-key-input")["value"]).to eq("samuel@example.com")
-    expect(page.at_css(".wl-key-input")["placeholder"]).to eq("seunome@email.com")
-    minimum = ActionController::Base.helpers.number_to_currency(WithdrawalService::MINIMUM_AMOUNT_CENTS / 100.0, unit: "R$ ", separator: ",", delimiter: ".")
-    expect(page.at_css(".wl-note").text.squish).to eq("Saque mínimo de #{minimum}. O valor cai na sua conta em até 1 dia útil.".squish)
+    expect(page.at_css(".wl-on-hold")).to be_nil
+    expect(page.at_css(".wl-section-title").text.squish).to eq("Para onde vai o dinheiro? Chave Pix no seu CPF")
+    expect(page.css(".wl-key").map { |b| [ b.text, b["data-key-type"] ] }).to eq([ %w[CPF cpf] ])
+    expect(page.at_css(".wl-key-input")["value"]).to eq("529.982.247-25")
+    expect(page.at_css(".wl-key-input")["placeholder"]).to eq("000.000.000-00")
+    expect(page.at_css(".wl-note").text.squish)
+      .to eq("Saque mínimo de R$ 300,00, para uma chave Pix no seu próprio CPF. O valor cai na sua conta em até 1 dia útil.")
     expect(page.at_css(".wl-submit").text.squish).to eq("Sacar R$ 250,00")
     expect(page.at_css(".wl-footer-note").text).to eq("Confira sua chave Pix antes de confirmar.")
+  end
+
+  it "chave salva de outro tipo não vem preenchida (o saque só vai para CPF)" do
+    user.create_wallet!(balance_cents: 30_000, pix_key: "samuel@example.com", pix_key_type: "email")
+    get "/carteira/sacar"
+
+    expect(Nokogiri::HTML(response.body).at_css(".wl-key-input")["value"]).to be_blank
+  end
+
+  it "mimo recebido nos últimos 2 dias aparece como ainda não liberado" do
+    allow(MimoNotificationService).to receive(:call)
+    user.create_wallet!(balance_cents: 40_000)
+    sender = create(:user, onboarding_completed: true)
+    sender.create_wallet!(balance_cents: 10_000)
+    MimoWalletPaymentService.call(sender: sender, receiver: user, selection: MimoSelection.custom(label: "Um chopp", amount_cents: 10_000))
+
+    get "/carteira/sacar"
+    page = Nokogiri::HTML(response.body)
+
+    expect(page.at_css('[data-controller="wallet"]')["data-wallet-available-value"]).to eq("40000")
+    expect(page.at_css(".wl-on-hold").text.squish).to eq("R$ 88,00 de mimos recebidos liberam para saque 2 dias depois do recebimento.")
   end
 
   it "sem chave salva: CPF escolhido e campo vazio" do
