@@ -345,15 +345,29 @@ RSpec.describe "Mimos", type: :request do
       post "/mimos/recebido/#{mimo.id}/agradecer", params: { message: message }, as: :json
     end
 
-    it "sem conversa ainda: cria a conversa e manda a mensagem nela" do
-      expect { thank("Muito obrigado! 🥰 Que dia fica bom pra você?") }.to change(Match, :count).by(1)
+    it "vai para a conversa aberta pelo mimo, citando o mimo" do
+      mimo # envia o mimo (que abre a conversa)
+      match = MimoChatService.conversation_between(luan, clara) || raise("o mimo devia ter aberto a conversa")
+
+      expect { thank("Muito obrigado! 🥰 Que dia fica bom pra você?") }.not_to change(Match, :count)
 
       expect(response).to have_http_status(:created)
-      match = Match.last
-      expect([ match.user, match.matched_user ]).to contain_exactly(clara, luan)
-      expect(match.messages.last).to have_attributes(sender: luan, content: "Muito obrigado! 🥰 Que dia fica bom pra você?")
+      thanks = match.messages.order(:id).last
+      expect(thanks).to have_attributes(sender: luan, content: "Muito obrigado! 🥰 Que dia fica bom pra você?", mimo_transaction: mimo)
+      expect(thanks).to be_mimo_thanks
       expect(response.parsed_body["match_url"]).to eq("/matches/#{match.id}")
       expect(mimo.reload).to be_thanked
+    end
+
+    it "mimo antigo, sem conversa: cria a conversa e manda a mensagem nela" do
+      mimo
+      Match.for_user(luan.id).destroy_all
+
+      expect { thank("Obrigado!") }.to change(Match, :count).by(1)
+
+      match = Match.order(:id).last
+      expect([ match.user, match.matched_user ]).to contain_exactly(clara, luan)
+      expect(match.messages.last).to have_attributes(sender: luan, content: "Obrigado!", mimo_transaction: mimo)
     end
 
     it "com conversa: usa a mesma" do
@@ -388,7 +402,9 @@ RSpec.describe "Mimos", type: :request do
       expect(response).to have_http_status(:unprocessable_entity)
     end
 
-    it "não recria a conversa se quem mandou o mimo desfez o match" do
+    it "não recria a conversa se quem mandou o mimo desfez o match depois" do
+      mimo
+      Match.for_user(luan.id).destroy_all
       Like.create!(liker: clara, liked: luan, is_like: false)
 
       expect { thank("Obrigado") }.not_to change(Match, :count)
@@ -401,6 +417,128 @@ RSpec.describe "Mimos", type: :request do
       thank("Obrigado")
 
       expect(response).to have_http_status(:not_found)
+    end
+  end
+
+  describe "o mimo na conversa" do
+    before { give_balance(luan, 10_000) }
+
+    def send_rosa
+      sign_in luan, scope: :user
+      deliver(receiver_id: clara.id, mimo_item_id: rosa.id, tier: "especial", message: "Pra você 🌹")
+      MimoTransaction.order(:created_at).last
+    end
+
+    it "enviar abre a conversa (se ainda não existe) com o balão do mimo" do
+      expect { send_rosa }.to change(Match, :count).by(1)
+
+      mimo  = MimoTransaction.order(:created_at).last
+      match = MimoChatService.conversation_between(luan, clara)
+      gift  = match.messages.last
+      expect(gift).to have_attributes(sender: luan, mimo_transaction: mimo, content: "🎁 Mimo: Rosa vermelha", kind: "mimo")
+      expect(gift).to be_mimo_gift
+      expect(MatchChannel).to have_received(:broadcast_to).with(
+        match, { message: hash_including(id: gift.id, kind: "mimo", mimo: hash_including(role: "gift", label: "Rosa vermelha", icon: "🌹", price: "R$ 4,90", message: "Pra você 🌹")) }
+      )
+    end
+
+    it "usa a conversa que já existe" do
+      match = Match.create!(user: clara, matched_user: luan)
+
+      expect { send_rosa }.not_to change(Match, :count)
+      expect(match.messages.last).to be_mimo_gift
+    end
+
+    it "o balão não manda o push de mensagem (o push do mimo já avisa)" do
+      send_rosa
+
+      expect(PushNotificationJob).not_to have_received(:perform_later)
+      expect(MimoPushNotificationJob).to have_been_enqueued
+    end
+
+    it "não abre conversa com quem bloqueou, mas o mimo é entregue" do
+      clara.blocks_sent.create!(blocked: luan)
+
+      expect { send_rosa }.not_to change(Match, :count)
+      expect(MimoTransaction.order(:created_at).last).to be_completed
+      expect(clara.wallet.reload.balance_cents).to eq(431)
+    end
+
+    it "não abre conversa com quem tinha dispensado quem enviou" do
+      Like.create!(liker: clara, liked: luan, is_like: false)
+
+      expect { send_rosa }.not_to change(Match, :count)
+      expect(MimoTransaction.order(:created_at).last).to be_completed
+    end
+
+    it "pago pelo Mercado Pago, o balão aparece quando o pagamento é aprovado" do
+      allow(MimoNotificationService).to receive(:call)
+      pending_mimo = MimoTransaction.create!(sender: luan, receiver: clara, mimo_item: rosa, tier: "simples", item_label: "rosa",
+                                             price_cents: 290, receiver_value_cents: 255, mp_fee_cents: 14, platform_fee_cents: 21)
+      allow(MpTransferService).to receive(:call)
+
+      expect { MimoPaymentService.complete!(pending_mimo) }.to change(Message, :count).by(1)
+      expect(Message.order(:id).last).to have_attributes(sender: luan, mimo_transaction: pending_mimo, content: "🎁 Mimo: Rosa")
+    end
+
+    it "na conversa: quem recebeu vê 'Mimo para você' e 'Ver mimo'; quem enviou, 'Você enviou um mimo'" do
+      mimo = send_rosa
+      match = MimoChatService.conversation_between(luan, clara)
+      gift = match.messages.last
+
+      get "/matches/#{match.id}"
+      bubble = Nokogiri::HTML(response.body).at_css("#msg-#{gift.id}")
+      expect(bubble["data-kind"]).to eq("mimo")
+      expect(bubble.at_css(".message-bubble.is-mimo .msg-mimo-kicker").text).to eq("Você enviou um mimo")
+      expect(bubble.at_css(".msg-mimo-art").text).to eq("🌹")
+      expect(bubble.at_css(".msg-mimo-label").text).to eq("Rosa vermelha")
+      expect(bubble.at_css(".msg-mimo-price").text).to eq("R$ 4,90")
+      expect(bubble.at_css(".msg-mimo-note").text).to eq("“Pra você 🌹”")
+      expect(bubble.at_css(".msg-mimo-link")).to be_nil
+
+      sign_in clara, scope: :user
+      get "/matches/#{match.id}"
+      bubble = Nokogiri::HTML(response.body).at_css("#msg-#{gift.id}")
+      expect(bubble.at_css(".msg-mimo-kicker").text).to eq("Mimo para você")
+      expect(bubble.at_css("a.msg-mimo-link")["href"]).to eq("/mimos/recebido/#{mimo.id}")
+    end
+
+    it "o agradecimento aparece citando o mimo, para os dois" do
+      mimo = send_rosa
+      sign_in clara, scope: :user
+      post "/mimos/recebido/#{mimo.id}/agradecer", params: { message: "Muito obrigada! 🥰" }, as: :json
+      match = MimoChatService.conversation_between(luan, clara)
+      thanks = match.messages.order(:id).last
+
+      get "/matches/#{match.id}"
+      row = Nokogiri::HTML(response.body).at_css("#msg-#{thanks.id}")
+      expect(row.at_css(".msg-mimo-quote-label").text).to eq("🎁 Você agradeceu pelo mimo")
+      expect(row.at_css(".msg-mimo-quote-text").text).to eq("🌹 Rosa vermelha")
+      expect(row.at_css(".msg-text").text).to eq("Muito obrigada! 🥰")
+
+      sign_in luan, scope: :user
+      get "/matches/#{match.id}"
+      row = Nokogiri::HTML(response.body).at_css("#msg-#{thanks.id}")
+      expect(row.at_css(".msg-mimo-quote-label").text).to eq("🎁 Agradeceu pelo seu mimo")
+      expect(MatchChannel).to have_received(:broadcast_to).with(
+        match, { message: hash_including(id: thanks.id, kind: "text", mimo: hash_including(role: "thanks", label: "Rosa vermelha")) }
+      )
+    end
+
+    it "o balão do mimo não pode ser editado nem apagado para todos" do
+      send_rosa
+      gift = MimoChatService.conversation_between(luan, clara).messages.last
+
+      expect(gift.editable_by?(luan)).to be(false)
+      expect(gift.deletable_for_everyone_by?(luan)).to be(false)
+    end
+
+    it "sem a coluna nova em produção, o mimo é enviado normalmente (só sem o balão)" do
+      allow(Message).to receive(:mimo_messages?).and_return(false)
+
+      expect { send_rosa }.not_to change(Message, :count)
+      expect(response).to have_http_status(:created)
+      expect(MimoTransaction.order(:created_at).last).to be_completed
     end
   end
 

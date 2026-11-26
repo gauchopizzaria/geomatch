@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_11_26_120100) do
+ActiveRecord::Schema[8.1].define(version: 2026_11_27_100000) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "pgcrypto"
@@ -186,6 +186,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120100) do
     t.datetime "edited_at"
     t.bigint "hidden_for_user_ids", default: [], null: false, array: true
     t.bigint "match_id", null: false
+    t.uuid "mimo_transaction_id"
     t.text "prompt_answer"
     t.string "prompt_key"
     t.string "prompt_question"
@@ -196,6 +197,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120100) do
     t.datetime "updated_at", null: false
     t.index ["id"], name: "index_messages_on_id", unique: true
     t.index ["match_id"], name: "index_messages_on_match_id"
+    t.index ["mimo_transaction_id"], name: "index_messages_on_mimo_transaction_id"
     t.index ["reply_to_id"], name: "index_messages_on_reply_to_id"
     t.index ["sender_id", "prompt_key"], name: "index_messages_on_sender_id_and_prompt_key", where: "(prompt_key IS NOT NULL)"
     t.index ["sender_id"], name: "index_messages_on_sender_id"
@@ -700,6 +702,7 @@ ActiveRecord::Schema[8.1].define(version: 2026_11_26_120100) do
   add_foreign_key "matches", "users", column: "matched_user_id"
   add_foreign_key "messages", "matches"
   add_foreign_key "messages", "messages", column: "reply_to_id", on_delete: :nullify
+  add_foreign_key "messages", "mimo_transactions", on_delete: :nullify
   add_foreign_key "messages", "users", column: "sender_id"
   add_foreign_key "mimo_transactions", "mimo_items"
   add_foreign_key "mimo_transactions", "payments"

@@ -57,6 +57,8 @@ class MatchesController < ApplicationController
     @messages = @match.messages.visible_to(current_user)
                       .includes(:reactions, reply_to: :sender)
                       .with_attached_audio.with_attached_photo.order(created_at: :asc)
+    # Balão do mimo e agradecimento leem o mimo (nome, emoji, valor) sem N+1
+    @messages = @messages.includes(mimo_transaction: :mimo_item) if Message.mimo_messages?
     @message  = Message.new
     @other_user = @match.other_user(current_user)
     # Sugestões de mensagem só no começo: somem depois da primeira mensagem

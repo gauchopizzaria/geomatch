@@ -18,6 +18,12 @@ class Message < ApplicationRecord
     (%w[edited_at hidden_for_user_ids] - column_names).empty?
   end
 
+  # Coluna dos mimos na conversa (migration AddMimoTransactionToMessages). Mesmo cuidado
+  # do chat_controls?: sem ela o chat funciona, só sem o balão do mimo.
+  def self.mimo_messages?
+    column_names.include?("mimo_transaction_id")
+  end
+
   # Mensagens que a pessoa não apagou para si ("Apagar para mim" / "Limpar conversa")
   scope :visible_to, ->(user) {
     chat_controls? ? where.not("? = ANY(messages.hidden_for_user_ids)", user.id) : all
@@ -29,6 +35,9 @@ class Message < ApplicationRecord
   # apagada, o banco zera esta coluna (on_delete: :nullify).
   belongs_to :reply_to, class_name: "Message", optional: true
   has_many   :reactions, dependent: :destroy
+  # Mimo na conversa (MimoChatService): o balão do mimo (mensagem de quem enviou) ou o
+  # agradecimento (mensagem de quem recebeu, que cita o mimo)
+  belongs_to :mimo_transaction, optional: true
 
   # Mensagem de voz e foto: anexos do Active Storage + rótulo no content
   include MessageMedia
@@ -37,22 +46,26 @@ class Message < ApplicationRecord
   validate  :reply_to_must_belong_to_same_match
 
   after_create_commit  :broadcast_message
-  after_create_commit  :send_push_notification
+  # O balão do mimo não manda o push de mensagem: o push "te enviou um Mimo" já sai
+  # pelo MimoPushNotificationJob
+  after_create_commit  :send_push_notification, unless: :mimo_gift?
   after_destroy_commit :broadcast_deletion
 
   def edited?
     has_attribute?(:edited_at) && edited_at.present?
   end
 
-  # Áudio e foto não têm texto para editar (o content deles é só o rótulo)
+  # Áudio, foto e o balão do mimo não têm texto para editar (o content é só o rótulo)
   def editable_by?(user)
-    Message.chat_controls? && sender_id == user&.id && created_at > EDIT_WINDOW.ago && !media?
+    Message.chat_controls? && sender_id == user&.id && created_at > EDIT_WINDOW.ago && !media? && !mimo_gift?
   end
 
   # Só quem enviou; mensagem lida antes de existir read_at conta como vista há
-  # muito tempo (não dá mais para apagar para todos)
+  # muito tempo (não dá mais para apagar para todos). O balão do mimo fica: o mimo já
+  # foi entregue (dá para "apagar para mim").
   def deletable_for_everyone_by?(user)
     return false unless sender_id == user&.id
+    return false if mimo_gift?
     return true unless read?
 
     read_at.present? && read_at > DELETE_FOR_EVERYONE_WINDOW.ago
@@ -100,6 +113,42 @@ class Message < ApplicationRecord
     }
   end
 
+  # --- Mimos na conversa ---------------------------------------------------------
+
+  def mimo_linked?
+    has_attribute?(:mimo_transaction_id) && mimo_transaction_id.present? && mimo_transaction.present?
+  end
+
+  # O balão do mimo: mensagem de quem enviou o mimo
+  def mimo_gift?
+    mimo_linked? && sender_id == mimo_transaction.sender_id
+  end
+
+  # O agradecimento: mensagem de quem recebeu, citando o mimo
+  def mimo_thanks?
+    mimo_linked? && sender_id == mimo_transaction.receiver_id
+  end
+
+  def kind
+    mimo_gift? ? "mimo" : super
+  end
+
+  # O que o balão precisa (o mesmo nos dois lados; quem vê decide "Você enviou" ou
+  # "Você recebeu" pelo remetente). url: a tela do mimo — só abre para quem recebeu.
+  def mimo_preview
+    return nil unless mimo_linked?
+
+    mimo = mimo_transaction
+    {
+      role:    mimo_gift? ? "gift" : "thanks",
+      label:   mimo.display_label,
+      icon:    mimo.display_icon,
+      price:   Money.new(mimo.price_cents, "BRL").format,
+      message: mimo_gift? ? mimo.message.presence : nil,
+      url:     Rails.application.routes.url_helpers.mimo_celebration_page_path(mimo.id)
+    }
+  end
+
   # A mensagem no formato que o chat_logic.js desenha (broadcast e resposta do envio)
   def chat_payload
     {
@@ -116,7 +165,8 @@ class Message < ApplicationRecord
       reply_to:   reply_to_preview,
       prompt:     prompt_preview,
       audio:      audio_preview,
-      photo:      photo_preview
+      photo:      photo_preview,
+      mimo:       mimo_preview
     }
   end
 

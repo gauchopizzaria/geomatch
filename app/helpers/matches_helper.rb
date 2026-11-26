@@ -89,6 +89,36 @@ module MatchesHelper
     safe_join(bars)
   end
 
+  # Balão do mimo: emoji, "Você enviou um mimo" / "Mimo para você", nome, valor, o
+  # recadinho e, para quem recebeu, "Ver mimo" (a tela com Agradecer). O chat_logic.js
+  # monta o mesmo HTML para o que chega ao vivo.
+  def chat_mimo_gift_tag(message, mine)
+    mimo = message.mimo_preview
+
+    card = content_tag(:span, class: "msg-mimo") do
+      content_tag(:span, mimo[:icon] || "🎁", class: "msg-mimo-art", aria: { hidden: true }) +
+        content_tag(:span, class: "msg-mimo-body") do
+          content_tag(:span, mine ? "Você enviou um mimo" : "Mimo para você", class: "msg-mimo-kicker") +
+            content_tag(:strong, mimo[:label], class: "msg-mimo-label") +
+            content_tag(:span, mimo[:price], class: "msg-mimo-price")
+        end
+    end
+
+    note = mimo[:message] ? content_tag(:span, "“#{mimo[:message]}”", class: "msg-mimo-note") : "".html_safe
+    link = mine ? "".html_safe : link_to("Ver mimo", mimo[:url], class: "msg-mimo-link")
+    card + note + link
+  end
+
+  # Em cima do agradecimento: "Você agradeceu pelo mimo" / "Agradeceu pelo seu mimo" + o mimo
+  def chat_mimo_quote_tag(message, mine)
+    mimo = message.mimo_preview
+
+    content_tag(:span, class: "msg-mimo-quote") do
+      content_tag(:span, mine ? "🎁 Você agradeceu pelo mimo" : "🎁 Agradeceu pelo seu mimo", class: "msg-mimo-quote-label") +
+        content_tag(:span, [ mimo[:icon], mimo[:label] ].compact.join(" "), class: "msg-mimo-quote-text")
+    end
+  end
+
   def chat_photo_tag(message)
     photo = message.photo_preview
     size  = photo[:width].positive? && photo[:height].positive? ? { width: photo[:width], height: photo[:height] } : {}

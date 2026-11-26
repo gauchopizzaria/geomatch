@@ -197,6 +197,135 @@ $rec-red: #e5484d;
 }
 
 /* =========================================================
+   2b. MIMO NA CONVERSA — o balão do mimo (dourado, igual dos dois lados) e a
+       citação do mimo em cima do agradecimento
+   ========================================================= */
+.message-row .message-bubble.is-mimo {
+  width: 252px;
+  padding: 12px 13px;
+  border: 1.5px solid #d9b77a;
+  background: linear-gradient(160deg, #fdf6e8 0%, #f3e2c2 100%);
+  box-shadow: 0 6px 16px rgba(169, 128, 64, 0.16);
+  color: #1c1c1e;
+}
+
+.msg-mimo {
+  display: flex;
+  align-items: center;
+  gap: 11px;
+}
+
+.msg-mimo-art {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 46px;
+  height: 46px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 0 0 3px rgba(217, 183, 122, 0.35);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.msg-mimo-body {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.msg-mimo-kicker {
+  color: #94723f;
+  font-size: 10.5px;
+  font-weight: 800;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+}
+
+.msg-mimo-label {
+  margin-top: 1px;
+  font-size: 15px;
+  font-weight: 800;
+  line-height: 1.25;
+  overflow-wrap: anywhere;
+}
+
+.msg-mimo-price {
+  margin-top: 1px;
+  color: #6b6560;
+  font-size: 12.5px;
+  font-weight: 700;
+}
+
+.msg-mimo-note {
+  display: block;
+  margin-top: 9px;
+  color: #4a4642;
+  font-size: 13.5px;
+  font-style: italic;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}
+
+.msg-mimo-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 34px;
+  margin-top: 10px;
+  border-radius: 999px;
+  background: #1c1c1e;
+  color: #fff;
+  font-size: 13px;
+  font-weight: 800;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover { color: #fff; }
+}
+
+// Agradecimento: "🎁 Agradeceu pelo seu mimo · 🌹 Rosa vermelha" em cima do texto
+.msg-mimo-quote {
+  display: block;
+  min-width: 150px;
+  margin: 0 0 7px;
+  padding: 6px 10px 7px;
+  border-left: 3px solid #c9a052;
+  border-radius: 8px;
+  background: rgba(201, 160, 82, 0.14);
+  text-align: left;
+}
+
+.msg-mimo-quote-label {
+  display: block;
+  color: #8a6d45;
+  font-size: 11.5px;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.msg-mimo-quote-text {
+  display: block;
+  margin-top: 1px;
+  font-size: 13px;
+  font-weight: 600;
+  line-height: 1.35;
+}
+
+.message-row.sent .msg-mimo-quote { background: rgba(255, 255, 255, 0.12); }
+.message-row.sent .msg-mimo-quote-label { color: #e2c88f; }
+
+// Menu do toque longo: o balão em foco mantém o dourado
+.msg-context-bubble:has(.msg-mimo) {
+  width: 252px;
+  border: 1.5px solid #d9b77a;
+  background: linear-gradient(160deg, #fdf6e8 0%, #f3e2c2 100%);
+  color: #1c1c1e;
+
+  .msg-mimo-link { pointer-events: none; }
+}
+
+/* =========================================================
    3. ENVIANDO… / NÃO ENVIADO
    ========================================================= */
 .message-row.is-pending {
@@ -717,6 +846,24 @@ html.dark:not(.light-mode) {
     background: linear-gradient(180deg, #e6d0b6 0%, #b8987b 100%);
     color: #1c1c1e;
   }
+
+  .message-row .message-bubble.is-mimo,
+  .msg-context-bubble:has(.msg-mimo) {
+    border-color: #8a6d3f;
+    background: linear-gradient(160deg, #2c2721 0%, #221e19 100%);
+    color: #f2efe9;
+  }
+
+  .msg-mimo-art { background: #1a1a1c; }
+  .msg-mimo-kicker { color: #d9b77a; }
+  .msg-mimo-price,
+  .msg-mimo-note { color: #cfc8bd; }
+  .msg-mimo-link { background: #e6d0b6; color: #1c1c1e; }
+
+  // agradecimento recebido (balão escuro) e enviado (balão bege)
+  .message-row.received .msg-mimo-quote-label { color: #d9b77a; }
+  .message-row.sent .msg-mimo-quote { background: rgba(28, 28, 30, 0.1); }
+  .message-row.sent .msg-mimo-quote-label { color: #3d2e17; }
 
   .chat-attach-handle { background: #3a3a3c; }
 

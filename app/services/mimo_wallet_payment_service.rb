@@ -42,6 +42,8 @@ class MimoWalletPaymentService
     # Depois do commit: notificação no app + push ("Fulano te enviou um Mimo"), que
     # abrem a tela "Você ganhou um mimo"
     MimoNotificationService.call(mimo_transaction: mimo_transaction)
+    # …e o balão "Mimo" na conversa dos dois
+    MimoChatService.post_gift(mimo_transaction)
     mimo_transaction
   rescue => e
     Rails.logger.error "[MimoWalletPaymentService] Falha ao transferir saldo — sender=#{sender&.id} receiver=#{receiver&.id} error=#{e.class}: #{e.message}"

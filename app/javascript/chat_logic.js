@@ -709,7 +709,7 @@ document.addEventListener('turbo:load', () => {
       : '';
     const kindClass = el.dataset.kind === 'text' ? '' : ` is-${el.dataset.kind}`;
     el.innerHTML =
-      `<div class="message-bubble${kindClass}">${promptHtml(message.prompt, isSender)}${quoteHtml(message.reply_to)}${messageBodyHtml(message)}</div>` +
+      `<div class="message-bubble${kindClass}">${promptHtml(message.prompt, isSender)}${quoteHtml(message.reply_to)}${messageBodyHtml(message, isSender)}</div>` +
       `<div class="message-meta"><span class="message-time">${formatTime(message.created_at)}</span>${statusHtml}</div>` +
       `<span class="message-timestamp">${formatTime(message.created_at)}</span>`;
 
@@ -744,15 +744,44 @@ document.addEventListener('turbo:load', () => {
     '<svg class="msg-audio-icon-pause" viewBox="0 0 24 24" aria-hidden="true"><rect x="6.5" y="5" width="4" height="14" rx="1.2"/><rect x="13.5" y="5" width="4" height="14" rx="1.2"/></svg>';
 
   function messageKind(message) {
+    if (message.mimo && message.mimo.role === 'gift') return 'mimo';
     if (message.audio) return 'audio';
     if (message.photo) return 'photo';
     return 'text';
   }
 
-  function messageBodyHtml(message) {
+  function messageBodyHtml(message, isSender) {
+    const mimo = message.mimo;
+    if (mimo && mimo.role === 'gift') return mimoGiftHtml(mimo, isSender);
     if (message.audio) return audioHtml(message.audio);
     if (message.photo) return photoHtml(message.photo);
-    return `<span class="msg-text">${escapeHtml(message.content)}</span>`;
+    const quote = mimo && mimo.role === 'thanks' ? mimoQuoteHtml(mimo, isSender) : '';
+    return `${quote}<span class="msg-text">${escapeHtml(message.content)}</span>`;
+  }
+
+  // Balão do mimo (o mesmo HTML de MatchesHelper#chat_mimo_gift_tag)
+  function mimoGiftHtml(mimo, isSender) {
+    const note = mimo.message ? `<span class="msg-mimo-note">“${escapeHtml(mimo.message)}”</span>` : '';
+    const link = !isSender && typeof mimo.url === 'string' && mimo.url.startsWith('/')
+      ? `<a class="msg-mimo-link" href="${escapeHtml(mimo.url)}">Ver mimo</a>`
+      : '';
+    return `<span class="msg-mimo">` +
+             `<span class="msg-mimo-art" aria-hidden="true">${escapeHtml(mimo.icon || '🎁')}</span>` +
+             `<span class="msg-mimo-body">` +
+               `<span class="msg-mimo-kicker">${isSender ? 'Você enviou um mimo' : 'Mimo para você'}</span>` +
+               `<strong class="msg-mimo-label">${escapeHtml(mimo.label)}</strong>` +
+               `<span class="msg-mimo-price">${escapeHtml(mimo.price)}</span>` +
+             `</span>` +
+           `</span>${note}${link}`;
+  }
+
+  // Em cima do agradecimento (MatchesHelper#chat_mimo_quote_tag)
+  function mimoQuoteHtml(mimo, isSender) {
+    const text = [mimo.icon, mimo.label].filter(Boolean).join(' ');
+    return `<span class="msg-mimo-quote">` +
+             `<span class="msg-mimo-quote-label">${isSender ? '🎁 Você agradeceu pelo mimo' : '🎁 Agradeceu pelo seu mimo'}</span>` +
+             `<span class="msg-mimo-quote-text">${escapeHtml(text)}</span>` +
+           `</span>`;
   }
 
   // Sempre PEAK_COUNT barras; 14% é a barra mínima (silêncio)
@@ -812,6 +841,14 @@ document.addEventListener('turbo:load', () => {
     const photo = target.closest('img.msg-photo');
     if (photo) {
       photoViewer.open(photo.currentSrc || photo.src);
+      return true;
+    }
+
+    // "Ver mimo" no balão do mimo: abre a tela do mimo recebido
+    const mimoLink = target.closest('a.msg-mimo-link');
+    if (mimoLink) {
+      if (window.Turbo) window.Turbo.visit(mimoLink.getAttribute('href'));
+      else window.location.href = mimoLink.getAttribute('href');
       return true;
     }
 
@@ -935,11 +972,12 @@ document.addEventListener('turbo:load', () => {
 
     // Áudio e foto: o "conteúdo" é só o rótulo — não há texto para copiar nem editar
     const kind    = row.dataset.kind || 'text';
-    const isMedia = kind === 'audio' || kind === 'photo';
+    const isMedia = kind === 'audio' || kind === 'photo' || kind === 'mimo';
 
     const canEdit = isSent && !isMedia && CHAT_CONTROLS && now - sentAt < EDIT_WINDOW_MS;
     const readAt  = row.dataset.readAt ? new Date(row.dataset.readAt) : null;
-    const canDeleteForAll = isSent &&
+    // O balão do mimo não sai "para todos": o mimo já foi entregue (Message#deletable_for_everyone_by?)
+    const canDeleteForAll = isSent && kind !== 'mimo' &&
       (row.dataset.status !== 'read' || (readAt && now - readAt < DELETE_WINDOW_MS));
 
     let html = '';

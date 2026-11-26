@@ -8,8 +8,11 @@ json.messages @messages do |message|
   json.is_mine    message.sender_id == current_api_user.id
   json.reply_to_id message.reply_to_id
 
-  # "text", "audio" (mensagem de voz) ou "photo" — nesses dois o content é só o rótulo
+  # "text", "audio" (mensagem de voz), "photo" ou "mimo" (o balão do mimo) — nesses
+  # três o content é só o rótulo
   json.kind message.kind
+  # Mimo: o balão do mimo (role "gift") ou o agradecimento que cita o mimo ("thanks")
+  json.mimo message.mimo_preview if Message.mimo_messages? && message.mimo_linked?
   if message.audio?
     json.audio do
       json.url      rails_blob_url(message.audio)

@@ -79,8 +79,10 @@ class MimoPaymentService
         mimo_transaction.complete!
       end
 
-      # Depois do commit: notificação no app + push para quem recebeu
+      # Depois do commit: notificação no app + push para quem recebeu, e o balão
+      # "Mimo" na conversa dos dois
       MimoNotificationService.call(mimo_transaction: mimo_transaction)
+      MimoChatService.post_gift(mimo_transaction)
     end
 
     move_value_to_pool_account(mimo_transaction)

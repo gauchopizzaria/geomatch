@@ -99,7 +99,8 @@
              data-read-at="<%= message.read_at&.iso8601 %>"
              class="message message-row <%= mine ? 'sent' : 'received' %> <%= 'is-group-end' if group_end %>">
 
-          <div class="message-bubble <%= "is-#{message.kind}" if message.media? %>">
+          <% gift = message.mimo_gift? %>
+          <div class="message-bubble <%= "is-#{message.kind}" if message.media? || gift %>">
             <%# Resposta a uma pergunta do perfil: a pergunta e a resposta citadas %>
             <% if message.prompt_reply? %>
               <span class="msg-prompt">
@@ -115,8 +116,14 @@
                 <span class="msg-quote-text"><%= quoted.content.to_s.truncate(Message::REPLY_PREVIEW_LENGTH) %></span>
               </button>
             <% end %>
-            <%# Mensagem de voz e foto: o content é só o rótulo (lista, push, citação) %>
-            <% if message.audio? %>
+            <%# Agradecimento de um mimo: o mimo citado em cima do texto %>
+            <% if message.mimo_thanks? %>
+              <%= chat_mimo_quote_tag(message, mine) %>
+            <% end %>
+            <%# Mimo, voz e foto: o content é só o rótulo (lista, push, citação) %>
+            <% if gift %>
+              <%= chat_mimo_gift_tag(message, mine) %>
+            <% elsif message.audio? %>
               <%= chat_audio_tag(message) %>
             <% elsif message.photo? %>
               <%= chat_photo_tag(message) %>
