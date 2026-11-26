@@ -128,7 +128,44 @@ RSpec.describe "Mimos", type: :request do
                                       status: "completed", message: "Pra você 🌹")
       expect(luan.wallet.reload.balance_cents).to eq(510)
       expect(clara.wallet.reload.balance_cents).to eq(431)
-      expect(flash[:notice]).to eq("Mimo enviado para Maria! 🎁")
+      match = MimoChatService.conversation_between(luan, clara)
+      expect(flash[:mimo_sent]).to eq("first_name" => "Maria", "label" => "rosa vermelha", "icon" => "🌹", "match_id" => match.id)
+    end
+
+    it "a próxima tela mostra 'Mimo enviado!' com 'Ver conversa'" do
+      give_balance(luan, 1_000)
+      deliver(receiver_id: clara.id, mimo_item_id: rosa.id, tier: "especial")
+      match = MimoChatService.conversation_between(luan, clara)
+
+      get "/users/#{clara.id}"
+      toast = Nokogiri::HTML(response.body).at_css(".tt-toast--mimo")
+      expect(toast.at_css(".tt-title").text).to eq("Mimo enviado!")
+      expect(toast.at_css(".tt-text").text).to eq("Maria recebeu: rosa vermelha 🌹")
+      expect(toast.at_css("a.tt-action--dark")["href"]).to eq("/matches/#{match.id}")
+      expect(toast.at_css(".tt-icon--mimo svg")).to be_present
+
+      # mostrado uma vez só
+      get "/users/#{clara.id}"
+      expect(Nokogiri::HTML(response.body).at_css(".tt-toast--mimo")).to be_nil
+    end
+
+    it "enviado de dentro da conversa: o aviso aparece sem 'Ver conversa'" do
+      give_balance(luan, 1_000)
+      deliver(receiver_id: clara.id, mimo_item_id: rosa.id, tier: "simples")
+      match = MimoChatService.conversation_between(luan, clara)
+
+      get "/matches/#{match.id}"
+      toast = Nokogiri::HTML(response.body).at_css(".tt-toast--mimo")
+      expect(toast.at_css(".tt-text").text).to eq("Maria recebeu: rosa 🌹")
+      expect(toast.at_css(".tt-action--dark")).to be_nil
+    end
+
+    it "bloqueado (sem conversa): o aviso aparece sem 'Ver conversa'" do
+      give_balance(luan, 1_000)
+      clara.blocks_sent.create!(blocked: luan)
+      deliver(receiver_id: clara.id, mimo_item_id: rosa.id, tier: "simples")
+
+      expect(flash[:mimo_sent]["match_id"]).to be_nil
     end
 
     it "avisa quem recebeu (notificação que abre a tela do mimo)" do

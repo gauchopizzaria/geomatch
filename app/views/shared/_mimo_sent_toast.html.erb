@@ -1,0 +1,17 @@
+<%# "Mimo enviado!" — depois de enviar um mimo com o saldo (MimosController#deliver,
+    flash[:mimo_sent]). Cartão branco no topo: presente dourado no círculo escuro com o
+    selo verde, "Luan recebeu: rosa vermelha 🌹" (neutro: "seu"/"sua" depende do mimo) e "Ver conversa" (a conversa
+    onde o balão do mimo apareceu). Componente: shared/_top_toast.
+    Locals: data — { "first_name", "label", "icon", "match_id" } %>
+<% first_name = data["first_name"].presence || "A pessoa" %>
+<% gift       = [ data["label"], data["icon"] ].compact_blank.join(" ") %>
+<% match_id   = data["match_id"].presence %>
+<%# Já está na conversa (o mimo foi enviado pelo "+" do chat): sem "Ver conversa" %>
+<% chat_path  = match_id && match_path(match_id) %>
+<% action     = chat_path && request.path != chat_path ? link_to("Ver conversa", chat_path, class: "tt-action tt-action--dark", data: { tt_keep: true }) : nil %>
+<%= render layout: "shared/top_toast", locals: {
+      title: "Mimo enviado!",
+      text: "#{first_name} recebeu: #{gift}",
+      icon_class: "tt-icon--mimo", duration: 5000, extra_class: "tt-toast--mimo", action: action } do %>
+  <svg viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.2C7 8 9.5 8 12 8zM12 8c1.5-3 5-3.5 5-1.2C17 8 14.5 8 12 8z"/></svg>
+<% end %>

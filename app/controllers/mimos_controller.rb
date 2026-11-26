@@ -38,7 +38,15 @@ class MimosController < ApplicationController
         mimo_transaction = MimoWalletPaymentService.call(
           sender: mobile_current_user, receiver: receiver, selection: selection, message: message
         )
-        flash[:notice] = "Mimo enviado para #{first_name(receiver)}! 🎁"
+        # "Mimo enviado!" no topo da próxima tela (shared/_mimo_sent_toast), com
+        # "Ver conversa" para a conversa onde o balão do mimo apareceu
+        conversation = MimoChatService.conversation_between(mobile_current_user, receiver)
+        flash[:mimo_sent] = {
+          "first_name" => first_name(receiver),
+          "label"      => selection.label,
+          "icon"       => selection.icon,
+          "match_id"   => conversation&.id
+        }
         return render json: { status: "sent", mimo_transaction_id: mimo_transaction.id }, status: :created
       rescue MimoWalletPaymentService::InsufficientBalanceError
         # O saldo mudou entre a conta e o débito: segue pelo checkout
