@@ -1,83 +1,89 @@
 # Catálogo de Mimos (presentes virtuais) — ver app/models/mimo_item.rb.
 #
-# Fonte: tabela interna "Catálogo de mimos e valores" (48 mimos em 8 categorias, cada
-# um com 3 níveis: Simples · Especial · Premium). Valores em reais, pagos por quem envia.
+# Fonte: a tela "Enviar um Mimo" (mockup do catálogo) — 48 mimos em 8 categorias, 6 em
+# cada uma, na ordem da tela. O preço do Simples é o "a partir de" que aparece no card.
+#
+# Os níveis Especial e Premium:
+#   # tabela   → copiados da tabela interna "Catálogo de mimos e valores" (o mimo existe
+#                lá com o mesmo preço de Simples);
+#   # sugerido → nomes e preços propostos para completar os três níveis (o mockup só
+#                mostra o "a partir de"). Revise e ajuste aqui à vontade.
 #
 # Arquivo separado de db/seeds.rb (que apaga usuários a cada execução) para poder
 # popular/atualizar só o catálogo sem mexer nos dados de teste. Pode ser rodado
 # sozinho, quantas vezes precisar (atualiza pelo nome): bin/rails runner db/seeds/mimos.rb
 #
-# Os mimos do catálogo antigo (Taça de Vinho, Jantar Completo...) ficam inativos: somem
-# da tela, mas continuam no banco porque há envios que apontam para eles.
+# Mimos que saíram do catálogo ficam inativos: somem da tela, mas continuam no banco
+# porque há envios que apontam para eles.
 #
 # receiver_value_cents é só a referência estática do item (preço do Simples − 12%) — o
 # crédito real ao destinatário é recalculado no envio por MimoFeeCalculator.
 
-# [nome, emoji, [simples, preço], [especial, preço], [premium, preço], descrição opcional]
+# [nome, emoji, [simples, preço], [especial, preço], [premium, preço]]
 MIMO_CATALOG = {
   "rapidos" => [
-    [ "Rosa",       "🌹", [ "rosa", 290 ],       [ "rosa vermelha", 490 ],     [ "buquê de rosas", 990 ] ],
-    [ "Coração",    "❤️", [ "coração", 290 ],    [ "coração brilhante", 490 ], [ "chuva de corações", 990 ] ],
-    [ "Piscadinha", "😉", [ "piscadinha", 190 ], [ "beijinho", 390 ],          [ "abraço apertado", 690 ] ]
+    [ "Rosa",       "🌹", [ "rosa", 290 ],       [ "rosa vermelha", 490 ],     [ "buquê de rosas", 990 ] ],      # tabela
+    [ "Coração",    "❤️", [ "coração", 290 ],    [ "coração brilhante", 490 ], [ "chuva de corações", 990 ] ],   # tabela
+    [ "Piscadinha", "😉", [ "piscadinha", 190 ], [ "piscadinha dupla", 390 ],  [ "piscadinha + abraço", 690 ] ], # sugerido
+    [ "Beijinho",   "💋", [ "beijinho", 190 ],   [ "beijo estalado", 390 ],    [ "chuva de beijos", 690 ] ],     # sugerido
+    [ "Bombom",     "🍫", [ "bombom", 390 ],     [ "trio de bombons", 690 ],   [ "caixa de bombons", 1_290 ] ],  # sugerido
+    [ "Estrela",    "⭐", [ "estrela", 490 ],    [ "estrela brilhante", 890 ], [ "chuva de estrelas", 1_490 ] ]  # sugerido
   ],
   "bebidas" => [
-    [ "Água de coco",     "🥥", [ "coco gelado", 790 ],   [ "coco grande", 1_290 ],        [ "garrafa 1L", 1_990 ] ],
-    [ "Café",             "☕", [ "espresso", 790 ],      [ "cappuccino", 1_490 ],         [ "café especial + doce", 2_490 ] ],
-    [ "Energético",       "⚡", [ "lata", 1_290 ],        [ "lata grande", 1_990 ],        [ "drink com energético", 2_990 ] ],
-    [ "Cerveja / chopp",  "🍺", [ "long neck", 990 ],     [ "chopp 500ml", 1_690 ],        [ "chopp artesanal", 2_990 ] ],
-    [ "Drink",            "🍹", [ "caipirinha", 1_990 ],  [ "caipiroska / gin", 3_490 ],   [ "drink autoral", 5_490 ] ],
-    [ "Balde de cerveja", "🍻", [ "5 long necks", 4_990 ], [ "10 long necks", 7_990 ],     [ "balde premium", 11_990 ] ],
-    [ "Vinho",            "🍷", [ "nacional", 6_990 ],    [ "importado", 12_990 ],         [ "reserva", 29_990 ] ],
-    [ "Espumante",        "🥂", [ "nacional", 7_990 ],    [ "prosecco", 15_990 ],          [ "espumante premium", 34_990 ] ],
-    [ "Champanhe",        "🍾", [ "champanhe", 39_990 ],  [ "champanhe premium", 79_990 ], [ "edição especial", 149_990 ] ]
+    [ "Água de coco", "🥥", [ "coco gelado", 790 ],     [ "coco grande", 1_290 ],      [ "garrafa 1L", 1_990 ] ],           # tabela
+    [ "Café",         "☕", [ "espresso", 790 ],        [ "cappuccino", 1_490 ],       [ "café especial + doce", 2_490 ] ], # tabela
+    [ "Energético",   "⚡", [ "lata", 1_290 ],          [ "lata grande", 1_990 ],      [ "drink com energético", 2_990 ] ], # tabela
+    [ "Chopp",        "🍺", [ "chopp 300ml", 1_490 ],   [ "chopp 500ml", 1_990 ],      [ "chopp artesanal", 2_990 ] ],      # sugerido
+    [ "Drink",        "🍹", [ "caipirinha", 1_990 ],    [ "caipiroska / gin", 3_490 ], [ "drink autoral", 5_490 ] ],        # tabela
+    [ "Vinho",        "🍷", [ "taça de vinho", 3_990 ], [ "garrafa nacional", 6_990 ], [ "garrafa importada", 12_990 ] ]    # sugerido
   ],
   "comidas" => [
-    [ "Picolé / sorvete", "🍦", [ "picolé", 990 ],               [ "paleta gourmet", 1_990 ], [ "pote premium", 2_990 ] ],
-    [ "Acarajé",          "🧆", [ "simples", 1_290 ],            [ "completo", 1_990 ],       [ "acarajé + bebida", 2_990 ] ],
-    [ "Crepe",            "🥞", [ "salgado", 1_990 ],            [ "recheado", 2_990 ],       [ "doce + salgado", 3_990 ] ],
-    [ "Pizza",            "🍕", [ "fatia", 1_490 ],              [ "pizza média", 5_990 ],    [ "pizza grande premium", 9_990 ] ],
-    [ "Açaí",             "🍇", [ "300ml", 2_490 ],              [ "500ml", 3_990 ],          [ "700ml completo", 5_990 ] ],
-    [ "Hambúrguer",       "🍔", [ "smash", 2_990 ],              [ "artesanal", 4_990 ],      [ "combo artesanal", 7_990 ] ],
-    [ "Sushi",            "🍣", [ "combinado 20 peças", 5_990 ], [ "40 peças", 9_990 ],       [ "rodízio", 17_990 ] ],
-    [ "Jantar a dois",    "🕯️", [ "casual", 19_990 ],            [ "restaurante", 34_990 ],   [ "alta gastronomia", 69_990 ] ]
+    [ "Sorvete",    "🍨", [ "picolé", 890 ],               [ "paleta gourmet", 1_690 ], [ "pote premium", 2_990 ] ],         # sugerido
+    [ "Açaí",       "🍇", [ "300ml", 1_490 ],              [ "500ml", 2_490 ],          [ "700ml completo", 3_990 ] ],       # sugerido
+    [ "Hambúrguer", "🍔", [ "smash", 2_990 ],              [ "artesanal", 4_990 ],      [ "combo artesanal", 7_990 ] ],      # tabela
+    [ "Pizza",      "🍕", [ "pizza média", 3_990 ],        [ "pizza grande", 5_990 ],   [ "pizza grande premium", 8_990 ] ], # sugerido
+    [ "Sushi",      "🍣", [ "combinado 20 peças", 4_990 ], [ "40 peças", 8_990 ],       [ "rodízio", 14_990 ] ],             # sugerido
+    [ "Bolo",       "🍰", [ "fatia de bolo", 1_690 ],      [ "bolo pequeno", 3_990 ],   [ "bolo decorado", 8_990 ] ]         # sugerido
   ],
   "beleza" => [
-    [ "Esmaltação",          "💅", [ "mão", 2_990 ],           [ "pé e mão", 4_990 ],           [ "em gel", 8_990 ] ],
-    [ "Barbearia",           "💈", [ "corte", 3_990 ],         [ "corte + barba", 6_990 ],      [ "dia do barbeiro", 11_990 ] ],
-    [ "Cabelo",              "💇", [ "escova", 4_990 ],        [ "hidratação + escova", 8_990 ], [ "tratamento completo", 14_990 ] ],
-    [ "Kit skincare",        "🧴", [ "básico", 7_990 ],        [ "completo", 14_990 ],          [ "premium", 29_990 ] ],
-    [ "Massagem",            "💆", [ "30 min", 9_990 ],        [ "60 min", 15_990 ],            [ "pedras quentes", 24_990 ] ],
-    [ "Kit salão de beleza", "💄", [ "cabelo + unha", 14_990 ], [ "+ maquiagem", 24_990 ],      [ "dia da noiva", 44_990 ] ],
-    [ "Day spa",             "🧖", [ "meio período", 24_990 ], [ "dia inteiro", 44_990 ],       [ "spa a dois", 79_990 ] ]
+    [ "Esmalte",    "💅", [ "esmalte", 1_490 ],         [ "esmaltação mão", 2_990 ],      [ "pé e mão", 4_990 ] ],              # sugerido
+    [ "Batom",      "💄", [ "batom", 2_990 ],           [ "batom de marca", 5_990 ],      [ "kit de maquiagem", 11_990 ] ],     # sugerido
+    [ "Hidratante", "🧴", [ "hidratante", 3_490 ],      [ "kit skincare básico", 7_990 ], [ "kit skincare completo", 14_990 ] ], # sugerido
+    [ "Perfume",    "🌸", [ "body splash", 5_990 ],     [ "perfume nacional", 12_990 ],   [ "perfume importado", 29_990 ] ],    # sugerido
+    [ "Spa",        "💆", [ "massagem 30 min", 9_990 ], [ "massagem 60 min", 15_990 ],    [ "day spa", 24_990 ] ],              # sugerido
+    [ "Salão",      "✂️", [ "corte", 7_990 ],           [ "corte + escova", 12_990 ],     [ "dia de salão", 24_990 ] ]          # sugerido
   ],
   "presentes" => [
-    [ "Chocolate",         "🍫", [ "barra", 1_490 ],      [ "caixa de bombons", 3_990 ],  [ "chocolate premium", 8_990 ] ],
-    [ "Flores",            "💐", [ "rosa única", 2_990 ], [ "buquê", 7_990 ],             [ "arranjo especial", 15_990 ] ],
-    [ "Camisa",            "👕", [ "básica", 6_990 ],     [ "de marca", 12_990 ],         [ "grife", 24_990 ] ],
-    [ "Camisa de time",    "⚽", [ "torcedor", 19_990 ],  [ "oficial", 34_990 ],          [ "versão jogador", 49_990 ] ],
-    [ "Óculos de sol",     "🕶️", [ "casual", 9_990 ],     [ "de marca", 24_990 ],         [ "grife", 69_990 ] ],
-    [ "Perfume",           "🌸", [ "nacional", 15_990 ],  [ "nacional premium", 24_990 ], [ "lançamento", 37_990 ] ],
-    [ "Perfume importado", "🌷", [ "importado", 39_990 ], [ "importado de marca", 69_990 ], [ "grife", 129_990 ] ]
+    [ "Buquê",    "💐", [ "buquê pequeno", 3_990 ],  [ "buquê", 7_990 ],              [ "arranjo especial", 15_990 ] ], # sugerido
+    [ "Ursinho",  "🧸", [ "ursinho", 2_990 ],        [ "ursinho médio", 5_990 ],      [ "ursão gigante", 12_990 ] ],    # sugerido
+    [ "Surpresa", "🎁", [ "caixa surpresa", 4_990 ], [ "caixa especial", 9_990 ],     [ "caixa premium", 19_990 ] ],    # sugerido
+    [ "Cartinha", "💌", [ "cartinha", 990 ],         [ "cartinha perfumada", 1_490 ], [ "carta + flores", 2_990 ] ],    # sugerido
+    [ "Joia",     "💍", [ "pulseira", 9_990 ],       [ "colar", 19_990 ],             [ "anel", 39_990 ] ],             # sugerido
+    [ "Laço",     "🎀", [ "laço", 1_990 ],           [ "laço de cetim", 3_490 ],      [ "kit de laços", 5_990 ] ]       # sugerido
   ],
   "fitness" => [
-    [ "Isotônico",           "💧", [ "isotônico", 790 ],     [ "bebida proteica", 1_290 ], [ "kit hidratação", 1_990 ] ],
-    [ "Diária de academia",  "🏋️", [ "diária", 2_990 ],      [ "diária premium", 4_990 ],  [ "aula especial", 7_990 ] ],
-    [ "1 mês de academia",   "💪", [ "plano básico", 9_990 ], [ "plano rede", 13_990 ],     [ "academia premium", 29_990 ] ],
-    [ "Inscrição de corrida", "👟", [ "5 km", 8_990 ],        [ "10 km", 14_990 ],          [ "meia maratona", 24_990 ] ],
-    [ "Suplemento",          "🥤", [ "creatina", 9_990 ],     [ "whey", 16_990 ],           [ "kit completo", 24_990 ] ]
+    [ "Garrafinha",   "💧", [ "garrafinha", 1_990 ],     [ "garrafa térmica", 4_990 ],    [ "garrafa premium", 8_990 ] ], # sugerido
+    [ "Shake",        "🥤", [ "shake", 2_490 ],          [ "shake proteico", 3_490 ],     [ "kit de shakes", 6_990 ] ],   # sugerido
+    [ "Aula de yoga", "🧘", [ "aula avulsa", 3_990 ],    [ "aula particular", 8_990 ],    [ "pacote 4 aulas", 14_990 ] ], # sugerido
+    [ "Personal",     "🏋️", [ "treino avulso", 7_990 ],  [ "2 treinos", 14_990 ],         [ "4 treinos", 27_990 ] ],      # sugerido
+    [ "Corrida",      "👟", [ "inscrição 5 km", 2_990 ], [ "10 km", 5_990 ],              [ "meia maratona", 12_990 ] ],  # sugerido
+    [ "Bike",         "🚴", [ "aluguel 1 hora", 3_490 ], [ "aluguel por um dia", 6_990 ], [ "passeio guiado", 11_990 ] ]  # sugerido
   ],
   "role" => [
-    [ "Uber",            "🚗", [ "corrida curta", 1_990 ], [ "média", 3_990 ],               [ "longa / carro premium", 6_990 ] ],
-    [ "Cinema",          "🎬", [ "ingresso", 2_990 ],      [ "ingresso + pipoca", 5_990 ],   [ "sala VIP", 9_990 ] ],
-    [ "Balada",          "🪩", [ "pista", 4_990 ],         [ "área VIP", 9_990 ],            [ "open bar", 19_990 ] ],
-    [ "Show",            "🎶", [ "pista", 14_990 ],        [ "pista premium", 29_990 ],      [ "camarote", 59_990 ] ],
-    [ "Passeio de barco", "🛥️", [ "escuna", 14_990 ],       [ "lancha compartilhada", 29_990 ], [ "passeio privativo", 119_990 ] ],
-    [ "Camarote",        "🎟️", [ "camarote", 49_990 ],     [ "camarote open bar", 99_990 ],  [ "camarote VIP", 199_990 ] ]
+    [ "Cinema",  "🎬", [ "ingresso", 2_990 ],             [ "ingresso + pipoca", 5_990 ],   [ "sala VIP", 9_990 ] ],              # tabela
+    [ "Praia",   "🏖️", [ "cadeira e guarda-sol", 1_990 ], [ "petiscos na barraca", 5_990 ], [ "dia de praia completo", 11_990 ] ], # sugerido
+    [ "Karaokê", "🎤", [ "1 hora", 3_990 ],               [ "sala por 2 horas", 7_990 ],    [ "sala VIP", 14_990 ] ],             # sugerido
+    [ "Show",    "🎶", [ "pista", 9_990 ],                [ "pista premium", 19_990 ],      [ "camarote", 39_990 ] ],             # sugerido
+    [ "Balada",  "🪩", [ "pista", 4_990 ],                [ "área VIP", 9_990 ],            [ "open bar", 19_990 ] ],             # tabela
+    [ "Boliche", "🎳", [ "partida", 6_490 ],              [ "partida + petiscos", 10_990 ], [ "pista VIP", 18_990 ] ]             # sugerido
   ],
   "vip" => [
-    [ "Coroa",                  "👑", [ "coroa", 99_990 ],     [ "coroa de ouro", 199_990 ], [ "coroa de diamante", 499_990 ], "Rei/Rainha do rolê" ],
-    [ "Fim de semana na praia", "🏖️", [ "1 noite", 149_990 ],  [ "2 noites", 299_990 ],      [ "resort", 599_990 ] ],
-    [ "Diamante",               "💎", [ "diamante", 299_990 ], [ "diamante raro", 499_990 ], [ "diamante lendário", 999_990 ] ]
+    [ "Champanhe",     "🍾", [ "champanhe", 19_990 ],         [ "champanhe premium", 39_990 ], [ "edição especial", 79_990 ] ],    # sugerido
+    [ "Jantar a dois", "🕯️", [ "restaurante", 24_590 ],       [ "alta gastronomia", 44_990 ],  [ "jantar exclusivo", 89_990 ] ],   # sugerido
+    [ "Coroa",         "👑", [ "coroa", 9_990 ],              [ "coroa de ouro", 19_990 ],     [ "coroa de diamante", 49_990 ] ],  # sugerido
+    [ "Diamante",      "💎", [ "diamante", 49_990 ],          [ "diamante raro", 99_990 ],     [ "diamante lendário", 199_990 ] ], # sugerido
+    [ "Passeio",       "🛥️", [ "passeio de lancha", 39_990 ], [ "lancha privativa", 79_990 ],  [ "iate", 149_990 ] ],              # sugerido
+    [ "Destaque",      "🌟", [ "destaque", 14_990 ],          [ "destaque dourado", 29_990 ],  [ "destaque lendário", 59_990 ] ]   # sugerido
   ]
 }.freeze
 
@@ -88,7 +94,7 @@ new_names = []
 
 MimoItem.transaction do
   MimoItem::CATEGORIES.each do |category|
-    MIMO_CATALOG.fetch(category[:key]).each do |name, icon, simples, especial, premium, description|
+    MIMO_CATALOG.fetch(category[:key]).each do |name, icon, simples, especial, premium|
       position += 1
       tiers = MimoItem::TIER_KEYS.zip([ simples, especial, premium ]).map do |key, (label, cents)|
         { "key" => key, "label" => label, "price_cents" => cents }
@@ -98,7 +104,7 @@ MimoItem.transaction do
       item.assign_attributes(
         category: category[:key],
         icon: icon,
-        description: description,
+        description: nil,
         position: position,
         tiers: tiers,
         price_cents: simples.last,
@@ -110,9 +116,9 @@ MimoItem.transaction do
     end
   end
 
-  # Catálogo antigo: sai da tela, fica no banco (envios antigos apontam para ele)
+  # Mimos fora desta lista: saem da tela, ficam no banco (envios antigos apontam para eles)
   retired = MimoItem.where.not(name: new_names).where(active: true).update_all(active: false, updated_at: Time.current)
-  puts "  #{retired} mimo(s) do catálogo antigo desativado(s)." if retired.positive?
+  puts "  #{retired} mimo(s) que saíram do catálogo desativado(s)." if retired.positive?
 end
 
 puts "Catálogo de Mimos: #{MimoItem.active.count} mimos ativos em #{MimoItem.active.distinct.count(:category)} categorias."

@@ -2,14 +2,14 @@ class MimoItem < ApplicationRecord
   # Categorias do catálogo, na ordem da tela "Enviar um Mimo". title é o cabeçalho
   # da seção ("MIMOS RÁPIDOS"); chip é o botão curto do topo ("Rápidos").
   CATEGORIES = [
-    { key: "rapidos",   title: "Mimos rápidos",       chip: "Rápidos" },
-    { key: "bebidas",   title: "Bebidas",             chip: "Bebidas" },
-    { key: "comidas",   title: "Comidas",             chip: "Comidas" },
-    { key: "beleza",    title: "Saúde & Beleza",      chip: "Beleza" },
-    { key: "presentes", title: "Presentes & Estilo",  chip: "Presentes" },
-    { key: "fitness",   title: "Fitness",             chip: "Fitness" },
-    { key: "role",      title: "Rolê & Experiências", chip: "Rolê" },
-    { key: "vip",       title: "VIP",                 chip: "VIP" }
+    { key: "rapidos",   title: "Mimos rápidos", chip: "Rápidos" },
+    { key: "bebidas",   title: "Bebidas",       chip: "Bebidas" },
+    { key: "comidas",   title: "Comidas",       chip: "Comidas" },
+    { key: "beleza",    title: "Beleza",        chip: "Beleza" },
+    { key: "presentes", title: "Presentes",     chip: "Presentes" },
+    { key: "fitness",   title: "Fitness",       chip: "Fitness" },
+    { key: "role",      title: "Rolê",          chip: "Rolê" },
+    { key: "vip",       title: "VIP",           chip: "VIP" }
   ].freeze
   CATEGORY_KEYS = CATEGORIES.map { |category| category[:key] }.freeze
 
