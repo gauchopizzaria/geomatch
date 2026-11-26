@@ -580,18 +580,21 @@ $rec-red: #e5484d;
   background: #d9d2c6;
 }
 
+// Fotos · Mimo · Câmera
 .chat-attach-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 13px;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 11px;
 }
 
 .chat-attach-card {
   display: flex;
   flex-direction: column;
   align-items: center;
-  height: 140px;
-  padding: 18px 8px 0;
+  height: 137px;
+  padding: 16px 6px 0;
+  text-align: center;
+  text-decoration: none;
   border: 1px solid var(--chat-field-line);
   border-radius: 18px;
   background: var(--chat-surface);
@@ -611,9 +614,13 @@ $rec-red: #e5484d;
 
   > span:last-child {
     margin-top: 1px;
+    max-width: 100%;
+    overflow: hidden;
     color: var(--chat-muted);
-    font-size: 12.5px;
+    font-size: 12px;
     line-height: 16px;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 
@@ -639,34 +646,21 @@ $rec-red: #e5484d;
   }
 }
 
-.chat-attach-mimo {
-  display: flex;
-  align-items: center;
-  gap: 9px;
-  height: 44px;
-  margin-top: 10px;
-  padding: 0 12px 0 15px;
-  border: 1px solid var(--chat-field-line);
-  border-radius: 14px;
-  background: var(--chat-surface);
-  color: var(--chat-text);
-  font-size: 14px;
-  font-weight: 700;
-  text-decoration: none;
-  -webkit-tap-highlight-color: transparent;
+// Mimo em destaque: borda dourada, fundo creme e o presente no círculo dourado
+.chat-attach-card.is-mimo {
+  border: 1.5px solid #c9a052;
+  background: linear-gradient(180deg, #fdf8ef 0%, #f8ecd8 100%);
+  box-shadow: 0 8px 20px rgba(169, 128, 64, 0.18);
 
   &:hover { color: var(--chat-text); }
 
-  svg {
-    width: 16px;
-    height: 16px;
-    margin-left: auto;
-    fill: none;
-    stroke: var(--chat-muted);
-    stroke-width: 2;
-    stroke-linecap: round;
-    stroke-linejoin: round;
+  .chat-attach-icon {
+    background: linear-gradient(160deg, #ecd3a1 0%, #c49a58 100%);
+    box-shadow: 0 0 0 4px #f6ead3;
+    color: #1c1c1e;
   }
+
+  > span:last-child { color: #94723f; }
 }
 
 .chat-attach-note {
@@ -729,6 +723,19 @@ html.dark:not(.light-mode) {
   .chat-attach-icon {
     background: #2b2926;
     box-shadow: 0 0 0 4px rgba(230, 208, 182, 0.12);
+  }
+
+  .chat-attach-card.is-mimo {
+    border-color: #8a6d3f;
+    background: linear-gradient(180deg, #2a2620 0%, #231f1a 100%);
+
+    .chat-attach-icon {
+      background: linear-gradient(160deg, #ecd3a1 0%, #c49a58 100%);
+      box-shadow: 0 0 0 4px rgba(230, 208, 182, 0.12);
+      color: #1c1c1e;
+    }
+
+    > span:last-child { color: #d9b77a; }
   }
 }
 

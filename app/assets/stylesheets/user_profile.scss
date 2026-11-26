@@ -244,6 +244,34 @@
   &.is-liked { color: #f2484a; transform: none; }
 }
 
+// Mimo: presente dourado no círculo preto, no fim da fileira
+.up-gift-btn {
+  background: #1c1c1e;
+  color: #e6c993;
+  text-decoration: none;
+
+  svg {
+    width: 23px;
+    height: 23px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  &:hover { color: #e6c993; }
+}
+
+// Com o presente são quatro botões na fileira (X · Mensagem · ♥ · 🎁): círculos um
+// pouco menores para a pílula "Mensagem" continuar com folga
+.up-actions:has(.up-gift-btn) {
+  gap: 10px;
+
+  .up-action { width: 52px; height: 52px; }
+  .up-message { height: 52px; font-size: 15px; }
+}
+
 // Página /users/:id (aberta por Curtidas etc.): vermelho = ainda não curtiu (convite);
 // escuro = já curtiu. Os blocos .up-slot são trocados por Turbo Stream (LikesController).
 .up-slot { display: contents; }
@@ -949,6 +977,68 @@ a.pg-cta { align-self: stretch; margin-top: 24px; }
   svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
   &:active { transform: scale(0.98); }
 }
+
+// "Envie um mimo e surpreenda Fulano" — cartão escuro logo abaixo de "Mandar mensagem"
+.up-mimo-cta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 13px 14px 13px 13px;
+  border-radius: 20px;
+  background: #1c1c1e;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.16);
+  color: #fff;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent;
+
+  &:hover { color: #fff; }
+  &:active { transform: scale(0.98); }
+}
+
+.up-mimo-cta-icon {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 44px;
+  height: 44px;
+  border-radius: 13px;
+  background: linear-gradient(160deg, #ecd3a1 0%, #c49a58 100%);
+  color: #1c1c1e;
+
+  svg {
+    width: 22px;
+    height: 22px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 1.8;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+}
+
+.up-mimo-cta-text {
+  flex: 1;
+  min-width: 0;
+
+  strong { display: block; font-size: 14px; font-weight: 800; line-height: 1.25; }
+  span { display: block; margin-top: 2px; color: #b9b2a8; font-size: 12px; line-height: 1.3; }
+}
+
+.up-mimo-cta-chevron {
+  flex-shrink: 0;
+  width: 18px;
+  height: 18px;
+  fill: none;
+  stroke: #e6c993;
+  stroke-width: 2.2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+// No modo escuro o fundo da página já é escuro: o cartão ganha borda para se destacar
+.dark-mode .up-mimo-cta,
+html.dark:not(.light-mode) .up-mimo-cta { border: 1px solid #3a3226; background: #201d19; }
 
 .up-safety { margin-top: 20px; }
 

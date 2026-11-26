@@ -243,10 +243,10 @@ RSpec.describe "Mídia no chat (áudio e foto)", type: :request do
       expect(page.css("label.haptic-tap[for=chat-haptic-switch]").map { |l| l.parent["id"] })
         .to eq(%w[mic-button rec-trash rec-pause rec-send])
 
-      expect(page.css("#chat-attach .chat-attach-card strong").map(&:text)).to eq(%w[Fotos Câmera])
-      expect(page.css("#chat-attach .chat-attach-card > span:last-child").map(&:text)).to eq([ "Da sua galeria", "Tirar foto agora" ])
+      expect(page.css("#chat-attach .chat-attach-card strong").map(&:text)).to eq(%w[Fotos Mimo Câmera])
+      expect(page.css("#chat-attach .chat-attach-card > span:last-child").map(&:text)).to eq([ "Da galeria", "Enviar presente", "Tirar agora" ])
       expect(page.at_css("#chat-attach .chat-attach-note").text.squish).to eq("Só envie fotos que você se sentiria bem em mostrar")
-      expect(page.at_css("#chat-attach a.chat-attach-mimo")["href"]).to eq("/mimos/catalogo?receiver_id=#{clara.id}")
+      expect(page.at_css("#chat-attach a.chat-attach-card.is-mimo")["href"]).to eq("/mimos/catalogo?receiver_id=#{clara.id}")
       expect(page.at_css("#chat-photo-camera")["capture"]).to eq("environment")
     end
   end

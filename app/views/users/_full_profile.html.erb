@@ -160,7 +160,7 @@
         <%= button_to start_chat_path(user_id: user.id), method: :post,
               class: "up-message", form: { class: "up-action-form up-message-form" } do %>
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
-          <%= in_map ? "Mensagem" : "Mandar mensagem" %>
+          Mensagem
         <% end %>
       <% else %>
         <%# Já existe conversa: abre direto %>
@@ -181,6 +181,13 @@
       <% else %>
         <%# Vermelho = ainda não curtiu; escuro = já curtiu (users/_profile_like_button) %>
         <%= render "users/profile_like_button", user: user, liked: liked, match: local_assigns[:match] %>
+      <% end %>
+
+      <%# Mimo: o presente escuro no fim da fileira (o cartão "Envie um mimo" fica no fim do perfil) %>
+      <%= link_to mimo_catalog_page_path(receiver_id: user.id), class: "up-action up-gift-btn",
+                  aria: { label: "Enviar um mimo para #{first_name}" }, title: "Enviar um mimo",
+                  data: { turbo_frame: "_top" } do %>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.2C7 8 9.5 8 12 8zM12 8c1.5-3 5-3.5 5-1.2C17 8 14.5 8 12 8z"/></svg>
       <% end %>
     </div>
   <% end %>
@@ -281,6 +288,18 @@
           <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
           Mandar mensagem
         <% end %>
+      <% end %>
+
+      <%# Mimo: cartão escuro logo abaixo de "Mandar mensagem" %>
+      <%= link_to mimo_catalog_page_path(receiver_id: user.id), class: "up-mimo-cta", data: { turbo_frame: "_top" } do %>
+        <span class="up-mimo-cta-icon" aria-hidden="true">
+          <svg viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.2C7 8 9.5 8 12 8zM12 8c1.5-3 5-3.5 5-1.2C17 8 14.5 8 12 8z"/></svg>
+        </span>
+        <span class="up-mimo-cta-text">
+          <strong>Envie um mimo e surpreenda <%= first_name %></strong>
+          <span>Um gesto carinhoso faz você se destacar</span>
+        </span>
+        <svg class="up-mimo-cta-chevron" viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6.5 5.5 5.5-5.5 5.5"/></svg>
       <% end %>
     </div>
   <% end %>

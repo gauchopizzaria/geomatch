@@ -266,24 +266,24 @@
             <svg viewBox="0 0 24 24"><rect x="3.5" y="4.5" width="17" height="15" rx="3"/><circle cx="9" cy="10" r="1.7"/><path d="m5 17.5 4.5-4.3 3.2 3 2.8-2.7 4 3.8"/></svg>
           </span>
           <strong>Fotos</strong>
-          <span>Da sua galeria</span>
+          <span>Da galeria</span>
         </button>
+        <%# Mimo no meio, em destaque: abre o catálogo já com a pessoa da conversa %>
+        <%= link_to mimo_catalog_page_path(receiver_id: @other_user.id), class: "chat-attach-card is-mimo" do %>
+          <span class="chat-attach-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24"><rect x="3.5" y="8" width="17" height="4" rx="1"/><path d="M5 12v8h14v-8M12 8v12M12 8c-1.5-3-5-3.5-5-1.2C7 8 9.5 8 12 8zM12 8c1.5-3 5-3.5 5-1.2C17 8 14.5 8 12 8z"/></svg>
+          </span>
+          <strong>Mimo</strong>
+          <span>Enviar presente</span>
+        <% end %>
         <button type="button" class="chat-attach-card" data-attach="camera">
           <span class="chat-attach-icon" aria-hidden="true">
             <svg viewBox="0 0 24 24"><path d="M4 8.5A2.5 2.5 0 0 1 6.5 6h1.3l1-1.6a1 1 0 0 1 .85-.4h4.7a1 1 0 0 1 .85.4l1 1.6h1.3A2.5 2.5 0 0 1 20 8.5v8a2.5 2.5 0 0 1-2.5 2.5h-11A2.5 2.5 0 0 1 4 16.5z"/><circle cx="12" cy="12.5" r="3.2"/></svg>
           </span>
           <strong>Câmera</strong>
-          <span>Tirar foto agora</span>
+          <span>Tirar agora</span>
         </button>
       </div>
-
-      <%# Não está no mockup do painel: era a única opção do "+" antigo e segue sendo a
-          entrada do catálogo de Mimos já com a pessoa da conversa escolhida %>
-      <%= link_to mimo_catalog_page_path(receiver_id: @other_user.id), class: "chat-attach-mimo" do %>
-        <span aria-hidden="true">🎁</span>
-        Enviar um Mimo
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9.5 6.5 5.5 5.5-5.5 5.5"/></svg>
-      <% end %>
 
       <p class="chat-attach-note">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-3.5 7-9V6l-7-3-7 3v6c0 5.5 7 9 7 9z"/></svg>

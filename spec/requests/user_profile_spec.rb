@@ -39,8 +39,13 @@ RSpec.describe "Perfil de uma pessoa (/users/:id)", type: :request do
     pass = page.at_css("form[action^='/lead/reject']")
     expect(pass["action"]).to include("source=profile", "user_id=#{felipe.id}")
     expect(pass["data-action"]).to eq("submit->user-profile#pass")
-    expect(page.at_css("form[action='/start_chat/#{felipe.id}'] .up-message").text.squish).to eq("Mandar mensagem")
+    expect(page.at_css("form[action='/start_chat/#{felipe.id}'] .up-message").text.squish).to eq("Mensagem")
     expect(page.at_css("form[action^='/likes']")["action"]).to include("source=profile")
+    # Mimo: o presente no fim da fileira de ações e o cartão abaixo de "Mandar mensagem"
+    expect(page.at_css(".up-actions a.up-gift-btn")["href"]).to eq("/mimos/catalogo?receiver_id=#{felipe.id}")
+    mimo_cta = page.at_css(".up-cta-wrap a.up-mimo-cta")
+    expect(mimo_cta["href"]).to eq("/mimos/catalogo?receiver_id=#{felipe.id}")
+    expect(mimo_cta.text.squish).to eq("Envie um mimo e surpreenda Felipe Um gesto carinhoso faz você se destacar")
     expect(page.at_css("#favorite-btn-#{felipe.id} form[action^='/favorites']")).to be_present
 
     expect(page.css(".up-label").map(&:text)).to eq([ "Sobre mim", "Em resumo", "Interesses" ])
@@ -124,6 +129,7 @@ RSpec.describe "Perfil de uma pessoa (/users/:id)", type: :request do
     expect(page.at_css(".up-actions")).to be_nil
     expect(page.at_css(".up-fav")).to be_nil
     expect(page.at_css(".up-safety")).to be_nil
+    expect(page.at_css(".up-gift-btn, .up-mimo-cta")).to be_nil # sem mimo para si mesmo
     expect(page.at_css(".up-bio").text).to eq("Eu mesmo")
   end
 
