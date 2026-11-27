@@ -36,6 +36,78 @@ RSpec.describe "Explorar cidades (/discover_3d/gallery)", type: :request do
     expect(page.at_css(".profile-card-name strong").text).to eq("Felipe Alves")
   end
 
+  describe "curtir pelo card (fica em Explorar cidades)" do
+    let(:turbo) { { "Accept" => "text/vnd.turbo-stream.html, text/html, application/xhtml+xml" } }
+    let(:gallery_path) { "/discover_3d/gallery?city=Itabuna&state=BA" }
+
+    before { allow(NotificationBroadcastJob).to receive_message_chain(:set, :perform_later) }
+
+    it "o coração do card manda source=gallery e o caminho desta busca" do
+      felipe = person("Felipe Alves")
+
+      get gallery_path
+      form = Nokogiri::HTML(response.body).at_css("#gallery-like-#{felipe.id} form")
+
+      expect(form["action"]).to eq("/likes?user_id=#{felipe.id}")
+      expect(form.at_css("input[name=source]")["value"]).to eq("gallery")
+      expect(form.at_css("input[name=return_to]")["value"]).to eq(gallery_path)
+    end
+
+    it "curtir: responde sem sair da galeria — coração cheio e 'Curtida enviada!'" do
+      felipe = person("Felipe Alves")
+
+      post "/likes", params: { user_id: felipe.id, source: "gallery", return_to: gallery_path }, headers: turbo
+
+      expect(response).to have_http_status(:ok)
+      expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+      expect(response.body).to include('action="replace" target="gallery-like-' + felipe.id.to_s + '"')
+      expect(response.body).to include("is-liked")
+      expect(response.body).to include("Curtida enviada!")
+      expect(response.body).not_to include("/lead")
+      expect(Like.positive.exists?(liker_id: me.id, liked_id: felipe.id)).to be(true)
+    end
+
+    it "já curtido: o card já vem com o coração cheio" do
+      felipe = person("Felipe Alves")
+      Like.create!(liker_id: me.id, liked_id: felipe.id)
+
+      get gallery_path
+      heart = Nokogiri::HTML(response.body).at_css("#gallery-like-#{felipe.id} button")
+
+      expect(heart["class"]).to include("is-liked")
+      expect(heart["disabled"]).to be_present
+    end
+
+    it "deu match: o modal aparece por cima da galeria e 'Continuar explorando' só fecha" do
+      felipe = person("Felipe Alves")
+      Like.create!(liker_id: felipe.id, liked_id: me.id)
+
+      post "/likes", params: { user_id: felipe.id, source: "gallery", return_to: gallery_path }, headers: turbo
+
+      expect(response.media_type).to eq("text/vnd.turbo-stream.html")
+      page = Nokogiri::HTML(response.body)
+      expect(response.body).to include("Continuar explorando")
+      expect(page.at_css("[data-match-modal-dismiss-path-value]")["data-match-modal-dismiss-path-value"]).to eq("#")
+      expect(response.body).to include('target="gallery-like-' + felipe.id.to_s + '"')
+    end
+
+    it "sem Turbo (HTML), volta para a mesma busca da galeria" do
+      felipe = person("Felipe Alves")
+
+      post "/likes", params: { user_id: felipe.id, source: "gallery", return_to: gallery_path }
+
+      expect(response).to redirect_to(gallery_path)
+    end
+
+    it "return_to de fora da galeria é ignorado" do
+      felipe = person("Felipe Alves")
+
+      post "/likes", params: { user_id: felipe.id, source: "gallery", return_to: "https://malicioso.example/x" }
+
+      expect(response).to redirect_to("/discover_3d/gallery")
+    end
+  end
+
   it "não mostra quem se ocultou da busca por cidades" do
     person("Aparece")
     person("Oculto", hidden_from_city_search: true)

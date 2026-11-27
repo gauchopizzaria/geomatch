@@ -39,6 +39,13 @@ class LikesController < ApplicationController
       # Se veio do MAPA, apenas fecha o popup (ok)
       return head :ok if params[:source] == "map"
 
+      # Galeria (Explorar cidades): coração cheio + "Você já curtiu …", sem sair da galeria
+      if gallery_stream?
+        return render turbo_stream: [ gallery_heart_stream(liked_user),
+                                      turbo_stream.append("body", partial: "shared/already_liked_toast",
+                                                                  locals: { first_name: first_name_of(liked_user) }) ]
+      end
+
       # Perfil: coração escuro + o banner "Você já curtiu …", sem sair da tela e sem duplicar
       if profile_stream?
         return render turbo_stream: [ profile_heart_stream(liked_user, liked: true),
@@ -116,11 +123,13 @@ class LikesController < ApplicationController
                   left_avatar:  current_user.avatar.attached? ? url_for(current_user.avatar) : nil,
                   right_avatar: liked_user.avatar.attached?   ? url_for(liked_user.avatar)   : nil,
                   message_path: match_path(match),
-                  dismiss_path: return_path,
-                  dismiss_label: from_likes ? "Agora não" : "Continuar deslizando",
+                  # Galeria: "Continuar explorando" só fecha o modal (fica na mesma rolagem)
+                  dismiss_path: params[:source] == "gallery" ? "#" : return_path,
+                  dismiss_label: match_dismiss_label(from_likes),
                   auto_forward_ms: from_likes ? MATCH_AUTO_FORWARD_MS : 0
                 }) ]
               streams << turbo_stream.remove("like-card-#{liked_user.id}") if params[:source] == "likes"
+              streams << gallery_heart_stream(liked_user) if params[:source] == "gallery"
               if params[:source] == "profile"
                 # Atrás do modal o perfil já mostra o novo estado: coração escuro e
                 # "Mandar mensagem" abrindo a conversa
@@ -156,6 +165,9 @@ class LikesController < ApplicationController
         elsif profile_stream?
           # Perfil: confirma o coração escuro sem recarregar a página
           render turbo_stream: [ profile_heart_stream(liked_user, liked: true), toast_stream("Curtida enviada!") ]
+        elsif gallery_stream?
+          # Galeria (Explorar cidades): coração cheio sem recarregar nem perder a rolagem
+          render turbo_stream: [ gallery_heart_stream(liked_user), toast_stream("Curtida enviada!") ]
         else
           # Se veio do swipe, recarrega a página para o próximo card
           redirect_to return_path, notice: "Curtida enviada!"
@@ -219,6 +231,22 @@ class LikesController < ApplicationController
     params[:source] == "profile" && request.format.turbo_stream?
   end
 
+  def gallery_stream?
+    params[:source] == "gallery" && request.format.turbo_stream?
+  end
+
+  def gallery_heart_stream(user)
+    turbo_stream.replace("gallery-like-#{user.id}", partial: "discover3d/like_button",
+                                                    locals: { user: user, liked: true })
+  end
+
+  def match_dismiss_label(from_likes)
+    return "Agora não" if from_likes
+    return "Continuar explorando" if params[:source] == "gallery"
+
+    "Continuar deslizando"
+  end
+
   def profile_heart_stream(user, liked:)
     turbo_stream.replace("profile-like-#{user.id}", partial: "users/profile_like_button",
                                                     locals: { user: user, liked: liked, match: match_with(user) })
@@ -247,12 +275,22 @@ class LikesController < ApplicationController
 
   # "Curtir de volta" pela tela de Curtidas (source=likes) volta para ela —
   # inclusive ao fechar o modal de match. Curtir pelo perfil (source=profile)
-  # fica no perfil. Os demais fluxos seguem para o Início.
+  # fica no perfil; pela galeria de Explorar cidades (source=gallery), na mesma busca
+  # (estado/cidade/sexo). Os demais fluxos seguem para o Início.
   def return_path
     case params[:source]
     when "likes"   then notifications_path
     when "profile" then user_path(params[:user_id])
+    when "gallery" then gallery_return_path
     else lead_path
     end
+  end
+
+  # A busca de onde a curtida veio (return_to = caminho da galeria com os filtros).
+  # Só aceita a própria galeria: nada de redirecionar para fora a partir de um parâmetro.
+  def gallery_return_path
+    path = params[:return_to].to_s
+    gallery = discover_3d_gallery_path
+    path == gallery || path.start_with?("#{gallery}?") ? path : gallery
   end
 end

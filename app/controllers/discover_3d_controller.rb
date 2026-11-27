@@ -47,6 +47,8 @@ class Discover3dController < ApplicationController
     @favorites_map = current_user.favorites
                                   .where(favorited_user_id: @users.map(&:id))
                                   .each_with_object({}) { |f, h| h[f.favorited_user_id] = f.id }
+    # Coração cheio em quem já foi curtido (o "agora não" não conta como curtida)
+    @liked_ids = Like.positive.where(liker_id: current_user.id, liked_id: @users.map(&:id)).pluck(:liked_id).to_set
   end
 
   # POST /discover_3d/gallery/visibility — olho da tela Explorar cidades (recurso Gold).

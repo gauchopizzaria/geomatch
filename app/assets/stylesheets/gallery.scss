@@ -391,3 +391,16 @@ html.dark:not(.light-mode) .ce-toast {
   .ce-toast__title { color: #f8f2e7; }
   .ce-toast__body { color: #c9c4bc; }
 }
+
+// Coração do card (discover3d/_like_button): o bloco que o Turbo Stream troca
+.card-action-slot { display: contents; }
+
+// Já curtiu: coração vermelho cheio (não dá para curtir de novo)
+.card-action-fav.is-liked {
+  background: #fff;
+  color: #f2484a;
+  cursor: default;
+
+  svg { fill: currentColor; stroke: none; }
+  &:active { transform: none; }
+}
