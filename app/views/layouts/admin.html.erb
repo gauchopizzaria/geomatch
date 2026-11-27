@@ -113,6 +113,16 @@
         Cupons
       </a>
 
+      <%# Saques da carteira (Mimos): aprovar, recusar, dar baixa e reenviar o Pix %>
+      <a href="/admin/saques" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800/60 transition-colors text-left">
+        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19V5m-6 6 6-6 6 6M4 21h16"/></svg>
+        Saques
+        <% pending_withdrawals = WithdrawalRequest.where(status: "pending").count %>
+        <% if pending_withdrawals.positive? %>
+          <span class="ml-auto px-1.5 py-0.5 rounded-full text-[10px] font-bold text-slate-900" style="background:#f59e0b"><%= pending_withdrawals %></span>
+        <% end %>
+      </a>
+
       <%# ── item ativo ── %>
       <a href="/admin/settings" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium text-white bg-slate-800 text-left">
         <svg class="w-4 h-4 flex-shrink-0" style="color:#f59e0b" fill="none" stroke="currentColor" viewBox="0 0 24 24">

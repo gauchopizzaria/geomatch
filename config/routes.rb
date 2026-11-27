@@ -224,6 +224,16 @@ Rails.application.routes.draw do
     resources :settings, only: [:index, :edit, :update]
     resources :blog_posts, only: [:index, :new, :create, :edit, :update, :destroy]
     resources :coupons
+    # Saques da carteira (Mimos): aprovar, recusar, dar baixa e reenviar o Pix
+    resources :withdrawals, path: "saques", only: [ :index ] do
+      member do
+        patch :approve
+        patch :reject
+        patch :mark_paid
+        patch :refresh
+        patch :retry_payout
+      end
+    end
   end
 
   # =================================================================

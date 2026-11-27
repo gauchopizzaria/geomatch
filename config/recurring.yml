@@ -21,3 +21,10 @@ production:
     class: BolsaoReconciliationJob
     queue: default
     schedule: every day at 3am
+  # Saques com Pix enviado ao Mercado Pago: confirma e dá baixa nos que compensaram.
+  # (config/schedule.yml é do Sidekiq, que não roda em produção — lá o Solid Queue só
+  # lê este arquivo)
+  check_pending_payouts:
+    class: CheckPendingPayoutsJob
+    queue: default
+    schedule: every 10 minutes

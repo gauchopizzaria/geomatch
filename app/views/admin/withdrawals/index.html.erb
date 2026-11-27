@@ -1,0 +1,137 @@
+<% content_for :page_title, "Saques" %>
+<% money = ->(cents) { Money.new(cents.to_i, "BRL").format } %>
+<% payout_labels = {
+     "manual" => [ "Envio manual", "text-amber-300 bg-amber-500/10 border-amber-500/30" ],
+     "requested" => [ "Enviando ao Mercado Pago", "text-sky-300 bg-sky-500/10 border-sky-500/30" ],
+     "retry" => [ "Reenviando", "text-sky-300 bg-sky-500/10 border-sky-500/30" ],
+     "pending" => [ "Mercado Pago processando", "text-sky-300 bg-sky-500/10 border-sky-500/30" ],
+     "succeeded" => [ "Pix enviado", "text-emerald-300 bg-emerald-500/10 border-emerald-500/30" ],
+     "failed" => [ "Envio falhou", "text-red-300 bg-red-500/10 border-red-500/30" ]
+   } %>
+
+<div class="max-w-6xl">
+
+  <div class="mb-5">
+    <h2 class="text-lg font-bold text-white">Saques</h2>
+    <p class="text-sm text-slate-500 mt-0.5">Pedidos de saque da carteira dos usuários (Mimos recebidos e saldo adicionado).</p>
+  </div>
+
+  <%# Modo de envio do Pix %>
+  <% case @payout_mode %>
+  <% when :automatic %>
+    <div class="mb-5 rounded-2xl border border-emerald-500/30 bg-emerald-500/10 px-4 py-3 text-sm text-emerald-200">
+      <strong>Envio automático ligado (Mercado Pago, produção).</strong>
+      Ao aprovar, o Pix sai sozinho para a chave do usuário e o saque é dado como pago quando o Mercado Pago confirmar.
+    </div>
+  <% when :test %>
+    <div class="mb-5 rounded-2xl border border-sky-500/30 bg-sky-500/10 px-4 py-3 text-sm text-sky-200">
+      <strong>Envio automático em TESTE (Mercado Pago sandbox).</strong>
+      Nenhum dinheiro de verdade sai. Para produção, tire MERCADO_PAGO_PAYOUT_TEST e configure o token de produção e a chave privada.
+    </div>
+  <% when :misconfigured %>
+    <div class="mb-5 rounded-2xl border border-red-500/30 bg-red-500/10 px-4 py-3 text-sm text-red-200">
+      <strong>PIX_PAYOUT_PROVIDER com valor inválido.</strong> Use <code>manual</code> ou <code>mercado_pago</code>.
+    </div>
+  <% else %>
+    <div class="mb-5 rounded-2xl border border-amber-500/30 bg-amber-500/10 px-4 py-3 text-sm text-amber-200">
+      <strong>Envio manual.</strong>
+      Ao aprovar, envie o Pix pelo app do Mercado Pago para a chave CPF do usuário (valor exato) e depois clique em <em>Marcar como pago</em>.
+    </div>
+  <% end %>
+
+  <%# Abas por situação %>
+  <div class="flex flex-wrap gap-2 mb-4">
+    <% Admin::WithdrawalsController::STATUS_TABS.each do |key, label| %>
+      <%= link_to admin_withdrawals_path(status: key),
+            class: "px-3 py-1.5 rounded-xl text-sm font-semibold border transition-colors " +
+                   (key == @status ? "text-slate-900 border-transparent" : "text-slate-300 border-slate-700 hover:bg-slate-800"),
+            style: (key == @status ? "background:linear-gradient(135deg,#f59e0b,#d97706)" : nil) do %>
+        <%= label %> <span class="opacity-70">(<%= @counts[key].to_i %>)</span>
+      <% end %>
+    <% end %>
+  </div>
+
+  <% if @withdrawals.any? %>
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-x-auto">
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="border-b border-slate-800 text-left text-xs text-slate-500 uppercase tracking-wide">
+            <th class="px-4 py-3 font-semibold">Pedido em</th>
+            <th class="px-4 py-3 font-semibold">Usuário</th>
+            <th class="px-4 py-3 font-semibold">Valor</th>
+            <th class="px-4 py-3 font-semibold">Chave Pix</th>
+            <th class="px-4 py-3 font-semibold">Envio do Pix</th>
+            <th class="px-4 py-3 font-semibold text-right">Ações</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/70">
+          <% @withdrawals.each do |wr| %>
+            <tr class="hover:bg-slate-800/40 transition-colors align-top" id="saque-<%= wr.id %>">
+              <td class="px-4 py-3 text-slate-300 whitespace-nowrap">
+                <%= wr.created_at.strftime("%d/%m/%Y %H:%M") %>
+                <% if wr.processed_at %><div class="text-xs text-slate-500">pago em <%= wr.processed_at.strftime("%d/%m %H:%M") %></div><% end %>
+              </td>
+              <td class="px-4 py-3">
+                <div class="font-semibold text-white"><%= wr.user.display_name %></div>
+                <div class="text-xs text-slate-500"><%= wr.user.email %></div>
+              </td>
+              <td class="px-4 py-3 font-bold text-amber-400 whitespace-nowrap"><%= money.(wr.amount_cents) %></td>
+              <td class="px-4 py-3">
+                <div class="font-mono text-slate-200 select-all"><%= wr.pix_key %></div>
+                <div class="text-xs text-slate-500 uppercase"><%= wr.pix_key_type %></div>
+              </td>
+              <td class="px-4 py-3">
+                <% if wr.payout_status.present? %>
+                  <% label, css = payout_labels.fetch(wr.payout_status, [ wr.payout_status, "text-slate-300 bg-slate-800 border-slate-700" ]) %>
+                  <span class="inline-block px-2 py-0.5 rounded-full text-xs font-bold border <%= css %>"><%= label %></span>
+                  <% if wr.payout_external_id.present? %><div class="mt-1 text-xs text-slate-500 font-mono">MP <%= wr.payout_external_id %></div><% end %>
+                  <% if wr.payout_error.present? %><div class="mt-1 text-xs text-red-300 max-w-[260px]"><%= wr.payout_error %></div><% end %>
+                <% elsif wr.status == "rejected" && wr.admin_notes.present? %>
+                  <span class="text-xs text-slate-400">Motivo: <%= wr.admin_notes %></span>
+                <% else %>
+                  <span class="text-xs text-slate-500">—</span>
+                <% end %>
+              </td>
+              <td class="px-4 py-3">
+                <div class="flex flex-wrap items-center justify-end gap-2">
+                  <% if wr.pending? %>
+                    <%= button_to "Aprovar", approve_admin_withdrawal_path(wr, tab: @status), method: :patch,
+                          data: { turbo_confirm: "Aprovar o saque de #{money.(wr.amount_cents)} para #{wr.user.display_name}?" },
+                          class: "px-3 py-1.5 rounded-lg text-xs font-bold text-slate-900 cursor-pointer",
+                          style: "background:linear-gradient(135deg,#f59e0b,#d97706)" %>
+                    <%= form_with url: reject_admin_withdrawal_path(wr, tab: @status), method: :patch, class: "flex items-center gap-1",
+                                  data: { turbo_confirm: "Recusar este saque? O valor volta para o saldo do usuário." } do |f| %>
+                      <%= f.text_field :reason, placeholder: "Motivo (opcional)",
+                            class: "w-36 px-2 py-1.5 rounded-lg text-xs bg-slate-800 border border-slate-700 text-slate-200" %>
+                      <%= f.submit "Recusar", class: "px-3 py-1.5 rounded-lg text-xs font-semibold text-red-400 border border-red-500/40 hover:bg-red-500/10 cursor-pointer bg-transparent" %>
+                    <% end %>
+                  <% elsif wr.approved? %>
+                    <% if wr.payout_external_id.present? && wr.payout_status != "failed" %>
+                      <%= button_to "Atualizar status", refresh_admin_withdrawal_path(wr, tab: @status), method: :patch,
+                            class: "px-3 py-1.5 rounded-lg text-xs font-semibold text-sky-300 border border-sky-500/40 hover:bg-sky-500/10 cursor-pointer" %>
+                    <% else %>
+                      <%= button_to "Marcar como pago", mark_paid_admin_withdrawal_path(wr, tab: @status), method: :patch,
+                            data: { turbo_confirm: "Você já enviou o Pix de #{money.(wr.amount_cents)} para a chave #{wr.pix_key}? Isto dá baixa no saldo do usuário." },
+                            class: "px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-950 bg-emerald-400 cursor-pointer" %>
+                    <% end %>
+                    <% if wr.payout_status == "failed" %>
+                      <%= button_to "Tentar de novo", retry_payout_admin_withdrawal_path(wr, tab: @status), method: :patch,
+                            data: { turbo_confirm: "Confira no painel do Mercado Pago que o Pix NÃO saiu. Enviar de novo?" },
+                            class: "px-3 py-1.5 rounded-lg text-xs font-semibold text-amber-400 border border-amber-500/40 hover:bg-amber-500/10 cursor-pointer" %>
+                    <% end %>
+                  <% else %>
+                    <span class="text-xs text-slate-500"><%= wr.processed_by&.display_name %></span>
+                  <% end %>
+                </div>
+              </td>
+            </tr>
+          <% end %>
+        </tbody>
+      </table>
+    </div>
+  <% else %>
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl px-6 py-12 text-center text-slate-500 text-sm">
+      Nenhum saque em "<%= Admin::WithdrawalsController::STATUS_TABS[@status] %>".
+    </div>
+  <% end %>
+</div>

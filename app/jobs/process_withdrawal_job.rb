@@ -15,12 +15,14 @@ class ProcessWithdrawalJob < ApplicationJob
 
   retry_on MpTransferService::TransferError, wait: 30.seconds, attempts: 3
 
-  def perform(withdrawal_request_id)
+  # retry_payout: "Tentar de novo" do admin (PixPayoutService.retry!) — o valor já foi
+  # movido entre as contas na primeira vez; aqui só o envio do PIX
+  def perform(withdrawal_request_id, retry_payout: false)
     withdrawal_request = WithdrawalRequest.find_by(id: withdrawal_request_id)
     return unless withdrawal_request
     return unless withdrawal_request.approved?
 
-    move_to_operational_account!(withdrawal_request)
+    move_to_operational_account!(withdrawal_request) unless retry_payout
     settle!(withdrawal_request)
   rescue MpTransferService::TransferError => e
     Rails.logger.error "[ProcessWithdrawalJob] Falha na transferência (withdrawal_request=#{withdrawal_request_id}): #{e.message}"

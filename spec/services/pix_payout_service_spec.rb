@@ -61,15 +61,51 @@ RSpec.describe PixPayoutService do
       expect(request.payout_provider).to eq("mercado_pago")
     end
 
-    it "usa o id da solicitação como chave de idempotência" do
+    it "usa 'id do saque + tentativa' como chave de idempotência e o id como referência" do
       request = withdrawal
       allow(adapter).to receive(:send_pix).and_return(described_class::Result.new(status: :succeeded, external_id: "p1"))
 
       described_class.call(request)
 
       expect(adapter).to have_received(:send_pix).with(
-        hash_including(idempotency_key: request.id, amount_cents: 32_340, pix_key: "529.982.247-25", pix_key_type: "cpf")
+        hash_including(idempotency_key: "#{request.id}-1", reference: "saque_#{request.id.delete('-')}",
+                       amount_cents: 32_340, pix_key: "529.982.247-25", pix_key_type: "cpf")
       )
+    end
+
+    it "repetir a mesma tentativa (job rodou de novo sem resposta) usa a MESMA chave" do
+      request = withdrawal(payout_status: "requested")
+      allow(adapter).to receive(:send_pix).and_return(described_class::Result.new(status: :pending, external_id: "p1"))
+
+      described_class.call(request)
+
+      expect(adapter).to have_received(:send_pix).with(hash_including(idempotency_key: "#{request.id}-1"))
+    end
+
+    describe ".retry! (Tentar de novo, no admin)" do
+      it "depois de uma falha, abre a tentativa 2 (chave nova), guarda a ordem antiga e reenvia sem mexer na tesouraria" do
+        request = withdrawal
+        request.update!(status: "approved", payout_status: "failed", payout_external_id: "payout-velho")
+
+        expect { described_class.retry!(request) }
+          .to have_enqueued_job(ProcessWithdrawalJob).with(request.id, retry_payout: true)
+
+        request.reload
+        expect(request.payout_external_id).to be_nil
+        expect(request.payout_payload).to include("attempt" => 2, "previous_payout_ids" => [ "payout-velho" ])
+
+        allow(adapter).to receive(:send_pix).and_return(described_class::Result.new(status: :pending, external_id: "payout-novo"))
+        described_class.call(request)
+        expect(adapter).to have_received(:send_pix).with(hash_including(idempotency_key: "#{request.id}-2"))
+        expect(request.reload.payout_payload).to include("attempt" => 2, "previous_payout_ids" => [ "payout-velho" ])
+      end
+
+      it "não deixa reenviar um saque cujo envio não falhou" do
+        request = withdrawal
+        request.update!(status: "approved", payout_status: "pending", payout_external_id: "payout-1")
+
+        expect { described_class.retry!(request) }.to raise_error(ArgumentError)
+      end
     end
 
     # A regra que protege o dinheiro: ordem já criada nunca é reenviada.
